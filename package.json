@@ -1,0 +1,12 @@
+{
+  "name": "enoteca-scarichi",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @enoteca/scarichi-vini",
+    "build": "npm run build -w @enoteca/scarichi-vini",
+    "preview": "npm run preview -w @enoteca/scarichi-vini"
+  }
+}
