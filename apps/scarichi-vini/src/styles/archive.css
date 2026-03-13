@@ -58,7 +58,7 @@
 .archiveFilters {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 1.3fr 0.9fr minmax(192px, auto) auto;
+  grid-template-columns: minmax(260px, 1fr) minmax(520px, 1.35fr) auto minmax(192px, auto) auto;
   gap: 10px;
   align-items: center;
 }
@@ -66,6 +66,59 @@
 .archiveFilterControl {
   font-size: 14px;
   padding: 10px 12px;
+}
+
+.archiveFilterGroup {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.archiveFilterSelect {
+  min-width: 0;
+}
+
+.archiveFilterSelectActive {
+  border-color: #7c164a;
+  background: #f7edf3;
+  color: #7c164a;
+  font-weight: 600;
+}
+
+.archiveExportActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 6px;
+}
+
+.archiveExportButton {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  border-radius: 9px;
+  width: 100%;
+  min-width: 56px;
+  min-height: 43px;
+  padding: 4px 6px;
+  display: grid;
+  place-items: center;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.archiveExportIconImage {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.archiveExportButton:hover {
+  border-color: #7c164a;
+  background: #fcf8fa;
 }
 
 .archiveStatsBox {
@@ -169,6 +222,17 @@
   min-width: 170px;
   font-size: 14px;
   padding: 10px 14px;
+}
+
+@media (max-width: 1500px) {
+  .archiveFilters {
+    grid-template-columns: minmax(260px, 1fr) minmax(420px, 1.2fr) auto minmax(192px, auto);
+  }
+
+  .archiveAddButton {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
 }
 
 .archiveTableSection {
@@ -615,6 +679,14 @@
 
   .archiveFilters {
     grid-template-columns: 1fr;
+  }
+
+  .archiveFilterGroup {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .archiveExportActions {
+    justify-content: flex-start;
   }
 
   .archiveAddButton {

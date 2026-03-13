@@ -1,4 +1,5 @@
 import type { Wine } from '@/domain/types';
+import type { ArchiveCsvWineInput } from '@/data/archiveCsv';
 import { supabase } from '@/lib/supabase';
 import { loadDb, notifyDbChanged, saveDb, newId } from '@/data/localDb';
 import { syncWineUpsert, syncWineDelete } from '@/integrations/googleSheetsSync';
@@ -173,7 +174,7 @@ export type WineInput = {
   age?: string;
   producer: string;
   origin: string;
-  supplier: string;
+  supplier?: string;
   threshold?: number;
   purchasePrice?: number;
   salePrice?: number;
@@ -200,7 +201,7 @@ function normalizeInput(input: WineInput): Wine {
     age: input.age?.trim() || undefined,
     producer: input.producer.trim(),
     origin: input.origin.trim(),
-    supplier: input.supplier.trim(),
+    supplier: input.supplier?.trim() || undefined,
     threshold,
     purchasePrice: hasPurchase ? purchasePrice : undefined,
     salePrice: hasSale ? salePrice : undefined,
@@ -291,4 +292,65 @@ export async function deleteWine(id: string): Promise<void> {
   const next = getLocalInventory().filter((w) => w.id !== id);
   persistLocalInventory(next);
   await syncWineDelete(id);
+}
+
+export async function replaceAllWines(inputRows: ArchiveCsvWineInput[]): Promise<Wine[]> {
+  const normalized = inputRows.map((row) =>
+    normalizeInput({
+      id: row.id?.trim() || undefined,
+      category: row.category,
+      name: row.name,
+      age: row.age,
+      producer: row.producer,
+      origin: row.origin,
+      supplier: row.supplier ?? '',
+      threshold: row.threshold,
+      purchasePrice: row.purchasePrice,
+      salePrice: row.salePrice,
+      qty: row.qty,
+      notes: row.notes
+    })
+  );
+
+  let persisted = normalized;
+
+  if (supabase) {
+    const { error: deleteError } = await supabase.from('wines').delete().not('id', 'is', null);
+    if (deleteError) {
+      console.error('[wineRepository] Supabase replace delete error', deleteError);
+      throw deleteError;
+    }
+
+    if (normalized.length > 0) {
+      const { data, error } = await supabase.from('wines').insert(normalized.map(toRowPayload)).select('*');
+
+      if (error && isSchemaColumnError(error)) {
+        const legacy = await supabase
+          .from('wines')
+          .insert(normalized.map(toLegacyPayload))
+          .select('*');
+        if (legacy.error) {
+          console.error('[wineRepository] Supabase replace legacy error', legacy.error);
+          throw legacy.error;
+        }
+        persisted = (legacy.data ?? []).map(toWine);
+      } else if (error) {
+        console.error('[wineRepository] Supabase replace insert error', error);
+        throw error;
+      } else {
+        persisted = (data ?? []).map(toWine);
+      }
+    } else {
+      persisted = [];
+    }
+  }
+
+  const sorted = sortWines(persisted);
+  persistLocalInventory(sorted);
+
+  for (const wine of sorted) {
+    await syncWineUpsert(wine);
+  }
+
+  return sorted;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, FileText, Pencil, Trash2 } from 'lucide-react';
@@ -46,6 +46,7 @@ function computeMargin(wine: Wine) {
 }
 
 export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQty }: Props) {
+  const qtyInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const [targetRows, setTargetRows] = useState(BASE_ROWS);
   const [notePreview, setNotePreview] = useState<{ wineName: string; note: string } | null>(null);
   const [editingQtyWineId, setEditingQtyWineId] = useState<string | null>(null);
@@ -125,11 +126,30 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
     setEditingQtyValue(String(Math.max(0, Math.min(99, Math.round(wine.qty)))));
   };
 
-  const cancelQtyEdit = () => {
+  const cancelQtyEdit = useCallback(() => {
     if (savingQtyWineId) return;
     setEditingQtyWineId(null);
     setEditingQtyValue('');
-  };
+  }, [savingQtyWineId]);
+
+  useEffect(() => {
+    if (!editingQtyWineId) return;
+    if (qtyConfirmModal) return;
+
+    const handlePointerDownOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (qtyInlineBoxRef.current?.contains(target)) return;
+      cancelQtyEdit();
+    };
+
+    document.addEventListener('mousedown', handlePointerDownOutside);
+    document.addEventListener('touchstart', handlePointerDownOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDownOutside);
+      document.removeEventListener('touchstart', handlePointerDownOutside);
+    };
+  }, [cancelQtyEdit, editingQtyWineId, qtyConfirmModal]);
 
   const requestQtyEditConfirm = (wine: Wine) => {
     if (savingQtyWineId) return;
@@ -327,7 +347,7 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
                   <td className="archiveColCenter">{formatMoney(wine.salePrice)}</td>
                   <td className={`archiveColCenter ${qtyClass}`}>
                     {editingQtyWineId === wine.id ? (
-                      <div className="archiveQtyInlineBox">
+                      <div className="archiveQtyInlineBox" ref={qtyInlineBoxRef}>
                         <input
                           className="archiveQtyInlineInput"
                           type="text"

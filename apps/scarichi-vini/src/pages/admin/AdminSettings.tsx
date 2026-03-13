@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { getBool, setBool, storageKeys } from '@/pages/admin/storage';
 import { ConfirmModal } from '@/components/ConfirmModal';
+import { parseArchiveCsv, type ArchiveCsvWineInput } from '@/data/archiveCsv';
+import { replaceAllWines } from '@/data/wineRepository';
 
 function SettingToggle({
   label,
@@ -59,6 +61,12 @@ export function AdminSettings({
   const [pwdOk, setPwdOk] = useState(false);
   const [reset1, setReset1] = useState(false);
   const [reset2, setReset2] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importRows, setImportRows] = useState<ArchiveCsvWineInput[] | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importOk, setImportOk] = useState<string | null>(null);
+  const [importConfirm, setImportConfirm] = useState(false);
 
   const canChange = useMemo(
     () => currentPassword.length > 0 && newPassword.length >= 4,
@@ -90,6 +98,42 @@ export function AdminSettings({
       setPwdOk(true);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const prepareImport = async () => {
+    if (!importFile) return;
+    setImportError(null);
+    setImportOk(null);
+    try {
+      const raw = await importFile.text();
+      const rows = parseArchiveCsv(raw);
+      if (rows.length === 0) {
+        setImportError('Il file non contiene righe valide da importare');
+        return;
+      }
+      setImportRows(rows);
+      setImportConfirm(true);
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Errore lettura CSV');
+    }
+  };
+
+  const importArchive = async () => {
+    if (!importRows) return;
+    setImportBusy(true);
+    setImportError(null);
+    setImportOk(null);
+    try {
+      await replaceAllWines(importRows);
+      setImportOk(`Import completato: ${importRows.length} record`);
+      setImportRows(null);
+      setImportFile(null);
+      setImportConfirm(false);
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Errore durante import archivio');
+    } finally {
+      setImportBusy(false);
     }
   };
 
@@ -170,6 +214,47 @@ export function AdminSettings({
       </div>
 
       <div className="card adminCard mt12">
+        <div className="sectionTitle">Importa archivio CSV</div>
+        <div className="subtle mt6">
+          L&apos;import sostituisce totalmente l&apos;archivio vini attuale con i record del file CSV.
+        </div>
+        <div className="subtle mt6">
+          Formato consigliato: export da Archivio ({' '}
+          <span className="mono">ID;Categoria;Nome;Anno;Produttore;Provenienza;Fornitore;Soglia;Acquisto;Vendita;Quantita;Note</span>{' '}
+          ).
+        </div>
+
+        <div className="mt12">
+          <input
+            className="input adminInput"
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              setImportFile(file);
+              setImportRows(null);
+              setImportError(null);
+              setImportOk(null);
+            }}
+          />
+        </div>
+        {importFile ? <div className="subtle mt8">File selezionato: {importFile.name}</div> : null}
+        {importError ? <div className="errorText mt10">{importError}</div> : null}
+        {importOk ? <div className="okText mt10">{importOk}</div> : null}
+
+        <div className="mt14">
+          <button
+            className="button buttonSecondary"
+            type="button"
+            disabled={!importFile || importBusy}
+            onClick={() => void prepareImport()}
+          >
+            Importa archivio
+          </button>
+        </div>
+      </div>
+
+      <div className="card adminCard mt12">
         <div className="sectionTitle">Reset totale</div>
         <div className="subtle mt6">
           Cancella inventario locale, storico e sospesi. Azione definitiva.
@@ -205,6 +290,26 @@ export function AdminSettings({
           onHardReset();
         }}
         onCancel={() => setReset2(false)}
+      />
+
+      <ConfirmModal
+        open={importConfirm}
+        title="Confermare import archivio?"
+        description={
+          importRows
+            ? `Verranno eliminati i record attuali e sostituiti con ${importRows.length} record dal CSV.`
+            : 'Verranno eliminati i record attuali e sostituiti con il contenuto del CSV.'
+        }
+        confirmLabel={importBusy ? 'Import in corso…' : 'Sì, sostituisci archivio'}
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          if (importBusy) return;
+          void importArchive();
+        }}
+        onCancel={() => {
+          if (importBusy) return;
+          setImportConfirm(false);
+        }}
       />
     </>
   );

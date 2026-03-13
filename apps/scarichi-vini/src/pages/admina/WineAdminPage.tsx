@@ -104,6 +104,18 @@ export function WineAdminPage() {
     [wines, managedCategories, supabaseCategories]
   );
   const origins = useMemo(() => listOriginOptions(wines, managedOrigins), [wines, managedOrigins]);
+  const producers = useMemo(() => {
+    const unique = new Map<string, string>();
+    for (const wine of wines) {
+      const value = wine.producer?.trim() ?? '';
+      if (!value) continue;
+      const key = value.toLowerCase();
+      if (!unique.has(key)) unique.set(key, value);
+    }
+    return Array.from(unique.values()).sort((a, b) =>
+      a.localeCompare(b, 'it', { sensitivity: 'base' })
+    );
+  }, [wines]);
   const suppliers = useMemo(
     () => listSupplierOptions(wines, [...managedSuppliers, ...supabaseSuppliers]),
     [wines, managedSuppliers, supabaseSuppliers]
@@ -323,10 +335,13 @@ export function WineAdminPage() {
         winesCount={wines.length}
         thresholdCount={wines.filter((w) => isInThreshold(w)).length}
         outCount={wines.filter((w) => w.qty <= 0).length}
+        wines={filteredWines}
         filters={filters}
         categories={categories}
+        producers={producers}
+        origins={origins}
+        suppliers={suppliers}
         onFiltersChange={setFilters}
-        onRequestAddCategory={handleRequestAddCategory}
         onOpenCreate={openCreate}
       />
 

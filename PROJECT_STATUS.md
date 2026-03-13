@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 15:03 CET**.
+Ultimo aggiornamento: **13/03/2026 15:45 CET**.
 
 ## Scopo di questo file
 
@@ -228,8 +228,20 @@ Comandi root:
     - `apps/scarichi-vini/dev-dist/*`
     - `*.tsbuildinfo`
   - `.gitignore` aggiornato per prevenire re-upload in futuro
+- Export/Import archivio:
+  - export Excel migrato a `.xlsx` reale (no warning formato/estensione)
+  - export Excel con stile professionale coerente alla tabella archivio:
+    - header verde chiaro, righe alternate, bordi, `Nome` in grassetto
+    - q.tà colorata (rosso `0`, ambra in soglia), colonne auto-size con limiti min/max
+  - export PDF migrato a generazione nativa file (`jsPDF + autoTable`), senza popup/print browser
+  - PDF con logo Enoteca Italiana su ogni pagina, footer pagina e layout compatto landscape
+  - naming file export uniformato:
+    - `archivio_vini_13 Marzo 2026.xlsx`
+    - `archivio_vini_13 Marzo 2026.pdf`
+  - impostazioni admin: import archivio CSV con validazione e conferma
+  - import CSV con sostituzione totale record archivio (Supabase + cache locale allineata)
 
-### Verifica qualità (13/03/2026 15:03 CET)
+### Verifica qualità (13/03/2026 15:45 CET)
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅

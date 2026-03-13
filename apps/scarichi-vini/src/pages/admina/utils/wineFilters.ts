@@ -32,6 +32,18 @@ export function matchesFilters(wine: Wine, filters: Filters) {
     const category = wine.category?.toLowerCase() ?? '';
     if (category !== filters.category.toLowerCase()) return false;
   }
+  if (filters.producer !== 'all') {
+    const producer = wine.producer?.toLowerCase() ?? '';
+    if (producer !== filters.producer.toLowerCase()) return false;
+  }
+  if (filters.origin !== 'all') {
+    const origin = wine.origin?.toLowerCase() ?? '';
+    if (origin !== filters.origin.toLowerCase()) return false;
+  }
+  if (filters.supplier !== 'all') {
+    const supplier = wine.supplier?.toLowerCase() ?? '';
+    if (supplier !== filters.supplier.toLowerCase()) return false;
+  }
 
   if (filters.stock === 'threshold' && !isInThreshold(wine)) return false;
   if (filters.stock === 'out' && wine.qty > 0) return false;

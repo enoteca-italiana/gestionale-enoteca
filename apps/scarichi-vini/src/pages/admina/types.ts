@@ -5,6 +5,9 @@ export type StockFilter = 'all' | 'threshold' | 'out';
 export type Filters = {
   term: string;
   category: string;
+  producer: string;
+  origin: string;
+  supplier: string;
   stock: StockFilter;
 };
 
@@ -26,6 +29,9 @@ export type WineFormState = {
 export const defaultFilters: Filters = {
   term: '',
   category: 'all',
+  producer: 'all',
+  origin: 'all',
+  supplier: 'all',
   stock: 'all'
 };
 
