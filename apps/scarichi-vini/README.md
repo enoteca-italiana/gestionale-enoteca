@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **13/03/2026 13:07 CET**.
 
 ## Quick Start
 
@@ -34,6 +34,7 @@ Comandi utili:
   - q.tà in soglia evidenziata in giallo chiaro
   - `ANNO` vuoto quando assente
   - `Soglia` nel modale vino con selector standard (`Vuoto` oppure `1..99`, mai `0`)
+  - `Q.tà` nel modale vino con selector standard (`0..99`) allineato agli altri controlli
   - note consultabili da icona dedicata in `Azioni`
   - categoria selezionabile solo da lista gestita, con `+ Aggiungi categoria…` e suggerimenti anti-duplicato
   - provenienza selezionabile solo da lista gestita, con `+ Aggiungi provenienza…` e suggerimenti anti-duplicato

@@ -167,6 +167,8 @@
   text-align: left;
   border: 0;
   background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
   position: relative;
 }

@@ -96,7 +96,6 @@ export function HomePage() {
       <div className="container introLayout">
         <div className={`introCenter ${introVisible ? 'introVisible' : ''}`}>
           <Logo variant="intro" />
-          <div className="subtle mt8">Avvio…</div>
         </div>
         <div className="introByline">By DERO</div>
       </div>

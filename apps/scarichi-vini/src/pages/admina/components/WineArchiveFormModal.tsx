@@ -56,10 +56,19 @@ export function WineArchiveFormModal({
     for (let value = 1; value <= 99; value += 1) values.push(value);
     return values;
   }, []);
+  const qtyOptions = useMemo(() => {
+    const values: number[] = [];
+    for (let value = 0; value <= 99; value += 1) values.push(value);
+    return values;
+  }, []);
 
   useEffect(() => {
     if (open) {
-      setState({ ...initial, age: normalizeYear(initial.age) });
+      setState({
+        ...initial,
+        age: normalizeYear(initial.age),
+        qty: Number.isFinite(initial.qty) ? Math.max(0, Math.min(99, Math.round(initial.qty))) : 0
+      });
       setError(null);
     }
   }, [open, initial]);
@@ -216,21 +225,22 @@ export function WineArchiveFormModal({
           <div className="archiveFormInline3">
             <label className="modalLabel archiveFormQtyLabel">
               Q.tà
-              <input
-                className="input mt4 archiveFormQtyInput"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={99}
-                step={1}
-                value={state.qty}
+              <select
+                className="input mt4"
+                value={String(state.qty)}
                 onChange={(e) => {
                   const parsed = Number(e.target.value);
                   if (!Number.isFinite(parsed)) return;
                   const nextQty = Math.max(0, Math.min(99, Math.round(parsed)));
                   setState((prev) => ({ ...prev, qty: nextQty }));
                 }}
-              />
+              >
+                {qtyOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="modalLabel">
               Acquisto

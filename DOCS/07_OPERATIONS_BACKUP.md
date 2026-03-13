@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **13/03/2026 13:07 CET**.
 
 ## Dev server
 
@@ -49,6 +49,7 @@ Porte usate in progetto:
 
 - `gh auth login -h github.com -p https -w` usato con successo (device flow sicuro).
 - push su `main` confermato.
+- `gh` installato anche su questo PC; autenticazione attiva su account `dero975`.
 - policy attiva: repository snello per deploy Render.
 
 ### Regole anti-file pesanti (tracking Git)
@@ -69,7 +70,7 @@ Cartella:
 Naming richiesto dall’utente:
 
 - es: `backup_13 Giovedi_15.40.tar.gz`
-- ultimo backup creato: `backup_13 Venerdi_01.48.tar.gz`
+- ultimo backup creato: `backup_13 Venerdi_13.07.tar.gz`
 
 Script:
 

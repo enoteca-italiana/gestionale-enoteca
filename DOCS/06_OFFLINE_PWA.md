@@ -1,6 +1,6 @@
 # Offline & PWA
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **13/03/2026 13:07 CET**.
 
 ## Obiettivo
 
@@ -29,7 +29,7 @@ Nota asset logo:
 
 - asset operativo: `logo.png` ottimizzato (compressione applicata).
 - `Logo.tsx` usa direttamente `logo.png`.
-- icone installazione generate da `public/logo home.png` e convertite in PNG ottimizzati:
+- icone installazione operative in `public/` (PNG ottimizzati):
   - `public/pwa-192x192.png`
   - `public/pwa-512x512.png`
   - `public/pwa-192x192-maskable.png`

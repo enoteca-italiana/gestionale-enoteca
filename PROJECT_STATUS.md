@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **13/03/2026 13:07 CET**.
 
 ## Scopo di questo file
 
@@ -164,12 +164,15 @@ Comandi root:
   - da completare/alimentare con credenziali e pipeline definitiva
 - Deploy Render
 
-### Ultimi aggiornamenti UI/asset (13/03/2026, notte)
+### Ultimi aggiornamenti UI/asset (13/03/2026)
 
-- Logo applicazione sostituito e compresso:
-  - asset operativo: `apps/scarichi-vini/public/logo.png` (ottimizzato, ~255 KB)
+- Logo applicazione sostituito e ricompresso:
+  - asset operativo: `apps/scarichi-vini/public/logo.png` (ottimizzato, ~77 KB)
   - mantenute proporzioni visive precedenti in header/app
   - intro lasciata invariata come dimensioni
+- Intro:
+  - aggiunta firma `By DERO` in basso schermata
+  - rimossa la scritta `Avvio...`
 - Tema colore:
   - elementi brand/pulsanti aggiornati su palette viola `#7c164a`
   - eccezione business archivio: q.tà `0` resta evidenziata in rosso acceso
@@ -184,9 +187,17 @@ Comandi root:
 - Modale vino:
   - sfondo allineato al colore base app (bianco crema)
   - campo `Soglia` sulla stessa riga di `Provenienza` e convertito a selector standard (`Vuoto`, `1..99`)
+  - campo `Q.tà` allineato a selector standard unico (`0..99`) come gli altri controlli
   - regola validazione: `Soglia` mai `0`
+- Consistenza iPhone/Safari:
+  - fix stile lista sessione su iOS (`button` ora eredita tipografia/colore) per allineare il design a desktop/local
+- Asset/public cleanup:
+  - rimossi file non usati: `logo.webp`, `logo home.png`, `icon.svg`
+  - rigenerate icone installazione PWA (`pwa-192/512`, `maskable`, `apple-touch-icon`) con peso ridotto
+- Documentazione:
+  - mantenuta una sola scheda tecnica (`SCHEDA TECNICA ENOTECA ITALIANA.md` in root)
 - Backup:
-  - creato nuovo archivio: `backup/backup_13 Venerdi_01.48.tar.gz`
+  - creato nuovo archivio: `backup/backup_13 Venerdi_13.07.tar.gz`
 - GitHub / Deploy hygiene:
   - push su `main` completato con `gh auth login` (device flow) e script `./scripts/commit_github.sh`
   - rimossi dal tracking i file pesanti non necessari al deploy:
