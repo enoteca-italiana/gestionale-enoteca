@@ -120,16 +120,16 @@ export function HomePage() {
       <div className="mt12">
         {sessionOpen ? (
           <div className="row">
-            <button className="button buttonSecondary buttonAuto" type="button" onClick={endSession}>
-              Chiudi
+            <button className="button buttonSecondary buttonAuto sessionCloseButton" type="button" onClick={endSession}>
+              ×
             </button>
             <button
-              className="button buttonAuto"
+              className={`button buttonAuto ${sessionCount > 0 ? 'buttonSessionConfirmActive' : ''}`}
               type="button"
               onClick={confirmSubmit}
               disabled={sessionCount <= 0}
             >
-              Conferma ({sessionCount})
+              Conferma Sessione
             </button>
           </div>
         ) : (

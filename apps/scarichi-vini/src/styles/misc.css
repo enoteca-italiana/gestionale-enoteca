@@ -148,3 +148,127 @@
 .toggleOn .toggleKnob {
   transform: translateX(20px);
 }
+
+.summaryDock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 84px;
+  width: min(calc(100vw - 32px), 688px);
+  z-index: 40;
+  background: #ffffff;
+}
+
+.summaryDock .list {
+  max-height: min(34vh, 320px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.summaryToggle {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0;
+}
+
+.summaryToggleMain {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.summaryToggleArrow {
+  color: var(--muted);
+  margin-left: auto;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(0deg);
+  transition: transform 140ms ease;
+}
+
+.summaryToggleArrowOpen {
+  transform: rotate(180deg);
+}
+
+.summaryToggleMeta {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summaryDockSpacer {
+  height: min(40vh, 340px);
+}
+
+.summaryDockSpacerCollapsed {
+  height: 72px;
+}
+
+.summaryItemButton {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 1.5px solid var(--border-strong);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.summaryEditModal {
+  max-width: 420px;
+  position: relative;
+}
+
+.summaryEditClose {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.summaryEditControls {
+  display: grid;
+  grid-template-columns: 58px 58px 58px;
+  justify-content: center;
+  gap: 10px;
+}
+
+.summaryEditActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.summaryEditActionsSingle {
+  display: flex;
+  justify-content: center;
+}
+
+.summaryEditActionsSingle .button {
+  width: min(72%, 280px);
+}
+
+.buttonDangerSoft {
+  background: #f5eaf0;
+  color: #7c164a;
+  border: 1px solid #ead4df;
+}
+
+.buttonConfirmSoft {
+  background: #eaf7ee;
+  color: #166534;
+  border: 1px solid #cfe9d8;
+}
