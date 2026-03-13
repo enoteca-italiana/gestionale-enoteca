@@ -98,6 +98,7 @@ export function HomePage() {
           <Logo variant="intro" />
           <div className="subtle mt8">Avvio…</div>
         </div>
+        <div className="introByline">By DERO</div>
       </div>
     );
   }

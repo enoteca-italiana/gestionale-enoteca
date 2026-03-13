@@ -8,8 +8,8 @@ export function Logo({ variant }: { variant: 'intro' | 'header' }) {
       alt="Enoteca Italiana"
       loading={variant === 'intro' ? 'eager' : 'lazy'}
       decoding="async"
-      width={1024}
-      height={240}
+      width={2252}
+      height={237}
     />
   );
 }

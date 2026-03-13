@@ -232,8 +232,8 @@ export function WineAdminPage() {
           alt="Enoteca Italiana"
           loading="lazy"
           decoding="async"
-          width={1024}
-          height={240}
+          width={2252}
+          height={237}
         />
       </div>
 
