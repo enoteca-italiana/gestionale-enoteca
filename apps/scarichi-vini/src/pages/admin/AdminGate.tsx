@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocalDb } from '@/data/useLocalDb';
+import { useDischargeSessions } from '@/data/useDischargeSessions';
 import { AdminHistory } from '@/pages/admin/AdminHistory';
 import { AdminHome, type AdminRootSection } from '@/pages/admin/AdminHome';
 import { AdminLogin } from '@/pages/admin/AdminLogin';
@@ -13,8 +14,16 @@ export function AdminGate() {
   const { ready, isAuthed, login, logout, changePassword } = useAdminAuth();
   const [toast, setToast] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('home');
-  const { history, pending, clearHistory, clearPending, deletePending, hardResetAll } =
-    useLocalDb();
+  const { hardResetAll } = useLocalDb();
+  const {
+    history,
+    pending,
+    loading: sessionsLoading,
+    error: sessionsError,
+    clearHistory,
+    clearPending,
+    deletePending
+  } = useDischargeSessions();
 
   const openRootSection = (target: AdminRootSection) => {
     if (target === 'sessions') {
@@ -49,6 +58,24 @@ export function AdminGate() {
           </div>
         ) : null}
       </>
+    );
+  }
+
+  if (sessionsLoading) {
+    return (
+      <div className="card adminCard">
+        <div className="title">Sessioni</div>
+        <div className="subtle mt6">Caricamento dati Supabase…</div>
+      </div>
+    );
+  }
+
+  if (sessionsError) {
+    return (
+      <div className="card adminCard">
+        <div className="title">Sessioni</div>
+        <div className="errorText mt6">{sessionsError}</div>
+      </div>
     );
   }
 
@@ -101,8 +128,12 @@ export function AdminGate() {
           history={history}
           onBack={() => setSection('sessions')}
           onReset={() => {
-            clearHistory();
-            setToast('Storico resettato');
+            void clearHistory()
+              .then(() => setToast('Storico resettato'))
+              .catch((error) => {
+                console.error('[AdminGate] clearHistory failed', error);
+                setToast('Errore reset storico');
+              });
           }}
         />
       ) : null}
@@ -112,12 +143,20 @@ export function AdminGate() {
           pending={pending}
           onBack={() => setSection('sessions')}
           onDelete={(id) => {
-            deletePending(id);
-            setToast('Sessione eliminata');
+            void deletePending(id)
+              .then(() => setToast('Sessione eliminata'))
+              .catch((error) => {
+                console.error('[AdminGate] deletePending failed', error);
+                setToast('Errore eliminazione sessione');
+              });
           }}
           onClear={() => {
-            clearPending();
-            setToast('Sospesi eliminati');
+            void clearPending()
+              .then(() => setToast('Sospesi eliminati'))
+              .catch((error) => {
+                console.error('[AdminGate] clearPending failed', error);
+                setToast('Errore eliminazione sospesi');
+              });
           }}
         />
       ) : null}

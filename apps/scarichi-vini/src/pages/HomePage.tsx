@@ -3,7 +3,7 @@ import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useAppSettings } from '@/app/useAppSettings';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
-import { newId } from '@/data/localDb';
+import { createAndSubmitDischargeSession } from '@/data/dischargeRepository';
 import { useLocalDb } from '@/data/useLocalDb';
 import { ResultsList } from '@/pages/home/ResultsList';
 import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
@@ -19,8 +19,7 @@ export function HomePage() {
   const settings = useAppSettings();
   const online = useOnlineStatus();
 
-  const { inventory, setInventory, addHistory, addPending, flushPendingToHistory, refreshInventory } =
-    useLocalDb();
+  const { inventory, setInventory, refreshInventory } = useLocalDb();
 
   const {
     sessionOpen,
@@ -48,11 +47,6 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!online) return;
-    flushPendingToHistory();
-  }, [flushPendingToHistory, online]);
-
-  useEffect(() => {
     void refreshInventory();
   }, [refreshInventory]);
 
@@ -65,27 +59,28 @@ export function HomePage() {
     setConfirmOpen(true);
   };
 
-  const submitSession = (userLabel?: string) => {
-    const createdAt = Date.now();
-    const session = {
-      id: newId('s'),
-      createdAt,
-      submittedAt: online ? createdAt : undefined,
-      userLabel,
-      items: sessionList.map((i) => ({ wineId: i.wineId, qty: i.qty }))
-    };
-
-    setConfirmOpen(false);
-    resetSession();
-
-    if (online) {
-      addHistory(session);
-      setToast('Sessione inviata');
+  const submitSession = async (userLabel?: string) => {
+    if (!online) {
+      setToast('Offline: impossibile confermare sessione');
+      setConfirmOpen(false);
       return;
     }
 
-    addPending(session);
-    setToast('Offline: salvata in coda');
+    try {
+      await createAndSubmitDischargeSession({
+        userLabel,
+        items: sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty }))
+      });
+      await refreshInventory();
+      setToast('Sessione inviata');
+    } catch (error) {
+      console.error('[HomePage] submitSession failed', error);
+      setToast('Errore invio sessione');
+      return;
+    }
+
+    setConfirmOpen(false);
+    resetSession();
   };
 
   const sessionQtyByWineId = useMemo(() => {
@@ -113,9 +108,7 @@ export function HomePage() {
         <Logo variant="header" />
       </div>
 
-      {!online ? (
-        <div className="banner">Offline: le sessioni confermate verranno messe in coda.</div>
-      ) : null}
+      {!online ? <div className="banner">Offline: conferma sessione non disponibile.</div> : null}
 
       <div className="mt12">
         {sessionOpen ? (

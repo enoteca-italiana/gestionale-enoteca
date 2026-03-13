@@ -1,14 +1,13 @@
 # Modello dati locale (localStorage)
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Obiettivo
 
 Simulare l’app completa senza Supabase/Sheets:
 
 - inventario vini
-- storico sessioni inviate
-- coda sessioni sospese (offline)
+- settings/runtime locale
 
 ## Struttura DB
 
@@ -21,8 +20,8 @@ Chiave storage:
 Tipo:
 
 - `inventory`: lista `Wine`
-- `history`: lista `LocalSession` (solo inviate)
-- `pending`: lista `LocalSession` (in coda)
+- `history`: legacy locale (non usato nel flusso operativo attuale)
+- `pending`: legacy locale (non usato nel flusso operativo attuale)
 
 Campi `Wine` rilevanti nello stato attuale:
 
@@ -45,6 +44,10 @@ Campi `Wine` rilevanti nello stato attuale:
 - `submittedAt` (opzionale): epoch ms
 - `userLabel` (opzionale): string
 - `items`: `{ wineId, qty }[]`
+
+Nota:
+
+- nel flusso operativo aggiornato, storico/sospesi admin sono letti da Supabase (`discharge_sessions`), non da localStorage.
 
 ## Persistenza e sincronizzazione
 

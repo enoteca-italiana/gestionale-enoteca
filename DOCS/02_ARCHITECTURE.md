@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Workspace
 
@@ -88,6 +88,14 @@ Toolbar archivio:
 - `src/data/categoryRepository.ts` (lista categorie gestite + upsert controllato)
 - `src/data/originRepository.ts` (lista provenienze gestite + upsert controllato)
 
+### Sessioni scarico (Supabase)
+
+- `src/data/dischargeRepository.ts`
+  - query `discharge_sessions` / `discharge_session_items`
+  - submit via RPC `submit_discharge_session`
+- `src/data/useDischargeSessions.ts`
+  - hook admin per storico/sospesi da Supabase
+
 ### Settings runtime
 
 - `src/app/useAppSettings.ts`
@@ -105,12 +113,16 @@ Toolbar archivio:
 
 - `registerSW()` avviene in `src/main.tsx`.
 - In dev viene eseguito `unregisterSwInDevOnce()` per evitare cache stale durante sviluppo.
+- icone installazione multi-device:
+  - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + varianti `maskable`
+  - Apple: `apple-touch-icon.png` + meta tag dedicati in `index.html`
 
 ## Note stato attuale
 
 - Architettura ibrida:
-  - Home/Admin settings con persistenza locale.
+  - Home/Admin settings con persistenza locale per runtime/UI.
   - `/admina` predisposta per CRUD su Supabase con fallback locale.
+  - storico/sospesi admin integrati su Supabase.
 - Modello vino esteso (`purchasePrice`, `salePrice`, `warehouse`, `margin`, `notes`):
   - `warehouse` e `margin` sono calcolati automaticamente.
   - `threshold` gestisce la soglia bottiglie (`Vuoto` oppure `>=1`, mai `0`).

@@ -1,4 +1,4 @@
-import type { LocalSession } from '@/data/localDb';
+import type { DischargeSessionSummary } from '@/data/dischargeRepository';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { useMemo, useState } from 'react';
 
@@ -13,7 +13,7 @@ export function AdminPending({
   onDelete,
   onClear
 }: {
-  pending: LocalSession[];
+  pending: DischargeSessionSummary[];
   onBack: () => void;
   onDelete: (id: string) => void;
   onClear: () => void;
@@ -63,7 +63,7 @@ export function AdminPending({
                   <div className="min0">
                     <div className="lineTitle">{formatDateTime(s.createdAt)}</div>
                     <div className="subtle mt4">
-                      {s.items.length} vini • {s.items.reduce((sum, i) => sum + i.qty, 0)} bottiglie
+                      {s.itemsCount} vini • {s.totalQty} bottiglie
                       {s.userLabel ? ` • ${s.userLabel}` : ''}
                     </div>
                   </div>

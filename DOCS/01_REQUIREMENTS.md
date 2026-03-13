@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Scopo
 
@@ -10,6 +10,7 @@ Ultimo aggiornamento: **13/03/2026 01:48 CET**.
 ## UX / UI
 
 - Mobile web app installabile come **PWA**.
+- Installazione supportata su Android, iOS e desktop (Chrome/Safari).
 - UX touch-first, veloce e chiara.
 - Intro iniziale **2.5s** con **logo** e comparsa graduale.
 - Navbar in basso con sole voci:
@@ -46,9 +47,8 @@ Ultimo aggiornamento: **13/03/2026 01:48 CET**.
 
 ## Offline (modalità locale)
 
-- L’app deve funzionare anche offline:
-  - conferme offline finiscono in **coda** (sospesi)
-  - quando torna online, la coda viene inviata **automaticamente** in ordine cronologico.
+- L’app deve aprirsi offline (PWA/app shell).
+- La conferma sessione richiede connessione online attiva (submit su Supabase).
 
 ## Admin
 
@@ -65,10 +65,10 @@ Ultimo aggiornamento: **13/03/2026 01:48 CET**.
   - conferma finale on/off
   - associazione nome utente on/off (predisposizione)
 - Storico Admin:
-  - mostra solo sessioni inviate correttamente
+  - mostra solo sessioni inviate correttamente da Supabase
   - reset storico con **doppia conferma**
 - Sospesi Admin:
-  - lista sessioni in coda
+  - lista sessioni in stato `pending` su Supabase
   - dettaglio (baseline: riepilogo in lista)
   - delete singolo con conferma
   - delete tutti con conferma

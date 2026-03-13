@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Quick Start
 
@@ -22,6 +22,7 @@ Comandi utili:
 ## Funzionalità principali
 
 - Sessione scarico mobile-first (`/`) con supporto offline.
+- Conferma sessione integrata su Supabase (RPC `submit_discharge_session`).
 - Admin impostazioni (`/admin`) con autenticazione locale.
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, anno, prezzi, q.tà, azioni)
@@ -41,6 +42,9 @@ Comandi utili:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
 - Logo applicativo ottimizzato in `public/logo.png` per ridurre peso asset.
+- Icone installazione PWA multi-device:
+  - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`
+  - iOS/Safari: `apple-touch-icon.png`
 
 ## Quality Gate
 
@@ -61,7 +65,7 @@ Comandi utili:
 ## Variabili ambiente
 
 - Crea `.env` da `.env.example`.
-- In assenza di configurazione Supabase, l’app resta operativa in modalità locale (localStorage + seed vini).
+- Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
 
 ## Regole Deploy (Render)
 

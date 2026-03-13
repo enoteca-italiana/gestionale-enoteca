@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Stato attuale
 
@@ -15,6 +15,20 @@ Conferme principali:
 - privilegi tabella corretti: solo `SELECT`, `INSERT`, `UPDATE`, `DELETE`.
 - indici principali presenti (`name`, `category`, `producer`, `origin`, `qty`).
 - seed caricato: `20` vini.
+- routine RPC presente: `submit_discharge_session`.
+- tabelle sessioni presenti:
+  - `public.discharge_sessions`
+  - `public.discharge_session_items`
+
+## Integrazione frontend completata
+
+- Home conferma sessione:
+  - crea sessione + items su Supabase
+  - invoca RPC `submit_discharge_session`
+- Admin sessioni:
+  - storico letto da `discharge_sessions.status = 'submitted'`
+  - sospesi letti da `discharge_sessions.status = 'pending'`
+  - reset/elimina agiscono direttamente su Supabase
 
 ## Variabili ambiente usate dall'app
 
@@ -65,4 +79,3 @@ Dopo i test, ruotare:
 - consigliato anche `VITE_SUPABASE_ANON_KEY`
 
 Non committare mai chiavi segrete nel repository.
-

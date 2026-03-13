@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Dev server
 
@@ -55,7 +55,6 @@ Porte usate in progetto:
 
 - File esclusi e non più pushabili:
   - `backup/*.tar.gz`
-  - `backup/*.zip`
   - `apps/scarichi-vini/dev-dist/`
   - `*.tsbuildinfo`
 - Cartella `backup/` resta nel repo solo per script (`backup/make_backup.sh`).
@@ -75,47 +74,12 @@ Naming richiesto dall’utente:
 Script:
 
 - `backup/make_backup.sh`
-- stato script attuale: legacy `.zip` (mantenuto per retrocompatibilità)
-- standard operativo consigliato: backup manuale `.tar.gz` (comando sotto)
+- formato output: `.tar.gz` (non zip)
 
 Uso:
 
 ```bash
 ./backup/make_backup.sh "backup_12 Martedi_02.11"
-```
-
-Formato consigliato attuale:
-
-- `tar.gz` (preferito rispetto a `.zip` per portabilità/CI e dimensioni)
-
-Comando manuale usato in progetto:
-
-```bash
-tar -czf "backup/backup_13 Giovedi_15.40.tar.gz" \
-  --exclude="./backup" \
-  --exclude="./.git" \
-  --exclude="./node_modules" \
-  --exclude="./apps/scarichi-vini/node_modules" \
-  --exclude="./apps/scarichi-vini/dist" \
-  --exclude="./apps/scarichi-vini/dev-dist" \
-  --exclude="./apps/scarichi-vini/.vite" \
-  --exclude="./.env" \
-  --exclude="./.env.*" .
-```
-
-Comando usato per l'ultimo backup:
-
-```bash
-tar -czf "backup/backup_13 Venerdi_01.48.tar.gz" \
-  --exclude="./backup" \
-  --exclude="./.git" \
-  --exclude="./node_modules" \
-  --exclude="./apps/scarichi-vini/node_modules" \
-  --exclude="./apps/scarichi-vini/dist" \
-  --exclude="./apps/scarichi-vini/dev-dist" \
-  --exclude="./apps/scarichi-vini/.vite" \
-  --exclude="./.env" \
-  --exclude="./.env.*" .
 ```
 
 Regole esclusioni:

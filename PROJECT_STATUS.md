@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Scopo di questo file
 
@@ -112,9 +112,10 @@ Comandi root:
   - per ogni vino in risultati: `Q.tà` (giacenza realtime) + `Scarico` (qty in sessione)
   - riepilogo sessione con correzioni
   - conferma finale con modale (controllata da toggle admin)
-- Offline:
-  - conferma sessione offline → accoda in pending
-  - ritorno online → flush automatico pending → history (ordine cronologico)
+- Sessioni scarico:
+  - conferma online su Supabase (`discharge_sessions` + RPC `submit_discharge_session`)
+  - storico/sospesi admin letti da Supabase
+  - in offline la conferma sessione è bloccata
 - Admin:
   - login password (iniziale `1909`) e cambio password
   - toggle impostazioni (conferma finale, predisposizione nome utente)
@@ -146,6 +147,10 @@ Comandi root:
 - PWA:
   - service worker + caching app shell/assets
   - auto-update
+  - icone installazione complete per Android/iOS/desktop:
+    - `pwa-192x192.png`, `pwa-512x512.png`
+    - `pwa-192x192-maskable.png`, `pwa-512x512-maskable.png`
+    - `apple-touch-icon.png`
 - Seed dataset:
   - aggiunti 15 vini test (totale seed attuale: 20)
 

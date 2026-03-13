@@ -1,13 +1,13 @@
 # Flusso utente — Sessione di scarico
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Entrata
 
 - Home mostra header con logo.
 - Box sessione:
   - stato OFF/ON
-  - CTA `Inizia sessione`
+  - CTA `Inizia sessione di scarico`
   - input ricerca (abilitato solo quando sessione aperta)
 - Sessione OFF:
   - lista consultiva visibile (solo lettura).
@@ -51,11 +51,12 @@ Vincolo:
 ## Comportamento online/offline
 
 - Online:
-  - la sessione confermata va in `history`.
+  - la sessione viene salvata su Supabase:
+    - insert `discharge_sessions` + `discharge_session_items`
+    - submit RPC `submit_discharge_session`
+  - aggiornamento inventario post-submit.
 - Offline:
-  - la sessione confermata va in `pending`.
-- Quando torna online:
-  - `pending` viene spostata in `history` automaticamente in ordine cronologico.
+  - conferma sessione bloccata con messaggio operativo.
 
 ## Intro
 

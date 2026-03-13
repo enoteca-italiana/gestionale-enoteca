@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Accesso
 
@@ -44,6 +44,7 @@ Nota: le settings notificano aggiornamenti in-tab via evento custom `scarichi:se
 File: `AdminHistory.tsx`
 
 - mostra solo sessioni inviate correttamente.
+- sorgente dati: Supabase (`discharge_sessions` con status `submitted`).
 - reset storico:
   - doppia conferma.
 
@@ -52,6 +53,7 @@ File: `AdminHistory.tsx`
 File: `AdminPending.tsx`
 
 - lista sessioni in coda.
+- sorgente dati: Supabase (`discharge_sessions` con status `pending`).
 - delete singolo con conferma.
 - delete tutti con conferma.
 
@@ -60,8 +62,8 @@ File: `AdminPending.tsx`
 In `AdminSettings.tsx`:
 
 - doppia conferma
-- chiama `hardResetAll()`
-- cancella inventario + storico + sospesi
+- chiama `hardResetAll()` solo per dati locali tecnici
+- storico/sospesi operativi sono gestiti via API Supabase dedicate
 
 ## Archivio vini (`/admina`)
 

@@ -15,26 +15,27 @@ BACKUP_DIR="$ROOT_DIR/backup"
 
 mkdir -p "$BACKUP_DIR"
 
-ARCHIVE="$BACKUP_DIR/${NAME}.zip"
+ARCHIVE="$BACKUP_DIR/${NAME}.tar.gz"
 
 rm -f "$ARCHIVE"
 
 # Create a lean backup: exclude generated/personal files.
 (
   cd "$ROOT_DIR"
-  zip -r "$ARCHIVE" . \
-    -x "backup/*" \
-    -x ".git/*" \
-    -x "node_modules/*" \
-    -x "*/node_modules/*" \
-    -x "dist/*" \
-    -x "*/dist/*" \
-    -x "*/.vite/*" \
-    -x "*/dev-dist/*" \
-    -x "*/.DS_Store" \
-    -x ".DS_Store" \
-    -x ".env" \
-    -x ".env.*"
+  tar -czf "$ARCHIVE" \
+    --exclude="./backup" \
+    --exclude="./.git" \
+    --exclude="./node_modules" \
+    --exclude="./apps/scarichi-vini/node_modules" \
+    --exclude="./dist" \
+    --exclude="./apps/scarichi-vini/dist" \
+    --exclude="./apps/scarichi-vini/.vite" \
+    --exclude="./apps/scarichi-vini/dev-dist" \
+    --exclude="./.DS_Store" \
+    --exclude="./apps/scarichi-vini/.DS_Store" \
+    --exclude="./.env" \
+    --exclude="./.env.*" \
+    .
 )
 
 echo "Backup created: $ARCHIVE"

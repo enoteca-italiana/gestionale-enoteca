@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **13/03/2026 01:48 CET**.
+Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 
 ## Introduzione
 
@@ -9,6 +9,13 @@ Questa applicazione serve a gestire in modo rapido, semplice e affidabile gli **
 L’obiettivo principale è avere un sistema **veloce, stabile, touch-friendly e sempre aggiornato**, capace di funzionare anche **offline** e di sincronizzarsi automaticamente quando torna la connessione. Il foglio Google resta parte integrante del progetto, ma il cuore operativo dell’applicazione sarà **Supabase**, così da garantire maggiore affidabilità, gestione offline, sincronizzazione ordinata e una base tecnica realmente scalabile.
 
 L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub**, backend dati su **Supabase** e deploy su **Render**. Il progetto dovrà nascere già con una struttura **modulare, scalabile e pulita**, così da permettere future estensioni senza rifare l’architettura.
+
+### Stato tecnico attuale (aggiornato)
+
+- conferma sessione scarico collegata a Supabase (tabelle sessioni + RPC);
+- storico e sospesi admin letti da Supabase;
+- installazione PWA ottimizzata per Android, iOS (Safari) e desktop con icone dedicate (`maskable` + `apple-touch-icon`);
+- backup operativo standard in formato `.tar.gz` (non zip).
 
 ---
 
