@@ -2,7 +2,7 @@
 
 Questa cartella contiene la documentazione operativa allineata allo stato reale del progetto.
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **13/03/2026 16:45 CET**.
 
 ## Documenti
 
@@ -22,6 +22,8 @@ Ultimo aggiornamento: **13/03/2026 03:12 CET**.
   - operatività dev, backup e handover su altro PC.
 - `08_SUPABASE_SETUP.md`
   - setup Supabase eseguito, ordine script SQL e checklist verifiche.
+- `09_AI_ASSISTANT.md`
+  - architettura, limiti, configurazione e uso operativo dell'Assistente AI in archivio.
 
 Documenti root correlati:
 

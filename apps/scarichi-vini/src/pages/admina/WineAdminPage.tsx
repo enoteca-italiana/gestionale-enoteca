@@ -19,6 +19,7 @@ import {
 import { createWine, deleteWine, listWines, updateWine } from '@/data/wineRepository';
 import { AdminArchiveToolbar } from '@/pages/admina/components/AdminArchiveToolbar';
 import { AdminArchiveTable } from '@/pages/admina/components/AdminArchiveTable';
+import { AiAssistantModal } from '@/pages/admina/components/AiAssistantModal';
 import { CategoryCreateModal } from '@/pages/admina/components/CategoryCreateModal';
 import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormModal';
 import { isInThreshold, matchesFilters } from '@/pages/admina/utils/wineFilters';
@@ -55,6 +56,7 @@ export function WineAdminPage() {
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const [supplierResultHandler, setSupplierResultHandler] =
     useState<((created: string | null) => void) | null>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   const loadWines = useCallback(async () => {
     setLoading(true);
@@ -343,6 +345,7 @@ export function WineAdminPage() {
         suppliers={suppliers}
         onFiltersChange={setFilters}
         onOpenCreate={openCreate}
+        onOpenAi={() => setAiModalOpen(true)}
       />
 
       {error ? (
@@ -373,6 +376,7 @@ export function WineAdminPage() {
         onSubmit={handleSubmit}
         onCancel={closeForm}
       />
+      <AiAssistantModal open={aiModalOpen} wines={wines} onClose={() => setAiModalOpen(false)} />
 
       <CategoryCreateModal
         open={categoryModalOpen}

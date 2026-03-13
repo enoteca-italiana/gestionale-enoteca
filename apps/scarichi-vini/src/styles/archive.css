@@ -58,7 +58,7 @@
 .archiveFilters {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(520px, 1.35fr) auto minmax(192px, auto) auto;
+  grid-template-columns: minmax(210px, 0.82fr) minmax(520px, 1.35fr) auto minmax(192px, auto) auto auto;
   gap: 10px;
   align-items: center;
 }
@@ -218,18 +218,260 @@
 }
 
 .archiveAddButton {
+  --archive-top-action-size: 46px;
   justify-self: end;
   min-width: 170px;
+  height: var(--archive-top-action-size);
   font-size: 14px;
-  padding: 10px 14px;
+  padding: 0 14px;
+}
+
+.archiveAiButton {
+  appearance: none;
+  border: 1px solid #7c164a;
+  background: #7c164a;
+  color: #ffffff;
+  border-radius: 999px;
+  width: var(--archive-top-action-size, 46px);
+  height: var(--archive-top-action-size, 46px);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.archiveAiButtonIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  transform: translate(1px, 1px);
+}
+
+.archiveAiModalCard {
+  max-width: min(1800px, 94vw) !important;
+  width: min(1800px, 94vw) !important;
+  height: min(80vh, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-color: #8e2e60 !important;
+  background: linear-gradient(160deg, #4a1230 0%, #381026 100%) !important;
+  color: #f8ecf2;
+  box-shadow: 0 24px 56px rgba(12, 8, 11, 0.45);
+}
+
+.archiveAiModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archiveAiModalTitleWrap {
+  min-width: 0;
+  text-align: center;
+}
+
+.archiveAiModalTitleRow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.archiveAiModalTitleIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.archiveAiModalTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f9eef4;
+  letter-spacing: 0.2px;
+}
+
+.archiveAiModalSubtle {
+  margin-top: 4px;
+  color: #e8cfe0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.archiveAiModalHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.archiveAiHeaderButton {
+  background: #f3edf1;
+  color: #2b1320;
+  border: 1px solid #e4d5de;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.archiveAiSettings {
+  border: 1px solid #e4d8df;
+  background: #f8f4ee;
+  border-radius: 14px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(220px, 0.55fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.archiveAiSettings > * {
+  min-width: 0;
+}
+
+.archiveAiSettingsInput {
+  background: #ffffff;
+  color: #111827;
+  border-color: #cfd5de;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.archiveAiMessages {
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  padding: 12px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+
+.archiveAiMessage {
+  max-width: min(84%, 700px);
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.archiveAiMessageUser {
+  justify-self: end;
+  background: #f7edf3;
+  border-color: #e7cedd;
+}
+
+.archiveAiMessageAssistant {
+  justify-self: start;
+  background: #f5f7fa;
+}
+
+.archiveAiMessageRole {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.archiveAiMessageText {
+  white-space: pre-wrap;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.archiveAiComposer {
+  border-top: 1px solid #e4d8df;
+  background: #fffaf3;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.archiveAiChatPanel {
+  border: 1px solid #e4d8df;
+  background: #fcfaf6;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.archiveAiPromptTextarea {
+  background: #ffffff;
+  color: #111827;
+  border-color: #d1d5db;
+  min-height: 52px;
+  font-size: 14px;
+  resize: none;
+  padding: 12px;
+}
+
+.archiveAiInlineSendButton {
+  min-width: 112px;
+  border-radius: 12px;
+  align-self: stretch;
+}
+
+.archiveAiBottomActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.archiveAiBottomActions > * {
+  flex: 0 0 180px;
+}
+
+.archiveAiToggleSettingsContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.archiveAiToggleSettingsIcon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  display: block;
+}
+
+.archiveAiFooterHint {
+  color: #e8cfe0;
+  font-size: 12px;
+}
+
+.archiveAiModalCard .errorText {
+  color: #ffd2dc;
 }
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: minmax(260px, 1fr) minmax(420px, 1.2fr) auto minmax(192px, auto);
+    grid-template-columns: minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto minmax(192px, auto);
   }
 
   .archiveAddButton {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .archiveAiButton {
     grid-column: 1 / -1;
     justify-self: end;
   }
@@ -693,6 +935,37 @@
     justify-self: stretch;
     min-width: 0;
     width: 100%;
+  }
+
+  .archiveAiModalCard {
+    width: min(98vw, 760px);
+    height: min(86vh, 860px);
+  }
+
+  .archiveAiModalHeader {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .archiveAiModalHeaderActions {
+    justify-content: flex-end;
+  }
+
+  .archiveAiSettings {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveAiBottomActions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .archiveAiBottomActions > * {
+    flex-basis: auto;
+  }
+
+  .archiveAiMessage {
+    max-width: 100%;
   }
 
   .archiveTableWrap {

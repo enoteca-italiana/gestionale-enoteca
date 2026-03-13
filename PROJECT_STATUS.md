@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 15:45 CET**.
+Ultimo aggiornamento: **13/03/2026 16:45 CET**.
 
 ## Scopo di questo file
 
@@ -159,6 +159,11 @@ Comandi root:
   - formule automatiche:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
+  - Assistente AI archivio:
+    - apertura da pulsante AI in toolbar
+    - modale conversazionale con analisi dati archivio
+    - vista `Impostazioni` dedicata con soli campi `API key` + `Tipo agent`
+    - nessuna scrittura dati su DB (solo analisi)
 - PWA:
   - service worker + caching app shell/assets
   - auto-update
@@ -220,7 +225,7 @@ Comandi root:
 - Documentazione:
   - mantenuta una sola scheda tecnica (`SCHEDA TECNICA ENOTECA ITALIANA.md` in root)
 - Backup:
-  - creato nuovo archivio: `backup/backup_13 Venerdi_15.03.tar.gz`
+  - creato nuovo archivio: `backup/backup_13 Venerdi_16.48.tar.gz`
 - GitHub / Deploy hygiene:
   - push su `main` completato con `gh auth login` (device flow) e script `./scripts/commit_github.sh`
   - rimossi dal tracking i file pesanti non necessari al deploy:
@@ -241,7 +246,7 @@ Comandi root:
   - impostazioni admin: import archivio CSV con validazione e conferma
   - import CSV con sostituzione totale record archivio (Supabase + cache locale allineata)
 
-### Verifica qualità (13/03/2026 15:45 CET)
+### Verifica qualità (13/03/2026 16:45 CET)
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅

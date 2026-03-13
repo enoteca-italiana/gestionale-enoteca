@@ -13,6 +13,7 @@ type Props = {
   suppliers: string[];
   onFiltersChange: (next: Filters) => void;
   onOpenCreate: () => void;
+  onOpenAi: () => void;
 };
 
 export function AdminArchiveToolbar({
@@ -26,7 +27,8 @@ export function AdminArchiveToolbar({
   origins,
   suppliers,
   onFiltersChange,
-  onOpenCreate
+  onOpenCreate,
+  onOpenAi
 }: Props) {
   const setStockFilter = (stock: StockFilter) => onFiltersChange({ ...filters, stock });
 
@@ -54,16 +56,16 @@ export function AdminArchiveToolbar({
       'Note'
     ] as const;
     const widthRules: Record<(typeof headers)[number], { min: number; max: number }> = {
-      Categoria: { min: 12, max: 22 },
+      Categoria: { min: 15, max: 24 },
       Nome: { min: 18, max: 38 },
-      Anno: { min: 8, max: 10 },
+      Anno: { min: 10, max: 12 },
       Produttore: { min: 16, max: 34 },
-      Provenienza: { min: 14, max: 30 },
+      Provenienza: { min: 16, max: 32 },
       Fornitore: { min: 14, max: 34 },
-      Soglia: { min: 8, max: 10 },
-      Acquisto: { min: 10, max: 14 },
-      Vendita: { min: 10, max: 14 },
-      Quantita: { min: 10, max: 12 },
+      Soglia: { min: 10, max: 12 },
+      Acquisto: { min: 12, max: 16 },
+      Vendita: { min: 12, max: 16 },
+      Quantita: { min: 12, max: 14 },
       Note: { min: 20, max: 52 }
     };
     const { Workbook } = await import('exceljs');
@@ -114,11 +116,12 @@ export function AdminArchiveToolbar({
         ...rows.map((row) => String(row[header] ?? '').replace(/\s+/g, ' ').length)
       );
       const { min, max } = widthRules[header];
-      column.width = Math.min(max, Math.max(min, maxLength + 2));
+      // Add extra spacing so Excel filter icon never overlaps header text.
+      column.width = Math.min(max, Math.max(min, maxLength + 4));
     });
 
     const headerRow = worksheet.getRow(1);
-    headerRow.height = 20;
+    headerRow.height = 40;
     headerRow.eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FF4B5563' }, size: 11 };
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDF3EA' } };
@@ -475,6 +478,16 @@ export function AdminArchiveToolbar({
 
         <button className="button buttonAuto archiveAddButton" type="button" onClick={onOpenCreate}>
           Aggiungi vino
+        </button>
+
+        <button
+          className="archiveAiButton"
+          type="button"
+          aria-label="Apri assistente AI"
+          title="AI"
+          onClick={onOpenAi}
+        >
+          <img className="archiveAiButtonIcon" src="/icons%20ai.png" alt="" aria-hidden="true" />
         </button>
       </div>
     </section>
