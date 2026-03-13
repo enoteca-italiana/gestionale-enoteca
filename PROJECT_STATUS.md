@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 14:21 CET**.
+Ultimo aggiornamento: **13/03/2026 14:33 CET**.
 
 ## Scopo di questo file
 
@@ -113,6 +113,9 @@ Comandi root:
   - vini già aggiunti al riepilogo nascosti dalla lista risultati (modifiche quantità solo da riepilogo)
   - riepilogo sessione semplificato (titolo centrato, rimossi testi riassuntivi ridondanti)
   - messaggio `Scarico Aggiunto!` mostrato nel modale vino alla conferma
+  - su mobile, in sessione ON è scrollabile solo la lista vini (parte alta fissa)
+  - fix modale vino: pulsanti `+ / -` aggiornano quantità senza chiusura automatica
+  - fix Safari/iOS: titolo `Riepilogo` nero (niente blu browser default)
   - pulsante primario sessione rinominato in `Conferma Scarico`
   - conferma finale con modale (controllata da toggle admin)
 - Sessioni scarico:
@@ -202,13 +205,15 @@ Comandi root:
   - aggiunta colonna `supplier` su `public.wines` + indice + tabella `public.suppliers`
 - Consistenza iPhone/Safari:
   - fix stile lista sessione su iOS (`button` ora eredita tipografia/colore) per allineare il design a desktop/local
+  - fix specifico `Riepilogo` (colore titolo nero forzato anche su Safari iOS)
+  - migliorato scroll mobile: contenuto pagina bloccato, scroll interno su lista vini
 - Asset/public cleanup:
   - rimossi file non usati: `logo.webp`, `logo home.png`, `icon.svg`
   - rigenerate icone installazione PWA (`pwa-192/512`, `maskable`, `apple-touch-icon`) con peso ridotto
 - Documentazione:
   - mantenuta una sola scheda tecnica (`SCHEDA TECNICA ENOTECA ITALIANA.md` in root)
 - Backup:
-  - creato nuovo archivio: `backup/backup_13 Venerdi_13.42.tar.gz`
+  - creato nuovo archivio: `backup/backup_13 Venerdi_14.33.tar.gz`
 - GitHub / Deploy hygiene:
   - push su `main` completato con `gh auth login` (device flow) e script `./scripts/commit_github.sh`
   - rimossi dal tracking i file pesanti non necessari al deploy:
@@ -217,7 +222,7 @@ Comandi root:
     - `*.tsbuildinfo`
   - `.gitignore` aggiornato per prevenire re-upload in futuro
 
-### Verifica qualità (13/03/2026 13:40 CET)
+### Verifica qualità (13/03/2026 14:33 CET)
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅

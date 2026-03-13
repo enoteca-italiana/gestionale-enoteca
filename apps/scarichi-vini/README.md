@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **13/03/2026 14:21 CET**.
+Ultimo aggiornamento: **13/03/2026 14:33 CET**.
 
 ## Quick Start
 
@@ -28,6 +28,9 @@ Comandi utili:
   - nel modale vino, conferma con feedback inline `Scarico Aggiunto!`
   - in sessione aperta, i vini già presenti nel riepilogo non compaiono più nella lista principale
   - riepilogo semplificato (titolo centrato, rimosse etichette riassuntive ridondanti)
+  - su mobile, scroll confinato alla sola lista vini (header/ricerca/CTA fissi)
+  - fix modale scarico: `+/-` aggiornano il valore senza chiusura involontaria
+  - fix iOS Safari: titolo `Riepilogo` forzato su colore nero coerente con app
 - Admin impostazioni (`/admin`) con autenticazione locale.
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)

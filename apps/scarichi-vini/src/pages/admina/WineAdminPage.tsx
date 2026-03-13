@@ -17,6 +17,7 @@ import { AdminArchiveToolbar } from '@/pages/admina/components/AdminArchiveToolb
 import { AdminArchiveTable } from '@/pages/admina/components/AdminArchiveTable';
 import { CategoryCreateModal } from '@/pages/admina/components/CategoryCreateModal';
 import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormModal';
+import { isInThreshold, matchesFilters } from '@/pages/admina/utils/wineFilters';
 import {
   defaultFilters,
   emptyWine,
@@ -24,43 +25,6 @@ import {
   type Mode,
   type WineFormState
 } from '@/pages/admina/types';
-
-function isInThreshold(wine: Wine) {
-  const qty = Number(wine.qty);
-  const threshold = Number(wine.threshold);
-  if (!Number.isFinite(qty) || qty <= 0) return false;
-  if (!Number.isFinite(threshold) || threshold < 1) return false;
-  return qty <= threshold;
-}
-
-function matchesFilters(wine: Wine, filters: Filters) {
-  const term = filters.term.trim().toLowerCase();
-  if (term) {
-    const haystack = [
-      wine.category,
-      wine.name,
-      wine.age,
-      wine.producer,
-      wine.origin,
-      wine.supplier,
-      wine.notes,
-      wine.warehouse
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-    if (!haystack.includes(term)) return false;
-  }
-
-  if (filters.category !== 'all') {
-    const category = wine.category?.toLowerCase() ?? '';
-    if (category !== filters.category.toLowerCase()) return false;
-  }
-
-  if (filters.stock === 'threshold' && !isInThreshold(wine)) return false;
-  if (filters.stock === 'out' && wine.qty > 0) return false;
-  return true;
-}
 
 export function WineAdminPage() {
   const [wines, setWines] = useState<Wine[]>([]);

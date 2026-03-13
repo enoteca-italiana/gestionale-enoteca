@@ -136,7 +136,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="container">
+    <div className={`container ${sessionOpen ? 'homeSessionContainer' : ''}`}>
       <div className="homeHeader">
         <Logo variant="header" />
       </div>
@@ -189,16 +189,18 @@ export function HomePage() {
         </button>
       </div>
 
-      {showResults ? (
-        <ResultsList
-          wines={visibleWines}
-          sessionOpen={sessionOpen}
-          interactive={sessionOpen}
-          getSessionQty={sessionOpen ? getSessionQty : undefined}
-          onIncrement={sessionOpen ? (wineId) => addToSession(wineId, 1) : undefined}
-          onDecrement={sessionOpen ? (wineId) => decrementItem(wineId) : undefined}
-        />
-      ) : null}
+      <div className={sessionOpen ? 'homeResultsArea homeResultsAreaSession' : 'homeResultsArea'}>
+        {showResults ? (
+          <ResultsList
+            wines={visibleWines}
+            sessionOpen={sessionOpen}
+            interactive={sessionOpen}
+            getSessionQty={sessionOpen ? getSessionQty : undefined}
+            onIncrement={sessionOpen ? (wineId) => addToSession(wineId, 1) : undefined}
+            onDecrement={sessionOpen ? (wineId) => decrementItem(wineId) : undefined}
+          />
+        ) : null}
+      </div>
 
       {sessionOpen ? (
         <SummaryList

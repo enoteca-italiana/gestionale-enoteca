@@ -149,6 +149,21 @@ a {
   margin-bottom: 10px;
 }
 
+.homeSessionContainer {
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.homeResultsArea {
+  min-width: 0;
+}
+
+.homeResultsAreaSession {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .logoHeader {
   display: block;
   width: min(51.6vw, 204px);

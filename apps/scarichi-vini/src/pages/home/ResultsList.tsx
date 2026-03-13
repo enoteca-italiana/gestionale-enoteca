@@ -18,13 +18,24 @@ export function ResultsList({
 }) {
   const showActions = interactive && sessionOpen;
   const [selectedWineId, setSelectedWineId] = useState<string | null>(null);
+  const [selectedWineSnapshot, setSelectedWineSnapshot] = useState<Wine | null>(null);
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
   const confirmCloseTimer = useRef<number | null>(null);
-  const selectedWine = useMemo(
-    () => (selectedWineId ? wines.find((wine) => wine.id === selectedWineId) ?? null : null),
-    [selectedWineId, wines]
-  );
+  const selectedWine = useMemo(() => {
+    if (!selectedWineId) return null;
+    const fromList = wines.find((wine) => wine.id === selectedWineId);
+    if (fromList) return fromList;
+    if (selectedWineSnapshot?.id === selectedWineId) return selectedWineSnapshot;
+    return null;
+  }, [selectedWineId, selectedWineSnapshot, wines]);
   const selectedQty = selectedWineId && getSessionQty ? getSessionQty(selectedWineId) : 0;
+
+  useEffect(() => {
+    if (!selectedWineId) return;
+    const latest = wines.find((wine) => wine.id === selectedWineId);
+    if (!latest) return;
+    setSelectedWineSnapshot(latest);
+  }, [selectedWineId, wines]);
 
   useEffect(() => {
     return () => {
@@ -41,6 +52,7 @@ export function ResultsList({
     }
     setShowConfirmMessage(false);
     setSelectedWineId(null);
+    setSelectedWineSnapshot(null);
   };
 
   if (!interactive) {
@@ -78,7 +90,11 @@ export function ResultsList({
             key={w.id}
             className={`consultiveRow consultiveRowButton ${idx === 0 ? 'consultiveRowFirst' : ''}`}
             type="button"
-            onClick={() => (showActions ? setSelectedWineId(w.id) : undefined)}
+            onClick={() => {
+              if (!showActions) return;
+              setSelectedWineId(w.id);
+              setSelectedWineSnapshot(w);
+            }}
             disabled={!showActions}
             role="listitem"
           >
@@ -116,7 +132,6 @@ export function ResultsList({
                 type="button"
                 onClick={() => {
                   onDecrement?.(selectedWine.id);
-                  if (selectedQty <= 1) setSelectedWineId(null);
                 }}
               >
                 -

@@ -206,6 +206,16 @@
   padding: 0 2px 8px 2px;
 }
 
+.homeResultsAreaSession .consultiveList {
+  height: 100%;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 120px;
+}
+
 .consultiveRow {
   padding: 12px 4px;
   border-top: 1px solid var(--border);
