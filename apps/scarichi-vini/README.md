@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **13/03/2026 13:40 CET**.
+Ultimo aggiornamento: **13/03/2026 14:21 CET**.
 
 ## Quick Start
 
@@ -23,6 +23,11 @@ Comandi utili:
 
 - Sessione scarico mobile-first (`/`) con supporto offline.
 - Conferma sessione integrata su Supabase (RPC `submit_discharge_session`).
+- Sessione scarico aggiornata:
+  - CTA primaria rinominata in `Conferma Scarico`
+  - nel modale vino, conferma con feedback inline `Scarico Aggiunto!`
+  - in sessione aperta, i vini già presenti nel riepilogo non compaiono più nella lista principale
+  - riepilogo semplificato (titolo centrato, rimosse etichette riassuntive ridondanti)
 - Admin impostazioni (`/admin`) con autenticazione locale.
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)
@@ -68,6 +73,7 @@ Comandi utili:
 
 - Crea `.env` da `.env.example`.
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
+- Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
 
 ## Regole Deploy (Render)
 

@@ -90,6 +90,7 @@
   left: 50%;
   transform: translateX(-50%);
   bottom: 86px;
+  z-index: 1101;
   background: rgba(124, 22, 74, 0.92);
   color: var(--bg);
   padding: 10px 12px;
@@ -175,15 +176,23 @@
 }
 
 .summaryToggleMain {
-  display: flex;
+  display: grid;
+  grid-template-columns: 22px 1fr 22px;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
+  gap: 8px;
+}
+
+.summaryToggleLead {
+  width: 22px;
+  height: 22px;
+}
+
+.summaryToggleTitle {
+  text-align: center;
 }
 
 .summaryToggleArrow {
   color: var(--muted);
-  margin-left: auto;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -194,11 +203,6 @@
 
 .summaryToggleArrowOpen {
   transform: rotate(180deg);
-}
-
-.summaryToggleMeta {
-  color: var(--muted);
-  font-size: 14px;
 }
 
 .summaryDockSpacer {
@@ -217,6 +221,14 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 12px;
+}
+
+.summaryQtyPill {
+  min-width: 40px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 5px 10px;
+  font-weight: 800;
 }
 
 .summaryEditModal {

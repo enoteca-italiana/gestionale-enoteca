@@ -26,8 +26,12 @@ async function unregisterSwInDevOnce() {
 
 void unregisterSwInDevOnce();
 
-registerSW({
-  immediate: true
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    // Force activation on installed PWA clients (iOS/Android) to avoid stale UI.
+    void updateSW(true);
+  }
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

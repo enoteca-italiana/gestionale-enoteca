@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 13:42 CET**.
+Ultimo aggiornamento: **13/03/2026 14:21 CET**.
 
 ## Scopo di questo file
 
@@ -110,10 +110,14 @@ Comandi root:
   - risultati visibili **solo dopo ricerca** quando sessione ON
   - UI scarico per vino con stepper `- / +` (stile mobile)
   - per ogni vino in risultati: `Q.tà` (giacenza realtime) + `Scarico` (qty in sessione)
-  - riepilogo sessione con correzioni
+  - vini già aggiunti al riepilogo nascosti dalla lista risultati (modifiche quantità solo da riepilogo)
+  - riepilogo sessione semplificato (titolo centrato, rimossi testi riassuntivi ridondanti)
+  - messaggio `Scarico Aggiunto!` mostrato nel modale vino alla conferma
+  - pulsante primario sessione rinominato in `Conferma Scarico`
   - conferma finale con modale (controllata da toggle admin)
 - Sessioni scarico:
   - conferma online su Supabase (`discharge_sessions` + RPC `submit_discharge_session`)
+  - riconciliazione difensiva post-submit su `wines.qty` per garantire allineamento giacenze archivio/storico
   - storico/sospesi admin letti da Supabase
   - in offline la conferma sessione è bloccata
 - Admin:

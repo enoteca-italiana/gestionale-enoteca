@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
 
 export function ResultsList({
@@ -18,11 +18,30 @@ export function ResultsList({
 }) {
   const showActions = interactive && sessionOpen;
   const [selectedWineId, setSelectedWineId] = useState<string | null>(null);
+  const [showConfirmMessage, setShowConfirmMessage] = useState(false);
+  const confirmCloseTimer = useRef<number | null>(null);
   const selectedWine = useMemo(
     () => (selectedWineId ? wines.find((wine) => wine.id === selectedWineId) ?? null : null),
     [selectedWineId, wines]
   );
   const selectedQty = selectedWineId && getSessionQty ? getSessionQty(selectedWineId) : 0;
+
+  useEffect(() => {
+    return () => {
+      if (confirmCloseTimer.current !== null) {
+        window.clearTimeout(confirmCloseTimer.current);
+      }
+    };
+  }, []);
+
+  const closeModal = () => {
+    if (confirmCloseTimer.current !== null) {
+      window.clearTimeout(confirmCloseTimer.current);
+      confirmCloseTimer.current = null;
+    }
+    setShowConfirmMessage(false);
+    setSelectedWineId(null);
+  };
 
   if (!interactive) {
     return (
@@ -84,7 +103,7 @@ export function ResultsList({
               className="summaryEditClose"
               type="button"
               aria-label="Chiudi"
-              onClick={() => setSelectedWineId(null)}
+              onClick={closeModal}
             >
               ×
             </button>
@@ -109,10 +128,23 @@ export function ResultsList({
             </div>
 
             <div className="summaryEditActions summaryEditActionsSingle mt14">
-              <button className="button buttonConfirmSoft" type="button" onClick={() => setSelectedWineId(null)}>
+              <button
+                className="button buttonConfirmSoft"
+                type="button"
+                onClick={() => {
+                  if (showConfirmMessage) return;
+                  setShowConfirmMessage(true);
+                  confirmCloseTimer.current = window.setTimeout(() => {
+                    setShowConfirmMessage(false);
+                    setSelectedWineId(null);
+                    confirmCloseTimer.current = null;
+                  }, 900);
+                }}
+              >
                 Conferma
               </button>
             </div>
+            {showConfirmMessage ? <div className="okText centered mt10">Scarico Aggiunto!</div> : null}
           </div>
         </div>
       ) : null}

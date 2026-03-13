@@ -37,6 +37,11 @@ type ItemCountRow = {
   session_id: string;
 };
 
+type WineQtyRow = {
+  id: string;
+  qty?: number | null;
+};
+
 export async function listDischargeSessions(status: DischargeStatus): Promise<DischargeSessionSummary[]> {
   const client = requireSupabase();
 
@@ -121,10 +126,43 @@ export async function createAndSubmitDischargeSession(input: {
   userLabel?: string;
   items: DischargeItemInput[];
   source?: string;
+  expectedQtyByWineId?: Record<string, number>;
 }): Promise<string> {
   const sessionId = await createDischargeSession(input);
   await submitDischargeSession(sessionId);
+  await reconcileSubmittedSessionStock(input.items, input.expectedQtyByWineId);
   return sessionId;
+}
+
+async function reconcileSubmittedSessionStock(
+  items: DischargeItemInput[],
+  expectedQtyByWineId?: Record<string, number>
+) {
+  if (!expectedQtyByWineId) return;
+  const client = requireSupabase();
+  const ids = [...new Set(items.filter((item) => item.qty > 0).map((item) => item.wineId))];
+  if (ids.length === 0) return;
+
+  const { data, error } = await client.from('wines').select('id, qty').in('id', ids);
+  if (error) throw error;
+
+  const rows = (data ?? []) as WineQtyRow[];
+  for (const row of rows) {
+    const expected = expectedQtyByWineId[row.id];
+    if (!Number.isFinite(expected)) continue;
+    const expectedQty = Math.max(0, Math.round(expected));
+    const currentQty = Number(row.qty ?? 0);
+
+    // Safety net: if RPC/session workflow did not propagate stock update,
+    // align wine qty to the already-computed local post-session value.
+    if (currentQty > expectedQty) {
+      const { error: updateError } = await client
+        .from('wines')
+        .update({ qty: expectedQty })
+        .eq('id', row.id);
+      if (updateError) throw updateError;
+    }
+  }
 }
 
 export async function deleteDischargeSession(id: string): Promise<void> {

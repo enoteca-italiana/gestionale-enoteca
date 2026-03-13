@@ -10,11 +10,22 @@ import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
 import { SummaryList } from '@/pages/home/SummaryList';
 import { useLocalSession } from '@/pages/home/useLocalSession';
 
+type StockFilter = 'all' | 'threshold' | 'out';
+
+function isInThreshold(qty: number, threshold?: number) {
+  const parsedQty = Number(qty);
+  const parsedThreshold = Number(threshold);
+  if (!Number.isFinite(parsedQty) || parsedQty <= 0) return false;
+  if (!Number.isFinite(parsedThreshold) || parsedThreshold < 1) return false;
+  return parsedQty <= parsedThreshold;
+}
+
 export function HomePage() {
   const [showIntro, setShowIntro] = useState(true);
   const [introVisible, setIntroVisible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [stockFilter, setStockFilter] = useState<StockFilter>('all');
 
   const settings = useAppSettings();
   const online = useOnlineStatus();
@@ -30,7 +41,6 @@ export function HomePage() {
     setQuery,
     resetSession,
     startSession,
-    endSession,
     addToSession,
     incrementItem,
     decrementItem,
@@ -66,10 +76,18 @@ export function HomePage() {
       return;
     }
 
+    const expectedQtyByWineId = Object.fromEntries(
+      sessionList.map((item) => [
+        item.wineId,
+        inventory.find((wine) => wine.id === item.wineId)?.qty ?? 0
+      ])
+    );
+
     try {
       await createAndSubmitDischargeSession({
         userLabel,
-        items: sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty }))
+        items: sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty })),
+        expectedQtyByWineId
       });
       await refreshInventory();
       setToast('Sessione inviata');
@@ -89,7 +107,22 @@ export function HomePage() {
     return m;
   }, [sessionList]);
 
+  const visibleWines = useMemo(() => {
+    const winesAvailableForSelection = sessionOpen
+      ? filtered.filter((wine) => !sessionQtyByWineId.has(wine.id))
+      : filtered;
+
+    if (stockFilter === 'threshold') {
+      return winesAvailableForSelection.filter((wine) => isInThreshold(wine.qty, wine.threshold));
+    }
+    if (stockFilter === 'out') {
+      return winesAvailableForSelection.filter((wine) => wine.qty <= 0);
+    }
+    return winesAvailableForSelection;
+  }, [filtered, sessionOpen, sessionQtyByWineId, stockFilter]);
+
   const getSessionQty = (wineId: string) => sessionQtyByWineId.get(wineId) ?? 0;
+  const showResults = !sessionOpen || query.trim().length > 0 || stockFilter !== 'all';
 
   if (showIntro) {
     return (
@@ -112,19 +145,14 @@ export function HomePage() {
 
       <div className="mt12">
         {sessionOpen ? (
-          <div className="row">
-            <button className="button buttonSecondary buttonAuto sessionCloseButton" type="button" onClick={endSession}>
-              ×
-            </button>
-            <button
-              className={`button buttonAuto ${sessionCount > 0 ? 'buttonSessionConfirmActive' : ''}`}
-              type="button"
-              onClick={confirmSubmit}
-              disabled={sessionCount <= 0}
-            >
-              Conferma Sessione
-            </button>
-          </div>
+          <button
+            className={`button ${sessionCount > 0 ? 'buttonSessionConfirmActive' : 'buttonSessionConfirmInactive'}`}
+            type="button"
+            onClick={confirmSubmit}
+            disabled={sessionCount <= 0}
+          >
+            Conferma Scarico
+          </button>
         ) : (
           <button className="button" type="button" onClick={startSession}>
             Inizia sessione di scarico
@@ -132,18 +160,38 @@ export function HomePage() {
         )}
       </div>
 
-      <div className="mt12">
+      <div className="mt12 searchRow">
         <input
-          className="input inputSearch"
+          className="input inputSearch inputSearchCompact"
           placeholder="Cerca vino per nome…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <button
+          className={`searchStockButton searchStockButtonThreshold ${
+            stockFilter === 'threshold' ? 'searchStockButtonActive' : ''
+          }`}
+          type="button"
+          onClick={() => setStockFilter((prev) => (prev === 'threshold' ? 'all' : 'threshold'))}
+          aria-pressed={stockFilter === 'threshold'}
+        >
+          Soglia
+        </button>
+        <button
+          className={`searchStockButton searchStockButtonOut ${
+            stockFilter === 'out' ? 'searchStockButtonActive' : ''
+          }`}
+          type="button"
+          onClick={() => setStockFilter((prev) => (prev === 'out' ? 'all' : 'out'))}
+          aria-pressed={stockFilter === 'out'}
+        >
+          Esaurito
+        </button>
       </div>
 
-      {!sessionOpen || query.trim() ? (
+      {showResults ? (
         <ResultsList
-          wines={sessionOpen ? filtered : inventory}
+          wines={visibleWines}
           sessionOpen={sessionOpen}
           interactive={sessionOpen}
           getSessionQty={sessionOpen ? getSessionQty : undefined}
@@ -154,7 +202,6 @@ export function HomePage() {
 
       {sessionOpen ? (
         <SummaryList
-          sessionCount={sessionCount}
           items={sessionList}
           wines={inventory}
           onIncrement={incrementItem}

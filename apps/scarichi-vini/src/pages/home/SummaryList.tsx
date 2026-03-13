@@ -4,14 +4,12 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import { ChevronDown } from 'lucide-react';
 
 export function SummaryList({
-  sessionCount,
   items,
   wines,
   onIncrement,
   onDecrement,
   onDelete
 }: {
-  sessionCount: number;
   items: SessionItem[];
   wines: Wine[];
   onIncrement: (wineId: string) => void;
@@ -71,8 +69,8 @@ export function SummaryList({
       <div className="card summaryDock">
         <button className="summaryToggle" type="button" onClick={toggleOpen} aria-expanded={isOpen}>
           <div className="summaryToggleMain">
-            <div className="sectionTitle">Riepilogo</div>
-            <div className="summaryToggleMeta">Vini scaricati: {sessionCount}</div>
+            <div className="summaryToggleLead" aria-hidden="true" />
+            <div className="sectionTitle summaryToggleTitle">Riepilogo</div>
             <div className={`summaryToggleArrow ${isOpen ? 'summaryToggleArrowOpen' : ''}`} aria-hidden="true">
               <ChevronDown size={22} strokeWidth={2} />
             </div>
@@ -81,11 +79,6 @@ export function SummaryList({
 
         {isOpen ? (
           <>
-            <div className="row mt10">
-              <div />
-              {sessionCount > 0 ? <div className="pill">Totale {sessionCount}</div> : null}
-            </div>
-
             <div className="list mt12">
               {items.length === 0 ? (
                 <div className="listItem centered">
@@ -111,7 +104,7 @@ export function SummaryList({
                             {wine.vintage ? ` • ${wine.vintage}` : ''}
                           </div>
                         </div>
-                        <div className="pill">-{i.qty}</div>
+                        <div className="pill summaryQtyPill">-{i.qty}</div>
                       </div>
                     </button>
                   );

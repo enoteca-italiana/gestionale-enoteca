@@ -62,6 +62,16 @@
   color: #ffffff;
 }
 
+.buttonSessionConfirmInactive {
+  background: #9fd5af;
+  color: #f8fffa;
+}
+
+.button.buttonSessionConfirmInactive:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
 .sessionCloseButton {
   width: 54px;
   min-width: 54px;
@@ -85,6 +95,50 @@
 .inputSearch {
   border-color: var(--border-strong);
   background: #ffffff;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.inputSearchCompact {
+  padding: 12px 14px;
+}
+
+.searchStockButton {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #374151;
+  border-radius: 12px;
+  padding: 10px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  min-height: 42px;
+}
+
+.searchStockButtonThreshold {
+  border-color: #ca8a04;
+  color: #ca8a04;
+}
+
+.searchStockButtonOut {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.searchStockButtonThreshold.searchStockButtonActive {
+  background: #ca8a04;
+  color: #ffffff;
+}
+
+.searchStockButtonOut.searchStockButtonActive {
+  background: #b91c1c;
+  color: #ffffff;
 }
 
 .adminCard {
@@ -163,14 +217,20 @@
 
 .consultiveRowButton {
   appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   text-align: left;
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
   font: inherit;
   cursor: pointer;
   position: relative;
+}
+
+.consultiveRowButton .subtle {
+  -webkit-text-fill-color: var(--muted);
 }
 
 .consultiveRowButton:disabled {
