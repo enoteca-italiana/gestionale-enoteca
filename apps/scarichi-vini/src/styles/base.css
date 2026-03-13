@@ -172,3 +172,9 @@ a {
   gap: 6px;
   padding: 10px 12px;
 }
+
+@media (max-width: 768px) {
+  .navbarInner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

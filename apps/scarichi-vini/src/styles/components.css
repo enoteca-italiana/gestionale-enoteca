@@ -26,6 +26,12 @@
   font-weight: 700;
 }
 
+@media (max-width: 768px) {
+  .navNavItemArchive {
+    display: none;
+  }
+}
+
 .card {
   border: 1px solid var(--border);
   background: var(--surface);

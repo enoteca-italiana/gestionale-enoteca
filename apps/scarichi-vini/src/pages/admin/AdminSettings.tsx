@@ -37,11 +37,13 @@ function SettingToggle({
 export function AdminSettings({
   onChangePassword,
   onLogout,
-  onHardReset
+  onHardReset,
+  onBack
 }: {
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   onLogout: () => void;
   onHardReset: () => void;
+  onBack?: () => void;
 }) {
   const [requireFinalConfirm, setRequireFinalConfirm] = useState(() =>
     getBool(storageKeys.settingRequireFinalConfirm, true)
@@ -101,9 +103,16 @@ export function AdminSettings({
               Configurazioni operative (locali, finché non colleghiamo Supabase).
             </div>
           </div>
-          <button className="button buttonSecondary buttonAuto" type="button" onClick={onLogout}>
-            Esci
-          </button>
+          <div className="row">
+            {onBack ? (
+              <button className="button buttonSecondary buttonAuto" type="button" onClick={onBack}>
+                Indietro
+              </button>
+            ) : null}
+            <button className="button buttonSecondary buttonAuto" type="button" onClick={onLogout}>
+              Esci
+            </button>
+          </div>
         </div>
 
         <div className="list mt12">
@@ -156,30 +165,6 @@ export function AdminSettings({
             onClick={changePassword}
           >
             Aggiorna password
-          </button>
-        </div>
-      </div>
-
-      <div className="card adminCard mt12">
-        <div className="sectionTitle">Storico sessioni</div>
-        <div className="subtle mt6">
-          Arriverà quando colleghiamo Supabase: qui vedrai solo le sessioni inviate correttamente.
-        </div>
-        <div className="mt14">
-          <button className="button buttonSecondary" type="button" disabled>
-            Apri storico
-          </button>
-        </div>
-      </div>
-
-      <div className="card adminCard mt12">
-        <div className="sectionTitle">Sessioni in sospeso</div>
-        <div className="subtle mt6">
-          Arriverà con la coda offline: qui l’admin potrà vedere ed eliminare le sessioni pendenti.
-        </div>
-        <div className="mt14">
-          <button className="button buttonSecondary" type="button" disabled>
-            Apri sospesi
           </button>
         </div>
       </div>

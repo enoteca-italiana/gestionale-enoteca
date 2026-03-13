@@ -12,7 +12,7 @@
     "typecheck": "npm run typecheck -w @enoteca/scarichi-vini",
     "test": "npm run test -w @enoteca/scarichi-vini",
     "build": "npm run build -w @enoteca/scarichi-vini",
-    "preview": "npm run preview -w @enoteca/scarichi-vini"
+    "preview": "npm run preview -w @enoteca/scarichi-vini --"
   },
   "dependencies": {
     "lucide-react": "^0.577.0"

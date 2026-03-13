@@ -19,7 +19,7 @@ export function BottomNav({ currentPath }: { currentPath: string }) {
         </Link>
         <Link
           href="/admina"
-          className={`navNavItem ${isArchive ? 'navNavItemActive' : ''}`}
+          className={`navNavItem navNavItemArchive ${isArchive ? 'navNavItemActive' : ''}`}
           aria-label="Archivio"
         >
           <Archive size={26} strokeWidth={1.4} />

@@ -19,8 +19,7 @@ export function AdminLogin({ onLogin }: { onLogin: (password: string) => Promise
 
   return (
     <div className="card adminCard">
-      <div className="title">Admin</div>
-      <div className="subtle mt6">Inserisci la password per accedere alle impostazioni.</div>
+      <div className="title centered">Admin</div>
 
       <div className="mt14">
         <input

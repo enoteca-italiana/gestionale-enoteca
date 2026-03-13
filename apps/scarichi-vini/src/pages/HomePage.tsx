@@ -117,41 +117,26 @@ export function HomePage() {
         <div className="banner">Offline: le sessioni confermate verranno messe in coda.</div>
       ) : null}
 
-      <div className="card sessionCard">
-        <div className="row">
-          <div>
-            <div className="title">Sessione di scarico</div>
-            <div className="subtle mt6">
-              {sessionOpen ? 'Sessione aperta' : 'Apri una sessione per scaricare'}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt14">
-          {sessionOpen ? (
-            <div className="row">
-              <button
-                className="button buttonSecondary buttonAuto"
-                type="button"
-                onClick={endSession}
-              >
-                Chiudi
-              </button>
-              <button
-                className="button buttonAuto"
-                type="button"
-                onClick={confirmSubmit}
-                disabled={sessionCount <= 0}
-              >
-                Conferma ({sessionCount})
-              </button>
-            </div>
-          ) : (
-            <button className="button" type="button" onClick={startSession}>
-              Inizia sessione
+      <div className="mt12">
+        {sessionOpen ? (
+          <div className="row">
+            <button className="button buttonSecondary buttonAuto" type="button" onClick={endSession}>
+              Chiudi
             </button>
-          )}
-        </div>
+            <button
+              className="button buttonAuto"
+              type="button"
+              onClick={confirmSubmit}
+              disabled={sessionCount <= 0}
+            >
+              Conferma ({sessionCount})
+            </button>
+          </div>
+        ) : (
+          <button className="button" type="button" onClick={startSession}>
+            Inizia sessione di scarico
+          </button>
+        )}
       </div>
 
       <div className="mt12">

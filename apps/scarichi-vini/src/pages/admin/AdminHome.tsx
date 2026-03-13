@@ -1,20 +1,17 @@
-export type AdminSection = 'settings' | 'history' | 'pending';
+export type AdminRootSection = 'settings' | 'sessions';
 
-export function AdminHome({ onOpen }: { onOpen: (section: AdminSection) => void }) {
+export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => void }) {
   return (
     <div className="card adminCard">
       <div className="title">Admin</div>
-      <div className="subtle mt6">Impostazioni, storico e sessioni in sospeso.</div>
+      <div className="subtle mt6">Seleziona area di gestione.</div>
 
       <div className="list mt12">
         <button className="button buttonSecondary" type="button" onClick={() => onOpen('settings')}>
           Impostazioni
         </button>
-        <button className="button buttonSecondary" type="button" onClick={() => onOpen('history')}>
-          Storico sessioni
-        </button>
-        <button className="button buttonSecondary" type="button" onClick={() => onOpen('pending')}>
-          Sessioni in sospeso
+        <button className="button buttonSecondary" type="button" onClick={() => onOpen('sessions')}>
+          Sessioni
         </button>
         <a className="button" href="/admina">
           Gestione vini (nuova)
