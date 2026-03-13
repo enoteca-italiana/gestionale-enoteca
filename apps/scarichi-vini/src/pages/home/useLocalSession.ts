@@ -16,7 +16,7 @@ export function useLocalSession({
     const q = query.trim().toLowerCase();
     if (!q) return inventory;
     return inventory.filter((w) => w.name.toLowerCase().includes(q));
-  }, [query, sessionOpen, inventory]);
+  }, [query, inventory]);
 
   const sessionList = useMemo(() => {
     return Object.values(items)

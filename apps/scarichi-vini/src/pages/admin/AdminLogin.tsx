@@ -37,7 +37,12 @@ export function AdminLogin({ onLogin }: { onLogin: (password: string) => Promise
       {error ? <div className="errorText mt10">{error}</div> : null}
 
       <div className="mt14">
-        <button className="button" type="button" disabled={busy || password.length === 0} onClick={submit}>
+        <button
+          className="button"
+          type="button"
+          disabled={busy || password.length === 0}
+          onClick={submit}
+        >
           Entra
         </button>
       </div>

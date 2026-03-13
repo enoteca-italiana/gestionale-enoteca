@@ -11,7 +11,8 @@ export function AdminGate() {
   const { ready, isAuthed, login, logout, changePassword } = useAdminAuth();
   const [toast, setToast] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('settings');
-  const { history, pending, clearHistory, clearPending, deletePending, hardResetAll } = useLocalDb();
+  const { history, pending, clearHistory, clearPending, deletePending, hardResetAll } =
+    useLocalDb();
 
   if (!ready) {
     return (
@@ -32,7 +33,11 @@ export function AdminGate() {
             return ok;
           }}
         />
-        {toast ? <div className="mt12"><div className="toastInline">{toast}</div></div> : null}
+        {toast ? (
+          <div className="mt12">
+            <div className="toastInline">{toast}</div>
+          </div>
+        ) : null}
       </>
     );
   }
@@ -88,7 +93,11 @@ export function AdminGate() {
         />
       ) : null}
 
-      {toast ? <div className="mt12"><div className="toastInline">{toast}</div></div> : null}
+      {toast ? (
+        <div className="mt12">
+          <div className="toastInline">{toast}</div>
+        </div>
+      ) : null}
     </>
   );
 }

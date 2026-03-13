@@ -1,5 +1,7 @@
 # Requisiti (baseline) — Scarichi Vini
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Scopo
 
 - L’app serve a gestire **scarichi** di bottiglie durante il servizio.
@@ -12,7 +14,8 @@
 - Intro iniziale **2.5s** con **logo** e comparsa graduale.
 - Navbar in basso con sole voci:
   - `Home`
-  - `Admin`
+  - `Archivio`
+- Area impostazioni admin disponibile su route dedicata `/admin` (protetta da password).
 
 ## Modello operativo: sessione di scarico
 
@@ -52,6 +55,12 @@
 - Area protetta da password.
 - Password iniziale: `1909`.
 - Password modificabile.
+- Archivio vini su route `/admina` (CRUD tabellare desktop-first).
+- Toolbar filtri archivio su una sola riga desktop con box compatto statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino` (filtro `Tutte le giacenze` rimosso).
+- In archivio, q.tà `0` resta evidenziata in rosso acceso.
+- In archivio, campo `ANNO` vuoto quando il valore non è presente.
+- In archivio, le note sono consultabili da icona in colonna `Azioni` (non più come colonna dedicata).
+- Categoria e provenienza selezionabili da liste gestite (no input libero), con opzione `+ Aggiungi ...` e suggerimenti anti-duplicato.
 - Settings (toggle):
   - conferma finale on/off
   - associazione nome utente on/off (predisposizione)

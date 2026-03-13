@@ -1,0 +1,174 @@
+:root {
+  color-scheme: light;
+  --brand: #7c164a;
+  --brand-2: #7c164a;
+  --ink: #111827;
+  --muted: #6b7280;
+  --bg: #fdfaf2;
+  --surface: #fffdf8;
+  --border: #e5e7eb;
+  --border-strong: #374151;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 90px;
+}
+
+.mt4 {
+  margin-top: 4px;
+}
+
+.mt6 {
+  margin-top: 6px;
+}
+
+.mt8 {
+  margin-top: 8px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.mt12 {
+  margin-top: 12px;
+}
+
+.mt14 {
+  margin-top: 14px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lineTitle {
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.min0 {
+  min-width: 0;
+}
+
+.centered {
+  text-align: center;
+}
+
+.buttonAuto {
+  width: auto;
+}
+
+.introLayout {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+}
+
+.introCenter {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(6px) scale(0.99);
+  filter: blur(2px);
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease,
+    filter 520ms ease;
+}
+
+.introVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .introCenter {
+    transition: none;
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.logoIntro {
+  display: block;
+  width: min(92vw, 420px);
+  height: auto;
+  margin: 0 auto;
+}
+
+.homeHeader {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.logoHeader {
+  display: block;
+  width: min(51.6vw, 204px);
+  height: auto;
+}
+
+.banner {
+  border: 1px solid #7c164a;
+  background: #f5eaf0;
+  color: #7c164a;
+  border-radius: 16px;
+  padding: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.navbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+}
+
+.navbarInner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 10px 12px;
+}

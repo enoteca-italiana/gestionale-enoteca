@@ -1,10 +1,6 @@
 export type AdminSection = 'settings' | 'history' | 'pending';
 
-export function AdminHome({
-  onOpen
-}: {
-  onOpen: (section: AdminSection) => void;
-}) {
+export function AdminHome({ onOpen }: { onOpen: (section: AdminSection) => void }) {
   return (
     <div className="card adminCard">
       <div className="title">Admin</div>
@@ -20,6 +16,9 @@ export function AdminHome({
         <button className="button buttonSecondary" type="button" onClick={() => onOpen('pending')}>
           Sessioni in sospeso
         </button>
+        <a className="button" href="/admina">
+          Gestione vini (nuova)
+        </a>
       </div>
     </div>
   );

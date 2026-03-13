@@ -6,7 +6,32 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @enoteca/scarichi-vini",
+    "lint": "npm run lint -w @enoteca/scarichi-vini",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run typecheck -w @enoteca/scarichi-vini",
+    "test": "npm run test -w @enoteca/scarichi-vini",
     "build": "npm run build -w @enoteca/scarichi-vini",
     "preview": "npm run preview -w @enoteca/scarichi-vini"
+  },
+  "dependencies": {
+    "lucide-react": "^0.577.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@types/node": "^20.14.10",
+    "@vitest/coverage-v8": "^2.0.5",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "jsdom": "^24.1.1",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.1.0",
+    "vitest": "^2.0.5"
   }
 }

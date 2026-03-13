@@ -33,7 +33,12 @@ export function AdminHistory({
         </div>
 
         <div className="mt14">
-          <button className="button buttonSecondary" type="button" onClick={() => setConfirm1(true)} disabled={history.length === 0}>
+          <button
+            className="button buttonSecondary"
+            type="button"
+            onClick={() => setConfirm1(true)}
+            disabled={history.length === 0}
+          >
             Reset storico
           </button>
         </div>

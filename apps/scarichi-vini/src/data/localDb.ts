@@ -40,12 +40,40 @@ function seed(): LocalDbState {
   };
 }
 
+function migrateInventoryWithSeed(inventory: Wine[]): Wine[] {
+  const seedById = new Map(mockWines.map((w) => [w.id, w]));
+  const existingById = new Map(inventory.map((w) => [w.id, w]));
+
+  const mergedExisting = inventory.map((w) => {
+    const seedWine = seedById.get(w.id);
+    if (!seedWine) return w;
+    return {
+      ...seedWine,
+      ...w
+    };
+  });
+
+  const missingFromSeed = mockWines.filter((w) => !existingById.has(w.id));
+  return [...mergedExisting, ...missingFromSeed];
+}
+
 export function loadDb(): LocalDbState {
   const parsed = safeParse<LocalDbState>(localStorage.getItem(DB_KEY));
-  if (!parsed || !Array.isArray(parsed.inventory) || !Array.isArray(parsed.history) || !Array.isArray(parsed.pending)) {
+  if (
+    !parsed ||
+    !Array.isArray(parsed.inventory) ||
+    !Array.isArray(parsed.history) ||
+    !Array.isArray(parsed.pending)
+  ) {
     const s = seed();
     saveDb(s);
     return s;
+  }
+  const migratedInventory = migrateInventoryWithSeed(parsed.inventory);
+  if (migratedInventory.length !== parsed.inventory.length) {
+    const migrated = { ...parsed, inventory: migratedInventory };
+    saveDb(migrated);
+    return migrated;
   }
   return parsed;
 }

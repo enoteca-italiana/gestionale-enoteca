@@ -1,0 +1,150 @@
+.adminError {
+  border-color: #7c164a;
+  background: #f5eaf0;
+  color: #7c164a;
+}
+
+.modalLabel {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.quickButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.smallButton {
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 10px;
+  background: var(--brand);
+  color: var(--bg);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.smallButtonSecondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.buttonCancel {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.smallButtonDanger {
+  background: #f5eaf0;
+  color: #7c164a;
+}
+
+.smallButton:disabled {
+  opacity: 0.45;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.modalDescription {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.modalActions {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 86px;
+  background: rgba(124, 22, 74, 0.92);
+  color: var(--bg);
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.toastInline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(124, 22, 74, 0.92);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.errorText {
+  color: #7c164a;
+  font-weight: 700;
+}
+
+.okText {
+  color: #065f46;
+  font-weight: 700;
+}
+
+.toggle {
+  width: 52px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #e5e7eb;
+  padding: 2px;
+  position: relative;
+}
+
+.toggleOn {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.toggleKnob {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--bg);
+  transform: translateX(0);
+  transition: transform 120ms ease;
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(20px);
+}

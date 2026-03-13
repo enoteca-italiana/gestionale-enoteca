@@ -1,5 +1,7 @@
 # Offline & PWA
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Obiettivo
 
 - L’app deve aprirsi anche senza rete (app shell cached).
@@ -24,8 +26,8 @@ Config: `apps/scarichi-vini/vite.config.ts`
 
 Nota asset logo:
 
-- `logo.webp` è presente come asset ottimizzato.
-- `Logo.tsx` mantiene fallback a `logo.png` per evitare immagini rotte.
+- asset operativo: `logo.png` ottimizzato (compressione applicata).
+- `Logo.tsx` usa direttamente `logo.png`.
 
 ## Offline queue (logica)
 

@@ -20,7 +20,11 @@ export function useAppSettings() {
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (!e.key) return;
-      if (e.key !== storageKeys.settingRequireFinalConfirm && e.key !== storageKeys.settingEnableUserLabel) return;
+      if (
+        e.key !== storageKeys.settingRequireFinalConfirm &&
+        e.key !== storageKeys.settingEnableUserLabel
+      )
+        return;
       setSettings(loadAppSettings());
     };
 

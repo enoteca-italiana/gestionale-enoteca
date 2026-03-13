@@ -1,10 +1,11 @@
 # Admin
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Accesso
 
 - Route: `/admin`
 - Password:
-
   - default `1909` (hashata e salvata localmente)
   - modificabile in Admin
 
@@ -21,6 +22,11 @@ Hook: `apps/scarichi-vini/src/pages/admin/useAdminAuth.ts`
 - settings
 - history
 - pending
+
+La Bottom Nav operativa mostra:
+
+- `Home` (`/`)
+- `Archivio` (`/admina`)
 
 ## Settings
 
@@ -52,6 +58,43 @@ File: `AdminPending.tsx`
 ## Reset totale
 
 In `AdminSettings.tsx`:
+
 - doppia conferma
 - chiama `hardResetAll()`
 - cancella inventario + storico + sospesi
+
+## Archivio vini (`/admina`)
+
+Route dedicata per gestione archivio desktop-first.
+
+Componenti:
+
+- `pages/admina/WineAdminPage.tsx`
+- `pages/admina/components/AdminArchiveToolbar.tsx`
+- `pages/admina/components/AdminArchiveTable.tsx`
+- `pages/admina/components/WineArchiveFormModal.tsx`
+
+Funzioni:
+
+- ricerca e filtri (testo, categoria, soglia/esauriti)
+- filtri su singola riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
+- rimosso il vecchio filtro `Tutte le giacenze`
+- CRUD vini
+- categoria e provenienza selezionabili solo da liste gestite
+- opzione `+ Aggiungi ...` in dropdown con suggerimenti valori uguali/simili
+- tabella estesa con header sticky
+- righe alternate + separatori verticali
+- riempimento automatico con righe vuote fino al fondo area tabella
+- box statistiche: `Totale` verde, `Soglia` ambra, `Esauriti` rosso
+- pulsanti statistiche selezionati con colori invertiti (testo bianco)
+- colonna `ANNO`: mostra cella vuota quando il valore è assente
+- colonna note rimossa dalla tabella; note consultabili da icona dedicata in `Azioni`
+- ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`
+
+Regole business:
+
+- `Magazzino = Acquisto × Q.tà`
+- `Margine = Vendita − Acquisto`
+- q.tà `0` evidenziata in rosso acceso
+- q.tà in soglia evidenziata in giallo ambra chiaro
+- `Soglia` disponibile nel modale vino: `Vuoto` oppure valore `>= 1` (mai `0`)

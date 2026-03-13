@@ -1,5 +1,7 @@
 # Flusso utente — Sessione di scarico
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Entrata
 
 - Home mostra header con logo.
@@ -7,6 +9,10 @@
   - stato OFF/ON
   - CTA `Inizia sessione`
   - input ricerca (abilitato solo quando sessione aperta)
+- Sessione OFF:
+  - lista consultiva visibile (solo lettura).
+- Sessione ON:
+  - risultati operativi visibili dopo ricerca.
 
 ## Ricerca
 
@@ -22,7 +28,6 @@
 
 - Bottoni: `-1`, `-2`, `-3`
 - Se qty è 0:
-
   - bottoni disabilitati
 
 Vincolo:

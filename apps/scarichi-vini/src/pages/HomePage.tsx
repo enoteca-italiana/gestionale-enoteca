@@ -114,7 +114,9 @@ export function HomePage() {
         <Logo variant="header" />
       </div>
 
-      {!online ? <div className="banner">Offline: le sessioni confermate verranno messe in coda.</div> : null}
+      {!online ? (
+        <div className="banner">Offline: le sessioni confermate verranno messe in coda.</div>
+      ) : null}
 
       <div className="card sessionCard">
         <div className="row">
@@ -124,16 +126,24 @@ export function HomePage() {
               {sessionOpen ? 'Sessione aperta' : 'Apri una sessione per scaricare'}
             </div>
           </div>
-          <div className={`pill ${sessionOpen ? '' : 'pillDanger'}`}>{sessionOpen ? 'ON' : 'OFF'}</div>
         </div>
 
         <div className="mt14">
           {sessionOpen ? (
             <div className="row">
-              <button className="button buttonSecondary buttonAuto" type="button" onClick={endSession}>
+              <button
+                className="button buttonSecondary buttonAuto"
+                type="button"
+                onClick={endSession}
+              >
                 Chiudi
               </button>
-              <button className="button buttonAuto" type="button" onClick={confirmSubmit} disabled={sessionCount <= 0}>
+              <button
+                className="button buttonAuto"
+                type="button"
+                onClick={confirmSubmit}
+                disabled={sessionCount <= 0}
+              >
                 Conferma ({sessionCount})
               </button>
             </div>
@@ -162,7 +172,6 @@ export function HomePage() {
           getSessionQty={sessionOpen ? getSessionQty : undefined}
           onIncrement={sessionOpen ? (wineId) => addToSession(wineId, 1) : undefined}
           onDecrement={sessionOpen ? (wineId) => decrementItem(wineId) : undefined}
-          onQuickRemove={(wineId, amount) => addToSession(wineId, amount)}
         />
       ) : null}
 

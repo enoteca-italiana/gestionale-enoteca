@@ -37,7 +37,12 @@ export function AdminPending({
         </div>
 
         <div className="mt14">
-          <button className="button buttonSecondary" type="button" onClick={() => setConfirmClear(true)} disabled={pending.length === 0}>
+          <button
+            className="button buttonSecondary"
+            type="button"
+            onClick={() => setConfirmClear(true)}
+            disabled={pending.length === 0}
+          >
             Elimina tutte
           </button>
         </div>
@@ -62,7 +67,11 @@ export function AdminPending({
                       {s.userLabel ? ` • ${s.userLabel}` : ''}
                     </div>
                   </div>
-                  <button className="smallButton smallButtonDanger" type="button" onClick={() => setDeleteId(s.id)}>
+                  <button
+                    className="smallButton smallButtonDanger"
+                    type="button"
+                    onClick={() => setDeleteId(s.id)}
+                  >
                     Elimina
                   </button>
                 </div>

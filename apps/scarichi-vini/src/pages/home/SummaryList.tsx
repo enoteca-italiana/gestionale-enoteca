@@ -46,13 +46,26 @@ export function SummaryList({
                   <div className="pill">-{i.qty}</div>
                 </div>
                 <div className="quickButtons mt10">
-                  <button className="smallButton" type="button" onClick={() => onIncrement(i.wineId)} disabled={wine.qty <= 0}>
+                  <button
+                    className="smallButton"
+                    type="button"
+                    onClick={() => onIncrement(i.wineId)}
+                    disabled={wine.qty <= 0}
+                  >
                     +1
                   </button>
-                  <button className="smallButton smallButtonSecondary" type="button" onClick={() => onDecrement(i.wineId)}>
+                  <button
+                    className="smallButton smallButtonSecondary"
+                    type="button"
+                    onClick={() => onDecrement(i.wineId)}
+                  >
                     -1
                   </button>
-                  <button className="smallButton smallButtonDanger" type="button" onClick={() => onDelete(i.wineId)}>
+                  <button
+                    className="smallButton smallButtonDanger"
+                    type="button"
+                    onClick={() => onDelete(i.wineId)}
+                  >
                     Elimina
                   </button>
                 </div>

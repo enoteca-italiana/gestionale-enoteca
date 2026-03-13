@@ -46,7 +46,9 @@ export function AdminSettings({
   const [requireFinalConfirm, setRequireFinalConfirm] = useState(() =>
     getBool(storageKeys.settingRequireFinalConfirm, true)
   );
-  const [enableUserLabel, setEnableUserLabel] = useState(() => getBool(storageKeys.settingEnableUserLabel, false));
+  const [enableUserLabel, setEnableUserLabel] = useState(() =>
+    getBool(storageKeys.settingEnableUserLabel, false)
+  );
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -56,7 +58,10 @@ export function AdminSettings({
   const [reset1, setReset1] = useState(false);
   const [reset2, setReset2] = useState(false);
 
-  const canChange = useMemo(() => currentPassword.length > 0 && newPassword.length >= 4, [currentPassword, newPassword]);
+  const canChange = useMemo(
+    () => currentPassword.length > 0 && newPassword.length >= 4,
+    [currentPassword, newPassword]
+  );
 
   const saveRequireFinalConfirm = (v: boolean) => {
     setRequireFinalConfirm(v);
@@ -92,7 +97,9 @@ export function AdminSettings({
         <div className="row">
           <div>
             <div className="title">Impostazioni</div>
-            <div className="subtle mt6">Configurazioni operative (locali, finché non colleghiamo Supabase).</div>
+            <div className="subtle mt6">
+              Configurazioni operative (locali, finché non colleghiamo Supabase).
+            </div>
           </div>
           <button className="button buttonSecondary buttonAuto" type="button" onClick={onLogout}>
             Esci
@@ -142,7 +149,12 @@ export function AdminSettings({
         {pwdOk ? <div className="okText mt10">Password aggiornata</div> : null}
 
         <div className="mt14">
-          <button className="button" type="button" disabled={!canChange || busy} onClick={changePassword}>
+          <button
+            className="button"
+            type="button"
+            disabled={!canChange || busy}
+            onClick={changePassword}
+          >
             Aggiorna password
           </button>
         </div>
@@ -150,7 +162,9 @@ export function AdminSettings({
 
       <div className="card adminCard mt12">
         <div className="sectionTitle">Storico sessioni</div>
-        <div className="subtle mt6">Arriverà quando colleghiamo Supabase: qui vedrai solo le sessioni inviate correttamente.</div>
+        <div className="subtle mt6">
+          Arriverà quando colleghiamo Supabase: qui vedrai solo le sessioni inviate correttamente.
+        </div>
         <div className="mt14">
           <button className="button buttonSecondary" type="button" disabled>
             Apri storico
@@ -160,7 +174,9 @@ export function AdminSettings({
 
       <div className="card adminCard mt12">
         <div className="sectionTitle">Sessioni in sospeso</div>
-        <div className="subtle mt6">Arriverà con la coda offline: qui l’admin potrà vedere ed eliminare le sessioni pendenti.</div>
+        <div className="subtle mt6">
+          Arriverà con la coda offline: qui l’admin potrà vedere ed eliminare le sessioni pendenti.
+        </div>
         <div className="mt14">
           <button className="button buttonSecondary" type="button" disabled>
             Apri sospesi
@@ -170,7 +186,9 @@ export function AdminSettings({
 
       <div className="card adminCard mt12">
         <div className="sectionTitle">Reset totale</div>
-        <div className="subtle mt6">Cancella inventario locale, storico e sospesi. Azione definitiva.</div>
+        <div className="subtle mt6">
+          Cancella inventario locale, storico e sospesi. Azione definitiva.
+        </div>
         <div className="mt14">
           <button className="button buttonSecondary" type="button" onClick={() => setReset1(true)}>
             Reset totale

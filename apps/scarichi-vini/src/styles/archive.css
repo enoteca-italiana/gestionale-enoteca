@@ -1,0 +1,613 @@
+.adminContainer {
+  padding-bottom: 40px;
+}
+
+.archiveDesktopContainer {
+  max-width: 1680px;
+  width: min(99vw, 1680px);
+  padding-left: 8px;
+  padding-right: 8px;
+  min-height: calc(100vh - 92px);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 42px;
+}
+
+.archiveLogoTop {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.archiveLogoImg {
+  display: block;
+  width: min(27.6vw, 168px);
+  height: auto;
+}
+
+.archiveTopBar {
+  padding: 4px 0 10px;
+}
+
+.archiveTopRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.archiveTopActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.archiveStatLabel {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--muted);
+}
+
+.archiveStatValue {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.archiveFilters {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr minmax(192px, auto) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.archiveFilterControl {
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+.archiveStatsBox {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+.archiveStatsBox .archiveStatLabel {
+  font-size: 10px;
+}
+
+.archiveStatsBox .archiveStatValue {
+  font-size: 11px;
+}
+
+.archiveStatsItem {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  width: 100%;
+  display: grid;
+  gap: 1px;
+  justify-items: center;
+  text-align: center;
+  border-radius: 9px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.archiveStatsItem:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.archiveStatsItemActive {
+  border-color: #111827;
+  background: #111827;
+}
+
+.archiveStatsItemActive .archiveStatLabel,
+.archiveStatsItemActive .archiveStatValue,
+.archiveStatsItemActive .archiveStatLabel svg {
+  color: #f9fafb;
+  stroke: currentColor;
+}
+
+.archiveStatsItemOut .archiveStatLabel,
+.archiveStatsItemOut .archiveStatValue {
+  color: #b91c1c;
+}
+
+.archiveStatsItemTotal .archiveStatLabel,
+.archiveStatsItemTotal .archiveStatValue {
+  color: #166534;
+}
+
+.archiveStatsItemThreshold .archiveStatLabel,
+.archiveStatsItemThreshold .archiveStatValue,
+.archiveStatsItemThreshold .archiveStatLabel svg {
+  color: #ca8a04;
+  stroke: currentColor;
+}
+
+.archiveStatsItemActive.archiveStatsItemTotal {
+  border-color: #166534;
+  background: #166534;
+}
+
+.archiveStatsItemActive.archiveStatsItemTotal .archiveStatLabel,
+.archiveStatsItemActive.archiveStatsItemTotal .archiveStatValue {
+  color: #f9fafb;
+}
+
+.archiveStatsItemActive.archiveStatsItemThreshold {
+  border-color: #ca8a04;
+  background: #ca8a04;
+}
+
+.archiveStatsItemActive.archiveStatsItemThreshold .archiveStatLabel,
+.archiveStatsItemActive.archiveStatsItemThreshold .archiveStatValue {
+  color: #f9fafb;
+}
+
+.archiveStatsItemActive.archiveStatsItemOut {
+  border-color: #b91c1c;
+  background: #b91c1c;
+}
+
+.archiveStatsItemActive.archiveStatsItemOut .archiveStatLabel,
+.archiveStatsItemActive.archiveStatsItemOut .archiveStatValue {
+  color: #f9fafb;
+}
+
+.archiveAddButton {
+  justify-self: end;
+  min-width: 170px;
+  font-size: 14px;
+  padding: 10px 14px;
+}
+
+.archiveTableSection {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.archiveTableWrap {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.archiveTable {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.archiveTable th:nth-child(1),
+.archiveTable td:nth-child(1) {
+  width: 10%;
+}
+
+.archiveTable th:nth-child(2),
+.archiveTable td:nth-child(2) {
+  width: 27.6%;
+}
+
+.archiveTable th:nth-child(3),
+.archiveTable td:nth-child(3) {
+  width: 5%;
+}
+
+.archiveTable th:nth-child(4),
+.archiveTable td:nth-child(4) {
+  width: 11%;
+}
+
+.archiveTable th:nth-child(5),
+.archiveTable td:nth-child(5) {
+  width: 8.8%;
+}
+
+.archiveTable th:nth-child(6),
+.archiveTable td:nth-child(6),
+.archiveTable th:nth-child(7),
+.archiveTable td:nth-child(7),
+.archiveTable th:nth-child(9),
+.archiveTable td:nth-child(9),
+.archiveTable th:nth-child(10),
+.archiveTable td:nth-child(10) {
+  width: 6.4%;
+}
+
+.archiveTable th:nth-child(8),
+.archiveTable td:nth-child(8) {
+  width: 4%;
+}
+
+.archiveTable th:nth-child(11),
+.archiveTable td:nth-child(11) {
+  width: 7%;
+}
+
+.archiveTable thead th {
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #4b5563;
+  background: #edf3ea;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid #e5e7eb;
+  padding: 10px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.archiveTable thead th:last-child {
+  border-right: 0;
+}
+
+.archiveSortableHeaderCell {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 0;
+}
+
+.archiveSortButton {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #374151;
+  border-radius: 6px;
+  line-height: 1;
+  padding: 3px;
+  min-width: 22px;
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.archiveSortButton:hover {
+  background: rgba(17, 24, 39, 0.08);
+}
+
+.archiveTable tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  vertical-align: middle;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.archiveTable tbody td:last-child {
+  border-right: 0;
+}
+
+.archiveTable tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.archiveTable tbody tr:nth-child(even) {
+  background: #f6f7f9;
+}
+
+.archiveEmptyRow td {
+  color: transparent;
+}
+
+.archiveTableName {
+  font-weight: 700;
+}
+
+.archiveColCenter {
+  text-align: center;
+}
+
+.archiveTable tbody td.archiveQtyValue {
+  color: #1f2937;
+  font-weight: 400;
+}
+
+.archiveTable tbody td.archiveQtyThreshold {
+  color: #ca8a04;
+  font-weight: 400;
+}
+
+.archiveTable tbody td.archiveQtyZero {
+  color: #ff0000;
+  font-weight: 400;
+}
+
+.archiveRowActions {
+  display: flex;
+  width: 100%;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.archiveIconAction {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  cursor: pointer;
+}
+
+.archiveIconDanger {
+  color: #7c164a;
+}
+
+.archiveIconNote {
+  color: #9ca3af;
+}
+
+.archiveIconNoteActive {
+  color: #ca8a04;
+}
+
+.archiveIconNoteInactive {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.archiveIconNote:disabled {
+  opacity: 1;
+}
+
+.archiveNoteModalCard {
+  max-width: 560px;
+}
+
+.archiveNoteModalText {
+  margin-top: 10px;
+  color: #1f2937;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.archiveCategoryModalCard {
+  max-width: 560px;
+}
+
+.archiveCategoryHints {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: #faf8f2;
+}
+
+.archiveCategoryHintsTitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.archiveCategoryHintsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.archiveCategoryHintItem {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #374151;
+  background: #ffffff;
+}
+
+.archiveCategoryDuplicate {
+  color: #92400e;
+  font-size: 13px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.archiveTableEmptyCell {
+  text-align: center;
+  color: var(--muted);
+  padding: 16px;
+}
+
+.archiveModalCard {
+  max-width: 860px;
+  transform: scale(0.9);
+  transform-origin: center center;
+  background: var(--bg);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.archiveModalCard .modalLabel {
+  font-weight: 400;
+}
+
+.archiveModalCard .modalTitle {
+  text-align: center;
+}
+
+.archiveFormGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.archiveFormSpan2 {
+  grid-column: span 1;
+}
+
+.archiveFormInline2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.archiveFormInlineOriginThreshold {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 10px;
+}
+
+.archiveFormThresholdLabel {
+  width: 112px;
+}
+
+.archiveThresholdTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.archiveThresholdWarning {
+  color: #dc2626;
+  flex: 0 0 auto;
+}
+
+.archiveFormInline3 {
+  display: grid;
+  grid-template-columns: minmax(92px, 120px) repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.archiveFormQtyLabel {
+  width: 100%;
+}
+
+.archiveFormQtyInput {
+  width: 100%;
+}
+
+.archiveCurrencyInputWrap {
+  position: relative;
+}
+
+.archiveCurrencyPrefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.archiveCurrencyInput {
+  padding-left: 28px;
+}
+
+.archiveNotesInput {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.archiveModalActions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.archiveModalActionButton {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .archiveDesktopContainer {
+    width: auto;
+    max-width: 720px;
+  }
+
+  .archiveTopRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .archiveTopActions {
+    width: 100%;
+  }
+
+  .archiveTopActions .buttonAuto {
+    width: 100%;
+  }
+
+  .archiveFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveAddButton {
+    justify-self: stretch;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .archiveTableWrap {
+    height: auto;
+    max-height: 62vh;
+  }
+
+  .archiveStatsBox {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .archiveStatsItem {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .archiveFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveFormInlineOriginThreshold {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveFormThresholdLabel {
+    width: 100%;
+  }
+
+  .archiveFormSpan2 {
+    grid-column: span 1;
+  }
+
+  .archiveModalActions {
+    grid-template-columns: 1fr;
+  }
+}

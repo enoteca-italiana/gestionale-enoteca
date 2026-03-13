@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+coverage
+backup
+apps/**/dist
+apps/**/dev-dist
+apps/**/.vite
+apps/**/coverage
+package-lock.json

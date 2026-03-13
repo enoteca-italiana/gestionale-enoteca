@@ -1,5 +1,7 @@
 # Modello dati locale (localStorage)
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Obiettivo
 
 Simulare l’app completa senza Supabase/Sheets:
@@ -21,6 +23,20 @@ Tipo:
 - `inventory`: lista `Wine`
 - `history`: lista `LocalSession` (solo inviate)
 - `pending`: lista `LocalSession` (in coda)
+
+Campi `Wine` rilevanti nello stato attuale:
+
+- `category`
+- `name`
+- `age` (label UI: `ANNO`)
+- `producer`
+- `origin`
+- `purchasePrice`
+- `salePrice`
+- `qty`
+- `notes`
+- `warehouse` (calcolato: `purchasePrice × qty`)
+- `margin` (calcolato: `salePrice - purchasePrice`)
 
 ### Sessione
 
@@ -50,7 +66,11 @@ Eventi:
 
 ## Seed inventario
 
-Se `inventory` è vuoto, Home esegue seed da `mockWines`.
+- Seed iniziale da `mockWines`.
+- Presente migrazione automatica in `loadDb()`:
+  - mantiene i record esistenti;
+  - aggiunge i vini seed mancanti;
+  - arricchisce i record con eventuali nuovi campi senza perdere dati locali.
 
 ## Reset
 

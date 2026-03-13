@@ -1,5 +1,7 @@
 # Architettura
 
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
+
 ## Workspace
 
 - Root `package.json` con npm workspaces.
@@ -15,6 +17,7 @@
 
 - `/` → `HomePage`
 - `/admin` → `AdminPage`
+- `/admina` → `WineAdminPage` (archivio vini, desktop-first)
 
 ## Moduli chiave
 
@@ -28,14 +31,14 @@
 
 Asset logo:
 
-- `apps/scarichi-vini/public/logo.webp` (primario)
-- `apps/scarichi-vini/public/logo.png` (fallback)
-- `Logo.tsx` usa `<picture>` con fallback PNG.
+- `apps/scarichi-vini/public/logo.png` (asset unico usato in UI, ottimizzato).
+- `Logo.tsx` usa direttamente `logo.png`.
 
 ### Pagine
 
 - `src/pages/HomePage.tsx`
 - `src/pages/AdminPage.tsx`
+- `src/pages/admina/WineAdminPage.tsx`
 
 ### Home (sessione)
 
@@ -57,10 +60,33 @@ Asset logo:
   - `useAdminAuth.ts`
   - `storage.ts`
 
+### Admin archivio vini (`/admina`)
+
+- `src/pages/admina/`
+  - `WineAdminPage.tsx`
+  - `types.ts`
+  - `components/AdminArchiveToolbar.tsx`
+  - `components/AdminArchiveTable.tsx`
+  - `components/WineArchiveFormModal.tsx`
+
+Toolbar archivio:
+
+- filtri ottimizzati su una riga desktop;
+- box compatto statistiche (`Totale`, `Soglia`, `Esauriti`) con comportamento filtro (rimosso filtro `Tutte le giacenze`);
+- indicatori: `Totale` verde, `Soglia` ambra, `Esauriti` rosso;
+- stato selezionato dei tre pulsanti con colori invertiti (testo bianco su sfondo colorato).
+- colonna `ANNO`: se dato assente, cella vuota (senza placeholder).
+- colonna `Azioni`: include icona note (gialla se presenti, grigia/disabilitata se assenti) con preview note in modale.
+- ordinamento `A-Z / Z-A` su header `Categoria`, `Nome`, `Produttore`, `Provenienza`.
+
 ### Dati locali
 
 - `src/data/localDb.ts`
 - `src/data/useLocalDb.ts`
+- `src/data/mockWines.ts` (seed + dataset test)
+- `src/data/wineRepository.ts` (CRUD locale/Supabase con fallback schema legacy)
+- `src/data/categoryRepository.ts` (lista categorie gestite + upsert controllato)
+- `src/data/originRepository.ts` (lista provenienze gestite + upsert controllato)
 
 ### Settings runtime
 
@@ -79,3 +105,12 @@ Asset logo:
 
 - `registerSW()` avviene in `src/main.tsx`.
 - In dev viene eseguito `unregisterSwInDevOnce()` per evitare cache stale durante sviluppo.
+
+## Note stato attuale
+
+- Architettura ibrida:
+  - Home/Admin settings con persistenza locale.
+  - `/admina` predisposta per CRUD su Supabase con fallback locale.
+- Modello vino esteso (`purchasePrice`, `salePrice`, `warehouse`, `margin`, `notes`):
+  - `warehouse` e `margin` sono calcolati automaticamente.
+  - `threshold` gestisce la soglia bottiglie (`Vuoto` oppure `>=1`, mai `0`).

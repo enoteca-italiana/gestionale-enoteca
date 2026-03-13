@@ -1,30 +1,37 @@
 # DOCS — Enoteca Italiana / Scarichi Vini
 
-Questa cartella contiene il **DNA del progetto**: decisioni, architettura, flussi e regole operative.
+Questa cartella contiene la documentazione operativa allineata allo stato reale del progetto.
+
+Ultimo aggiornamento: **13/03/2026 01:09 CET**.
 
 ## Documenti
 
 - `01_REQUIREMENTS.md`
-  - Requisiti funzionali e non funzionali (baseline) — esclusi Supabase/Google per la modalità locale.
+  - baseline funzionale mobile/PWA.
 - `02_ARCHITECTURE.md`
-  - Struttura del codice, moduli, routing, dipendenze, invarianti.
+  - routing, moduli e invarianti architetturali.
 - `03_LOCAL_STORAGE_MODEL.md`
-  - Modello dati locale (inventario, storico, sospesi), persistenza e sincronizzazione intra-tab.
+  - modello dati locale, seed, migrazione e persistenza.
 - `04_USER_FLOW_SESSION.md`
-  - Flusso utente: sessione scarico, ricerca, vincoli quantità, conferma, comportamento offline.
+  - flusso sessione scarico lato Home.
 - `05_ADMIN.md`
-  - Area Admin: login, settings, storico, sospesi, reset (storico/totale).
+  - differenza tra `/admin` (impostazioni) e `/admina` (archivio vini).
 - `06_OFFLINE_PWA.md`
-  - Offline reale (Service Worker), caching, update, note dev/prod.
+  - comportamento offline e Service Worker.
 - `07_OPERATIONS_BACKUP.md`
-  - Operatività: comandi, preview, backup, naming e policy.
+  - operatività dev, backup e handover su altro PC.
 
-## Regole di mantenimento
+Documenti root correlati:
 
-- Questa cartella va aggiornata **ad ogni modifica significativa**:
-  - nuovo flusso
-  - cambio struttura moduli
-  - cambio modello dati
-  - cambio comportamento offline/PWA
-  - nuove opzioni Admin
-- Obiettivo: permettere a un dev di capire **al 100%** cosa fa l’app e dove intervenire.
+- `PROJECT_STATUS.md` (stato sintetico + quick start nuovo PC)
+- `SCHEDA TECNICA ENOTECA ITALIANA.md` (documento esteso di riferimento)
+
+## Regola di manutenzione
+
+Aggiornare questi file ad ogni cambiamento significativo di:
+
+- flussi UX/UI
+- modello dati
+- routing o struttura moduli
+- comportamento offline/PWA
+- operatività backup/deploy/handover

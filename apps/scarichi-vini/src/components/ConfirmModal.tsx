@@ -28,7 +28,7 @@ export function ConfirmModal({
           <button className="button" type="button" onClick={onConfirm}>
             {confirmLabel}
           </button>
-          <button className="button buttonSecondary" type="button" onClick={onCancel}>
+          <button className="button buttonSecondary buttonCancel" type="button" onClick={onCancel}>
             {cancelLabel}
           </button>
         </div>
