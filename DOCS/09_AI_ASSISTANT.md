@@ -1,6 +1,6 @@
 # Assistente AI Archivio
 
-Ultimo aggiornamento: **13/03/2026 16:45 CET**.
+Ultimo aggiornamento: **13/03/2026 17:53 CET**.
 
 ## Scopo
 
@@ -16,11 +16,12 @@ Fornire in `/admina` un assistente conversazionale per analisi archivio vini (gi
 
 - Header: titolo `Assistente AI` con icona AI.
 - Vista chat:
-  - area messaggi;
-  - box input domanda + pulsante `Invia`;
-  - nota metrica sintetica valore magazzino.
+  - area messaggi verticale (uno sotto l'altro);
+  - box input domanda + pulsante `Invia`.
 - Vista impostazioni:
   - solo `OpenAI API key`;
+  - pulsante `Salva`;
+  - pulsante `Importa .txt` per caricare la chiave da file;
   - solo selettore `Tipo agent`.
   - nessuna area chat visibile in questa vista.
 
@@ -58,6 +59,7 @@ Chiavi localStorage:
 
 - Nessuna chiave API hardcoded nel codice.
 - Chiave inserita manualmente in UI e mantenuta in localStorage browser.
+- Validazione/sanitizzazione della chiave: viene accettata solo una stringa valida `sk-...`.
 - L’assistente non scrive su Supabase.
 - In caso di risposta vuota/errore rete, feedback esplicito in chat.
 

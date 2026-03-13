@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import type { Wine } from '@/domain/types';
 
 type ChatMessage = {
@@ -16,9 +16,13 @@ const AGENT_MODELS = [
   { value: 'gpt-4o-mini', label: 'GPT-4o mini' }
 ] as const;
 
-function formatMoney(value?: number) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return '—';
-  return `${value.toFixed(2).replace('.', ',')}€`;
+function extractApiKey(raw: string): string {
+  const normalized = raw.replace(/[\r\n\t]+/g, ' ').trim();
+  const start = normalized.indexOf('sk-');
+  if (start < 0) return '';
+  const candidate = normalized.slice(start);
+  const sanitized = candidate.replace(/[^A-Za-z0-9._~+/\-=]/g, '');
+  return /^sk-[A-Za-z0-9._~+/\-=]{20,}$/.test(sanitized) ? sanitized : '';
 }
 
 function buildInventorySnapshot(wines: Wine[]) {
@@ -121,9 +125,10 @@ export function AiAssistantModal({
     return AGENT_MODELS.some((option) => option.value === savedModel) ? savedModel : DEFAULT_MODEL;
   });
   const [showSettings, setShowSettings] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [apiSaved, setApiSaved] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const importApiKeyInputRef = useRef<HTMLInputElement | null>(null);
 
   const snapshot = useMemo(() => buildInventorySnapshot(wines), [wines]);
 
@@ -152,21 +157,39 @@ export function AiAssistantModal({
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, open]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_API_KEY, apiKey.trim());
+  const saveAiSettings = () => {
+    const safeApiKey = extractApiKey(apiKey);
+    if (!safeApiKey) return;
+    setApiKey(safeApiKey);
+    localStorage.setItem(STORAGE_API_KEY, safeApiKey);
     localStorage.setItem(STORAGE_MODEL, model || DEFAULT_MODEL);
-  }, [apiKey, model]);
+    setApiSaved(true);
+    setTimeout(() => setApiSaved(false), 1500);
+  };
+
+  const handleImportApiKeyFromTxt = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const content = await file.text();
+    const importedKey = extractApiKey(content);
+    if (!importedKey) return;
+    setApiKey(importedKey);
+    localStorage.setItem(STORAGE_API_KEY, importedKey);
+    localStorage.setItem(STORAGE_MODEL, model || DEFAULT_MODEL);
+    setApiSaved(true);
+    setTimeout(() => setApiSaved(false), 1500);
+  };
 
   const send = async () => {
     const question = prompt.trim();
     if (!question || busy) return;
-    if (!apiKey.trim()) {
-      setError('Inserisci una chiave API OpenAI valida nelle impostazioni AI.');
+    const safeApiKey = extractApiKey(apiKey);
+    if (!safeApiKey) {
       setShowSettings(true);
       return;
     }
 
-    setError(null);
     const nextUserMessage: ChatMessage = {
       id: `${Date.now()}_u`,
       role: 'user',
@@ -219,7 +242,7 @@ export function AiAssistantModal({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey.trim()}`
+          Authorization: `Bearer ${safeApiKey}`
         },
         body: JSON.stringify({
           model: model || DEFAULT_MODEL,
@@ -255,7 +278,6 @@ export function AiAssistantModal({
       ]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Errore AI imprevisto.';
-      setError(message);
       setMessages((prev) => [
         ...prev,
         {
@@ -284,25 +306,54 @@ export function AiAssistantModal({
         </div>
 
         {showSettings ? (
-          <div className="archiveAiSettings">
-            <input
-              className="input archiveAiSettingsInput"
-              type="password"
-              placeholder="OpenAI API key (sk-...)"
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-            />
-            <select
-              className="input archiveAiSettingsInput"
-              value={model}
-              onChange={(event) => setModel(event.target.value)}
-            >
-              {AGENT_MODELS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <div className="archiveAiSettingsStage">
+            <div className="archiveAiSettings">
+              <div className="archiveAiApiBar">
+                <input
+                  type="text"
+                  placeholder="OpenAI API key (sk-...)"
+                  value={apiKey}
+                  onChange={(event) => setApiKey(event.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="input archiveAiSettingsInput archiveAiApiInput"
+                />
+                <button
+                  className="button buttonAuto archiveAiSaveApiButton"
+                  type="button"
+                  onClick={saveAiSettings}
+                >
+                  {apiSaved ? 'Salvata' : 'Salva'}
+                </button>
+              </div>
+              <div className="archiveAiSettingsTools">
+                <button
+                  className="button buttonSecondary buttonAuto archiveAiImportApiButton"
+                  type="button"
+                  onClick={() => importApiKeyInputRef.current?.click()}
+                >
+                  Importa .txt
+                </button>
+                <input
+                  ref={importApiKeyInputRef}
+                  type="file"
+                  accept=".txt,text/plain"
+                  className="archiveAiImportApiInput"
+                  onChange={(event) => void handleImportApiKeyFromTxt(event)}
+                />
+              </div>
+              <select
+                className="input archiveAiSettingsInput"
+                value={model}
+                onChange={(event) => setModel(event.target.value)}
+              >
+                {AGENT_MODELS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : null}
 
@@ -354,11 +405,6 @@ export function AiAssistantModal({
               </div>
             </div>
 
-            {error ? <div className="errorText mt8">{error}</div> : null}
-
-            <div className="archiveAiFooterHint">
-              Le risposte usano i dati archivio correnti. Valore magazzino stimato: {formatMoney(snapshot.stockValue)}.
-            </div>
           </>
         ) : null}
         <div className="archiveAiBottomActions">

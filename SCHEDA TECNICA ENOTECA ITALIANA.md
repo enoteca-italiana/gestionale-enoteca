@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **13/03/2026 16:45 CET**.
+Ultimo aggiornamento: **13/03/2026 17:53 CET**.
 
 ## Introduzione
 
@@ -26,6 +26,7 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
 - assistente AI archivio (`/admina`) con modale dedicato:
   - chat analitica su dati correnti archivio;
   - vista impostazioni separata con soli campi chiave API e tipo agent;
+  - import chiave da file `.txt` e validazione/sanitizzazione automatica formato `sk-...`;
   - nessuna scrittura automatica su Supabase (solo consultazione/analisi).
 
 ---

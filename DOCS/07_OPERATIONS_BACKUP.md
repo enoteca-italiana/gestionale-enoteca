@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **13/03/2026 16:48 CET**.
+Ultimo aggiornamento: **13/03/2026 17:53 CET**.
 
 ## Dev server
 
@@ -70,7 +70,7 @@ Cartella:
 Naming richiesto dall’utente:
 
 - es: `backup_13 Giovedi_15.40.tar.gz`
-- ultimo backup creato: `backup_13 Venerdi_16.48.tar.gz`
+- ultimo backup creato: `backup_13 Venerdi_17.53.tar.gz`
 
 Script:
 

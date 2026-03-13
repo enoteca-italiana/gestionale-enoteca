@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **13/03/2026 16:45 CET**.
+Ultimo aggiornamento: **13/03/2026 17:53 CET**.
 
 ## Scopo di questo file
 
@@ -163,6 +163,9 @@ Comandi root:
     - apertura da pulsante AI in toolbar
     - modale conversazionale con analisi dati archivio
     - vista `Impostazioni` dedicata con soli campi `API key` + `Tipo agent`
+    - import chiave da file `.txt` nelle impostazioni
+    - chat allineata in colonna verticale (stile chat classica)
+    - sanitizzazione robusta della chiave (`sk-...`) prima della chiamata API
     - nessuna scrittura dati su DB (solo analisi)
 - PWA:
   - service worker + caching app shell/assets
@@ -225,7 +228,7 @@ Comandi root:
 - Documentazione:
   - mantenuta una sola scheda tecnica (`SCHEDA TECNICA ENOTECA ITALIANA.md` in root)
 - Backup:
-  - creato nuovo archivio: `backup/backup_13 Venerdi_16.48.tar.gz`
+  - creato nuovo archivio: `backup/backup_13 Venerdi_17.53.tar.gz`
 - GitHub / Deploy hygiene:
   - push su `main` completato con `gh auth login` (device flow) e script `./scripts/commit_github.sh`
   - rimossi dal tracking i file pesanti non necessari al deploy:
@@ -246,12 +249,13 @@ Comandi root:
   - impostazioni admin: import archivio CSV con validazione e conferma
   - import CSV con sostituzione totale record archivio (Supabase + cache locale allineata)
 
-### Verifica qualità (13/03/2026 16:45 CET)
+### Verifica qualità (13/03/2026 17:53 CET)
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅
 - `npm run test` ✅ (3 test passati)
 - `npm run build` ✅
+- `npm run test:coverage` ✅
 
 ---
 

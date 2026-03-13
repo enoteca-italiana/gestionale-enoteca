@@ -318,21 +318,48 @@
   padding: 10px 12px;
   border-radius: 12px;
   font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.archiveAiSettingsStage {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
 }
 
 .archiveAiSettings {
-  border: 1px solid #e4d8df;
-  background: #f8f4ee;
-  border-radius: 14px;
-  padding: 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(220px, 0.55fr);
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
+  width: min(520px, 100%);
+  margin: 0 auto;
 }
 
 .archiveAiSettings > * {
   min-width: 0;
+}
+
+.archiveAiApiBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0;
+  align-items: center;
+  border: 1px solid #cfd5de;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  width: 100%;
+  min-height: 52px;
 }
 
 .archiveAiSettingsInput {
@@ -343,19 +370,60 @@
   padding: 10px 12px;
 }
 
+.archiveAiApiInput {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.archiveAiSaveApiButton {
+  min-width: 88px;
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-self: end;
+  border-radius: 0;
+  height: 52px;
+}
+
+.archiveAiSettingsTools {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.archiveAiImportApiButton {
+  width: auto;
+  min-width: 112px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.archiveAiImportApiInput {
+  display: none;
+}
+
+
+.archiveAiSettings > select.archiveAiSettingsInput {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 12px;
+}
+
 .archiveAiMessages {
   border: 0;
   background: transparent;
   border-radius: 0;
   padding: 12px;
   overflow-y: auto;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   min-height: 0;
 }
 
 .archiveAiMessage {
-  max-width: min(84%, 700px);
+  width: min(100%, 780px);
   border-radius: 14px;
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
@@ -363,13 +431,13 @@
 }
 
 .archiveAiMessageUser {
-  justify-self: end;
+  align-self: flex-start;
   background: #f7edf3;
   border-color: #e7cedd;
 }
 
 .archiveAiMessageAssistant {
-  justify-self: start;
+  align-self: flex-start;
   background: #f5f7fa;
 }
 
@@ -431,11 +499,12 @@
   gap: 8px;
   flex-wrap: nowrap;
   overflow-x: auto;
+  margin-top: auto;
   padding-bottom: 2px;
 }
 
 .archiveAiBottomActions > * {
-  flex: 0 0 180px;
+  flex: 0 0 220px;
 }
 
 .archiveAiToggleSettingsContent {
@@ -443,6 +512,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .archiveAiToggleSettingsIcon {
@@ -450,15 +520,6 @@
   height: 14px;
   object-fit: contain;
   display: block;
-}
-
-.archiveAiFooterHint {
-  color: #e8cfe0;
-  font-size: 12px;
-}
-
-.archiveAiModalCard .errorText {
-  color: #ffd2dc;
 }
 
 @media (max-width: 1500px) {
@@ -952,7 +1013,21 @@
   }
 
   .archiveAiSettings {
+    width: 100%;
+  }
+
+  .archiveAiApiBar {
     grid-template-columns: 1fr;
+    border-radius: 14px;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+  }
+
+  .archiveAiSaveApiButton {
+    width: 100%;
+    justify-self: stretch;
+    border-radius: 12px;
   }
 
   .archiveAiBottomActions {
