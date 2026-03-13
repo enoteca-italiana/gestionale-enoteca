@@ -5,3 +5,11 @@ dist
 .env
 .env.*
 !.env.example
+
+# Backup and local archives (never deploy)
+backup/*.tar.gz
+backup/*.zip
+
+# Build/dev generated artifacts
+apps/scarichi-vini/dev-dist/
+*.tsbuildinfo
