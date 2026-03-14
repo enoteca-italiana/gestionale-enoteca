@@ -19,7 +19,6 @@ describe('localDb', () => {
     expect(Array.isArray(db.inventory)).toBe(true);
     expect(db.inventory.length).toBe(0);
     expect(Array.isArray(db.history)).toBe(true);
-    expect(Array.isArray(db.pending)).toBe(true);
 
     const persisted = localStorage.getItem('scarichi.localDb.v1');
     expect(persisted).toBeTruthy();
@@ -30,8 +29,7 @@ describe('localDb', () => {
       'scarichi.localDb.v1',
       JSON.stringify({
         inventory: [{ id: 'legacy-1', name: 'Legacy' }],
-        history: [],
-        pending: []
+        history: []
       })
     );
 

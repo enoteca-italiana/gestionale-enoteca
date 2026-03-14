@@ -333,6 +333,47 @@
   justify-content: center;
 }
 
+.adminHistoryModalCard {
+  width: min(900px, 96vw);
+}
+
+.adminHistoryDetailList {
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+}
+
+.adminHistoryListSection {
+  margin-top: 12px;
+}
+
+.adminHistoryListSection .listItemButton {
+  background: #f7f1e6;
+  border-color: #e6dcc8;
+}
+
+.adminHistoryDateLine {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.adminHistoryTime {
+  font-weight: 500;
+}
+
+.adminHistoryResetDock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  width: min(calc(100vw - 32px), 688px);
+  z-index: 45;
+}
+
+.adminHistoryResetSpacer {
+  height: 96px;
+}
+
 @media (max-width: 768px) {
   .adminSettingsSection {
     padding: 12px;

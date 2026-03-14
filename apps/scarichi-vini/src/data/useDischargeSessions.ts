@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   clearDischargeSessionsByStatus,
-  deleteDischargeSession,
   listDischargeSessions,
   type DischargeSessionSummary
 } from '@/data/dischargeRepository';
 
 export function useDischargeSessions() {
   const [history, setHistory] = useState<DischargeSessionSummary[]>([]);
-  const [pending, setPending] = useState<DischargeSessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,12 +14,8 @@ export function useDischargeSessions() {
     setLoading(true);
     setError(null);
     try {
-      const [submittedRows, pendingRows] = await Promise.all([
-        listDischargeSessions('submitted'),
-        listDischargeSessions('pending')
-      ]);
+      const submittedRows = await listDischargeSessions('submitted');
       setHistory(submittedRows);
-      setPending(pendingRows);
     } catch (err) {
       console.error('[useDischargeSessions] refresh failed', err);
       setError('Impossibile caricare le sessioni da Supabase.');
@@ -34,19 +28,6 @@ export function useDischargeSessions() {
     void refresh();
   }, [refresh]);
 
-  const deletePending = useCallback(
-    async (id: string) => {
-      await deleteDischargeSession(id);
-      await refresh();
-    },
-    [refresh]
-  );
-
-  const clearPending = useCallback(async () => {
-    await clearDischargeSessionsByStatus('pending');
-    await refresh();
-  }, [refresh]);
-
   const clearHistory = useCallback(async () => {
     await clearDischargeSessionsByStatus('submitted');
     await refresh();
@@ -54,12 +35,9 @@ export function useDischargeSessions() {
 
   return {
     history,
-    pending,
     loading,
     error,
     refresh,
-    deletePending,
-    clearPending,
     clearHistory
   };
 }

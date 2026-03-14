@@ -16,7 +16,6 @@ export type LocalSession = {
 export type LocalDbState = {
   inventory: Wine[];
   history: LocalSession[];
-  pending: LocalSession[];
 };
 
 const DB_KEY = 'scarichi.localDb.v1';
@@ -35,8 +34,7 @@ function safeParse<T>(raw: string | null): T | null {
 function seed(): LocalDbState {
   return {
     inventory: [],
-    history: [],
-    pending: []
+    history: []
   };
 }
 
@@ -45,8 +43,7 @@ export function loadDb(): LocalDbState {
   if (
     !parsed ||
     !Array.isArray(parsed.inventory) ||
-    !Array.isArray(parsed.history) ||
-    !Array.isArray(parsed.pending)
+    !Array.isArray(parsed.history)
   ) {
     const s = seed();
     saveDb(s);

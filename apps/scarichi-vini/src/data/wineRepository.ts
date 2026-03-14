@@ -354,3 +354,33 @@ export async function replaceAllWines(inputRows: ArchiveCsvWineInput[]): Promise
 
   return sorted;
 }
+
+export async function updateThresholdForAllWines(rawThreshold: number): Promise<number> {
+  const threshold = normalizeThreshold(rawThreshold);
+  if (threshold === undefined) {
+    throw new Error('Valore soglia non valido');
+  }
+
+  const current = getLocalInventory();
+  if (current.length === 0) return 0;
+
+  if (supabase) {
+    const { error } = await supabase
+      .from('wines')
+      .update({ threshold })
+      .not('id', 'is', null);
+    if (error && !isSchemaColumnError(error)) {
+      console.error('[wineRepository] Supabase bulk threshold update error', error);
+      throw error;
+    }
+  }
+
+  const updated = sortWines(current.map((wine) => ({ ...wine, threshold })));
+  persistLocalInventory(updated);
+
+  for (const wine of updated) {
+    await syncWineUpsert(wine);
+  }
+
+  return updated.length;
+}

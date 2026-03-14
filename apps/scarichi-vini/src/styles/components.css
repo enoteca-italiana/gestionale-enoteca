@@ -200,6 +200,17 @@
   padding: 12px;
 }
 
+.listItemButton {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--border);
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .consultiveList {
   max-height: calc(100dvh - 250px);
   overflow-y: auto;

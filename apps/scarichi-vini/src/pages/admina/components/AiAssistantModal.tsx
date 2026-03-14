@@ -194,7 +194,6 @@ function buildAiContext(wines: Wine[], question: string, snapshot: ReturnType<ty
 
 function buildSessionsContext(
   submittedSessions: DischargeSessionSummary[],
-  pendingSessions: DischargeSessionSummary[],
   submittedItems: DischargeSessionItemDetail[]
 ) {
   const topDischargedMap = new Map<
@@ -228,18 +227,13 @@ function buildSessionsContext(
   }
 
   const totalSubmittedQty = submittedSessions.reduce((sum, s) => sum + Math.max(0, s.totalQty), 0);
-  const totalPendingQty = pendingSessions.reduce((sum, s) => sum + Math.max(0, s.totalQty), 0);
-
   return {
     summary: {
       submittedSessions: submittedSessions.length,
-      pendingSessions: pendingSessions.length,
       totalSubmittedQty,
-      totalPendingQty,
       lastSubmittedAt: submittedSessions[0]?.submittedAt ?? null
     },
     recentSubmittedSessions: submittedSessions.slice(0, 30),
-    recentPendingSessions: pendingSessions.slice(0, 30),
     topDischargedWines: Array.from(topDischargedMap.values())
       .sort((a, b) => b.qtyTotal - a.qtyTotal)
       .slice(0, 30)
@@ -318,7 +312,6 @@ export function AiAssistantModal({
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
   const [submittedSessions, setSubmittedSessions] = useState<DischargeSessionSummary[]>([]);
-  const [pendingSessions, setPendingSessions] = useState<DischargeSessionSummary[]>([]);
   const [submittedItems, setSubmittedItems] = useState<DischargeSessionItemDetail[]>([]);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
   const [model, setModel] = useState(() => {
@@ -351,20 +344,17 @@ export function AiAssistantModal({
 
     async function loadSessionsData() {
       try {
-        const [submitted, pending, items] = await Promise.all([
+        const [submitted, items] = await Promise.all([
           listDischargeSessions('submitted'),
-          listDischargeSessions('pending'),
           listSubmittedDischargeItemsForAi(1200)
         ]);
         if (cancelled) return;
         setSubmittedSessions(submitted);
-        setPendingSessions(pending);
         setSubmittedItems(items);
         setSessionsLoaded(true);
       } catch {
         if (cancelled) return;
         setSubmittedSessions([]);
-        setPendingSessions([]);
         setSubmittedItems([]);
         setSessionsLoaded(false);
       }
@@ -431,12 +421,12 @@ export function AiAssistantModal({
         'Se mancano dati dichiaralo chiaramente.',
         'Non inventare numeri.',
         'Per richieste di classifica (top/bottom margini, quantità, valore magazzino) usa SEMPRE i leaderboards globali.',
-        'Usa anche il blocco sessions per risposte su storico, pending, andamenti temporali e vini più scaricati.'
+        'Usa anche il blocco sessions per risposte su storico, andamenti temporali e vini più scaricati.'
       ].join(' ');
 
       const contextPayload = {
         inventory: buildAiContext(wines, question, snapshot),
-        sessions: buildSessionsContext(submittedSessions, pendingSessions, submittedItems),
+        sessions: buildSessionsContext(submittedSessions, submittedItems),
         meta: {
           sessionsLoaded
         }

@@ -213,12 +213,6 @@ async function reconcileSubmittedSessionStock(
   }
 }
 
-export async function deleteDischargeSession(id: string): Promise<void> {
-  const client = requireSupabase();
-  const { error } = await client.from('discharge_sessions').delete().eq('id', id);
-  if (error) throw error;
-}
-
 export async function clearDischargeSessionsByStatus(status: DischargeStatus): Promise<void> {
   const client = requireSupabase();
   const { error } = await client.from('discharge_sessions').delete().eq('status', status);
@@ -257,4 +251,42 @@ export async function listSubmittedDischargeItemsForAi(limit = 500): Promise<Dis
       qty: Math.max(0, Number(row.qty ?? 0))
     };
   });
+}
+
+export async function listSubmittedDischargeSessionItems(
+  sessionId: string
+): Promise<DischargeSessionItemDetail[]> {
+  const client = requireSupabase();
+
+  const { data, error } = await client
+    .from('discharge_session_items')
+    .select(
+      'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, producer, origin, category, supplier)'
+    )
+    .eq('session_id', sessionId)
+    .eq('discharge_sessions.status', 'submitted');
+
+  if (error) throw error;
+
+  const rows = ((data ?? []) as SessionItemRow[]).map((row) => {
+    const session = Array.isArray(row.discharge_sessions) ? row.discharge_sessions[0] : row.discharge_sessions;
+    const wine = Array.isArray(row.wines) ? row.wines[0] : row.wines;
+
+    return {
+      sessionId: row.session_id,
+      sessionStatus: session?.status ?? 'submitted',
+      createdAt: session?.created_at ? new Date(session.created_at).getTime() : Date.now(),
+      submittedAt: session?.submitted_at ? new Date(session.submitted_at).getTime() : undefined,
+      wineId: row.wine_id,
+      wineName: wine?.name?.trim() || row.wine_id,
+      producer: wine?.producer ?? undefined,
+      origin: wine?.origin ?? undefined,
+      category: wine?.category ?? undefined,
+      supplier: wine?.supplier ?? undefined,
+      qty: Math.max(0, Number(row.qty ?? 0))
+    } satisfies DischargeSessionItemDetail;
+  });
+
+  rows.sort((a, b) => b.qty - a.qty || a.wineName.localeCompare(b.wineName, 'it-IT'));
+  return rows;
 }

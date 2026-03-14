@@ -4,12 +4,11 @@ import { useDischargeSessions } from '@/data/useDischargeSessions';
 import { AdminHistory } from '@/pages/admin/AdminHistory';
 import { AdminHome, type AdminRootSection } from '@/pages/admin/AdminHome';
 import { AdminLogin } from '@/pages/admin/AdminLogin';
-import { AdminPending } from '@/pages/admin/AdminPending';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { useAdminAuth } from '@/pages/admin/useAdminAuth';
 
-type AdminSection = 'home' | 'sessions' | 'history' | 'pending';
-type SettingsAction = 'password' | 'import' | 'reset' | null;
+type AdminSection = 'home' | 'history';
+type SettingsAction = 'password' | 'import' | 'threshold' | 'reset' | null;
 
 export function AdminGate() {
   const { ready, isAuthed, login, logout, changePassword } = useAdminAuth();
@@ -19,17 +18,14 @@ export function AdminGate() {
   const { hardResetAll } = useLocalDb();
   const {
     history,
-    pending,
     loading: sessionsLoading,
     error: sessionsError,
-    clearHistory,
-    clearPending,
-    deletePending
+    clearHistory
   } = useDischargeSessions();
 
   const openRootSection = (target: AdminRootSection) => {
-    if (target === 'sessions') {
-      setSection('sessions');
+    if (target === 'history') {
+      setSection('history');
       return;
     }
     setSettingsAction(target);
@@ -86,60 +82,14 @@ export function AdminGate() {
     <>
       {section === 'home' ? <AdminHome onOpen={openRootSection} /> : null}
 
-      {section === 'sessions' ? (
-        <div className="adminCenterSection">
-          <div className="card adminCard">
-            <div className="title">Sessioni</div>
-            <div className="subtle mt6">Seleziona il registro sessioni.</div>
-
-            <div className="list mt12">
-              <button className="button adminHomeAction" type="button" onClick={() => setSection('history')}>
-                Storico sessioni
-              </button>
-              <button className="button adminHomeAction" type="button" onClick={() => setSection('pending')}>
-                Sessioni in sospeso
-              </button>
-              <button className="button adminHomeAction" type="button" onClick={() => setSection('home')}>
-                Indietro
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {section === 'history' ? (
         <AdminHistory
           history={history}
-          onBack={() => setSection('sessions')}
           onReset={() => {
             void clearHistory()
-              .then(() => setToast('Storico resettato'))
               .catch((error) => {
                 console.error('[AdminGate] clearHistory failed', error);
                 setToast('Errore reset storico');
-              });
-          }}
-        />
-      ) : null}
-
-      {section === 'pending' ? (
-        <AdminPending
-          pending={pending}
-          onBack={() => setSection('sessions')}
-          onDelete={(id) => {
-            void deletePending(id)
-              .then(() => setToast('Sessione eliminata'))
-              .catch((error) => {
-                console.error('[AdminGate] deletePending failed', error);
-                setToast('Errore eliminazione sessione');
-              });
-          }}
-          onClear={() => {
-            void clearPending()
-              .then(() => setToast('Sospesi eliminati'))
-              .catch((error) => {
-                console.error('[AdminGate] clearPending failed', error);
-                setToast('Errore eliminazione sospesi');
               });
           }}
         />

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { storageKeys } from '@/pages/admin/storage';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { parseArchiveCsv, type ArchiveCsvWineInput } from '@/data/archiveCsv';
-import { replaceAllWines } from '@/data/wineRepository';
+import { replaceAllWines, updateThresholdForAllWines } from '@/data/wineRepository';
 import { sha256Base64 } from '@/pages/admin/crypto';
 
 export function AdminSettings({
@@ -18,7 +18,7 @@ export function AdminSettings({
   onLogout: () => void;
   onHardReset: () => void;
   onBack?: () => void;
-  openAction?: 'password' | 'import' | 'reset' | null;
+  openAction?: 'password' | 'import' | 'threshold' | 'reset' | null;
   onActionHandled?: () => void;
   hidePanel?: boolean;
 }) {
@@ -40,6 +40,14 @@ export function AdminSettings({
   const [importOk, setImportOk] = useState<string | null>(null);
   const [importConfirm, setImportConfirm] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [thresholdModalOpen, setThresholdModalOpen] = useState(false);
+  const [thresholdValue, setThresholdValue] = useState('');
+  const [thresholdError, setThresholdError] = useState<string | null>(null);
+  const [thresholdConfirm1, setThresholdConfirm1] = useState(false);
+  const [thresholdConfirm2, setThresholdConfirm2] = useState(false);
+  const [thresholdPin, setThresholdPin] = useState('');
+  const [thresholdPinError, setThresholdPinError] = useState<string | null>(null);
+  const [thresholdBusy, setThresholdBusy] = useState(false);
 
   const canChange = useMemo(
     () => currentPassword.length > 0 && newPassword.length >= 4,
@@ -60,6 +68,15 @@ export function AdminSettings({
       setImportError(null);
       setImportOk(null);
       setImportModalOpen(true);
+      onActionHandled?.();
+      return;
+    }
+    if (openAction === 'threshold') {
+      setThresholdError(null);
+      setThresholdPinError(null);
+      setThresholdPin('');
+      setThresholdValue('');
+      setThresholdModalOpen(true);
       onActionHandled?.();
       return;
     }
@@ -122,6 +139,50 @@ export function AdminSettings({
     }
   };
 
+  const parseThresholdValue = () => {
+    const parsed = Number(thresholdValue.trim());
+    if (!Number.isFinite(parsed)) return null;
+    const rounded = Math.round(parsed);
+    if (rounded < 1) return null;
+    return rounded;
+  };
+
+  const confirmBulkThresholdWithPin = async () => {
+    if (thresholdBusy) return;
+    const nextThreshold = parseThresholdValue();
+    if (nextThreshold === null) {
+      setThresholdError('Inserisci una soglia valida (numero intero >= 1).');
+      return;
+    }
+    setThresholdPinError(null);
+    setThresholdBusy(true);
+    try {
+      const storedHash = localStorage.getItem(storageKeys.adminPasswordHash);
+      if (!storedHash) {
+        setThresholdPinError('PIN admin non disponibile');
+        return;
+      }
+      const pinHash = await sha256Base64(thresholdPin.trim());
+      if (pinHash !== storedHash) {
+        setThresholdPinError('PIN non corretto');
+        return;
+      }
+      await updateThresholdForAllWines(nextThreshold);
+      setThresholdConfirm2(false);
+      setThresholdModalOpen(false);
+      setThresholdValue('');
+      setThresholdPin('');
+      setThresholdError(null);
+      setThresholdPinError(null);
+    } catch (error) {
+      setThresholdPinError(
+        error instanceof Error ? error.message : 'Errore durante aggiornamento soglie'
+      );
+    } finally {
+      setThresholdBusy(false);
+    }
+  };
+
   const confirmResetWithPin = async () => {
     if (resetBusy) return;
     setResetPinError(null);
@@ -174,10 +235,148 @@ export function AdminSettings({
         </div>
       ) : null}
 
+      {thresholdModalOpen ? (
+        <div className="modalOverlay" role="dialog" aria-modal="true">
+          <div className="modalCard">
+            <div className="modalTitle">Imposta soglia unica</div>
+            <div className="modalDescription">
+              Imposta un valore soglia uguale per tutti i vini in archivio.
+            </div>
+            <div className="mt12">
+              <input
+                className="input adminInput"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                step={1}
+                placeholder="Inserisci soglia"
+                value={thresholdValue}
+                onChange={(e) => {
+                  setThresholdValue(e.target.value);
+                  if (thresholdError) setThresholdError(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  const nextThreshold = parseThresholdValue();
+                  if (nextThreshold === null) {
+                    setThresholdError('Inserisci una soglia valida (numero intero >= 1).');
+                    return;
+                  }
+                  setThresholdConfirm1(true);
+                }}
+              />
+            </div>
+            {thresholdError ? <div className="errorText mt10">{thresholdError}</div> : null}
+            <div className="modalActions">
+              <button
+                className="button"
+                type="button"
+                onClick={() => {
+                  const nextThreshold = parseThresholdValue();
+                  if (nextThreshold === null) {
+                    setThresholdError('Inserisci una soglia valida (numero intero >= 1).');
+                    return;
+                  }
+                  setThresholdConfirm1(true);
+                }}
+              >
+                Applica soglia
+              </button>
+              <button
+                className="button buttonSecondary buttonCancel"
+                type="button"
+                onClick={() => {
+                  if (thresholdBusy) return;
+                  setThresholdModalOpen(false);
+                  setThresholdConfirm1(false);
+                  setThresholdConfirm2(false);
+                  setThresholdValue('');
+                  setThresholdPin('');
+                  setThresholdError(null);
+                  setThresholdPinError(null);
+                }}
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <ConfirmModal
+        open={thresholdConfirm1}
+        title="Confermare nuova soglia?"
+        description={`Confermando, tutti i vini in archivio verranno aggiornati con la soglia ${
+          parseThresholdValue() ?? 'selezionata'
+        }.`}
+        confirmLabel="Continua"
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          setThresholdConfirm1(false);
+          setThresholdPin('');
+          setThresholdPinError(null);
+          setThresholdConfirm2(true);
+        }}
+        onCancel={() => setThresholdConfirm1(false)}
+      />
+
+      {thresholdConfirm2 ? (
+        <div className="modalOverlay" role="dialog" aria-modal="true">
+          <div className="modalCard">
+            <div className="modalTitle">Conferma modifica soglie</div>
+            <div className="modalDescription">
+              Inserisci il PIN admin per applicare la soglia a tutti i vini in archivio.
+            </div>
+            <div className="mt12">
+              <input
+                className="input adminInput"
+                type="password"
+                inputMode="numeric"
+                placeholder="Inserisci PIN admin"
+                value={thresholdPin}
+                onChange={(e) => {
+                  setThresholdPin(e.target.value);
+                  if (thresholdPinError) setThresholdPinError(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  void confirmBulkThresholdWithPin();
+                }}
+              />
+            </div>
+            {thresholdPinError ? <div className="errorText mt10">{thresholdPinError}</div> : null}
+            <div className="modalActions">
+              <button
+                className="button"
+                type="button"
+                disabled={thresholdBusy || thresholdPin.trim().length === 0}
+                onClick={() => void confirmBulkThresholdWithPin()}
+              >
+                {thresholdBusy ? 'Verifica…' : 'Sì, applica soglia'}
+              </button>
+              <button
+                className="button buttonSecondary buttonCancel"
+                type="button"
+                onClick={() => {
+                  if (thresholdBusy) return;
+                  setThresholdConfirm2(false);
+                  setThresholdPin('');
+                  setThresholdPinError(null);
+                }}
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <ConfirmModal
         open={reset1}
         title="Reset totale?"
-        description="Verrà cancellato l'intero inventario, incluso storico e sospesi. Azione definitiva."
+        description="Verrà cancellato l'intero inventario, incluso lo storico. Azione definitiva."
         confirmLabel="Continua"
         cancelLabel="Annulla"
         onConfirm={() => {
@@ -194,7 +393,7 @@ export function AdminSettings({
           <div className="modalCard">
             <div className="modalTitle">Conferma reset definitivo</div>
             <div className="modalDescription">
-              Inserisci il PIN admin per confermare l&apos;eliminazione definitiva di inventario, storico e sospesi.
+              Inserisci il PIN admin per confermare l&apos;eliminazione definitiva di inventario e storico.
             </div>
             <div className="mt12">
               <input

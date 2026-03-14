@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **14/03/2026 17:33 CET**.
+Ultimo aggiornamento: **14/03/2026 18:42 CET**.
 
 ## Scopo di questo file
 
@@ -12,6 +12,24 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - stato attuale (feature completate / da fare)
 - punti chiave del codice
 - come riprendere il lavoro con Cascade (prompt operativi)
+
+## Ultimi aggiornamenti (14/03/2026)
+
+- Admin:
+  - rimossa pagina intermedia `Sessioni`; il pulsante home è ora `Sessioni storico` e apre direttamente lo storico.
+  - nuova azione `Imposta Soglie` in Admin, con ordine pulsanti:
+    - `Sessioni storico`, `Importa archivio`, `Imposta Soglie`, `Aggiorna password`, `Reset totale`.
+  - `Imposta Soglie` applica una soglia unica su tutti i vini:
+    - doppia conferma;
+    - PIN admin obbligatorio;
+    - update massivo su Supabase + allineamento locale.
+- Storico sessioni:
+  - card cliccabili con apertura dettaglio contenuto sessione;
+  - UI semplificata (rimossi elementi ridondanti);
+  - data/ora formattate `18 Marzo 2026, 15:05` (mese con iniziale maiuscola, no secondi);
+  - reset storico fisso in basso, con doppia conferma e PIN.
+- Sessioni sospese:
+  - rimosse dal flusso operativo e dalla UI admin.
 
 ---
 

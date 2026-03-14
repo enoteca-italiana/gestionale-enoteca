@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **14/03/2026 17:33 CET**.
+Ultimo aggiornamento: **14/03/2026 18:42 CET**.
 
 ## Accesso
 
@@ -20,61 +20,80 @@ Hook: `apps/scarichi-vini/src/pages/admin/useAdminAuth.ts`
 
 - home admin (menu)
 - history
-- pending
 
-Azioni rapide disponibili direttamente in home admin:
+Azioni rapide disponibili direttamente in home admin, in questo ordine:
 
-- `Sessioni`
-- `Aggiorna password`
+- `Sessioni storico`
 - `Importa archivio`
+- `Imposta Soglie`
+- `Aggiorna password`
 - `Reset totale`
 
-Nota:
+Note:
 
-- La pagina “Impostazioni” non è più parte del flusso UI.
-- Le azioni sopra aprono i modali restando nella home admin (nessun redirect pagina).
+- la pagina “Sessioni” intermedia è stata rimossa;
+- il pulsante `Sessioni storico` apre direttamente lo storico;
+- la pagina “Impostazioni” non è più parte del flusso UI;
+- le azioni rapide aprono modali restando nella home admin (nessun redirect pagina).
 
 La Bottom Nav operativa mostra:
 
 - `Home` (`/`)
 - `Archivio` (`/admina`)
+- `Impostazioni` (`/admin`)
 
-## Impostazioni operative (stato attuale)
+## Impostazioni operative (modali)
 
 File: `AdminSettings.tsx`
 
-- componente usato come host modali operativi:
-  - cambio password admin
-  - import archivio CSV
-  - reset totale con PIN
-- non espone più toggle di configurazione utente.
+Modali attivi:
 
-## Storico
+- cambio password admin
+- import archivio CSV (sostituzione totale)
+- imposta soglia unica su tutti i vini
+- reset totale con PIN
+
+### Imposta Soglie (nuovo)
+
+Obiettivo:
+
+- applicare una soglia unica a tutti i vini in archivio.
+
+Sicurezza:
+
+- doppia conferma;
+- seconda conferma con PIN admin obbligatorio.
+
+Persistenza:
+
+- update massivo su Supabase (`wines.threshold`);
+- allineamento cache locale;
+- sincronizzazione hook esterni già presenti.
+
+## Storico sessioni
 
 File: `AdminHistory.tsx`
 
-- mostra solo sessioni inviate correttamente.
-- sorgente dati: Supabase (`discharge_sessions` con status `submitted`).
+- mostra solo sessioni inviate correttamente (`status=submitted`);
+- card cliccabili con dettaglio contenuto sessione;
+- formato data: `18 Marzo 2026`;
+- formato ora: `15:05` (senza secondi);
 - reset storico:
-  - doppia conferma.
+  - doppia conferma;
+  - conferma finale con PIN admin.
 
-## Sospesi
+## Sessioni sospese
 
-File: `AdminPending.tsx`
-
-- lista sessioni in coda.
-- sorgente dati: Supabase (`discharge_sessions` con status `pending`).
-- delete singolo con conferma.
-- delete tutti con conferma.
+Rimosse dal flusso e dall’interfaccia admin.
 
 ## Reset totale
 
 In `AdminSettings.tsx`:
 
-- doppia conferma
-- seconda conferma con PIN admin
-- chiama `hardResetAll()` solo per dati locali tecnici
-- storico/sospesi operativi sono gestiti via API Supabase dedicate
+- doppia conferma;
+- seconda conferma con PIN admin;
+- cancella dati locali tecnici;
+- pulizia storico gestita via API Supabase dedicate.
 
 ## Archivio vini (`/admina`)
 
@@ -87,29 +106,19 @@ Componenti:
 - `pages/admina/components/AdminArchiveTable.tsx`
 - `pages/admina/components/WineArchiveFormModal.tsx`
 
-Funzioni:
+Funzioni principali:
 
 - ricerca e filtri (testo, categoria, soglia/esauriti)
-- filtri su singola riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
-- rimosso il vecchio filtro `Tutte le giacenze`
+- filtri su singola riga desktop con box statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
 - CRUD vini
-- categoria e provenienza selezionabili solo da liste gestite
-- fornitore selezionabile solo da lista gestita
-- opzione `+ Aggiungi ...` in dropdown con suggerimenti valori uguali/simili
-- tabella estesa con header sticky
-- righe alternate + separatori verticali
-- riempimento automatico con righe vuote fino al fondo area tabella
-- box statistiche: `Totale` verde, `Soglia` ambra, `Esauriti` rosso
-- pulsanti statistiche selezionati con colori invertiti (testo bianco)
-- colonna `ANNO`: mostra cella vuota quando il valore è assente
-- colonna `FORNITORE`: posizionata subito dopo `PROVENIENZA`
-- colonna note rimossa dalla tabella; note consultabili da icona dedicata in `Azioni`
-- ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+- categoria/provenienza/fornitore da liste gestite
+- tabella con header sticky, righe alternate e separatori verticali
+- ordinamento `A-Z / Z-A` su `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
 
 Regole business:
 
 - `Magazzino = Acquisto × Q.tà`
 - `Margine = Vendita − Acquisto`
-- q.tà `0` evidenziata in rosso acceso
-- q.tà in soglia evidenziata in giallo ambra chiaro
-- `Soglia` disponibile nel modale vino: `Vuoto` oppure valore `>= 1` (mai `0`)
+- q.tà `0` in rosso
+- q.tà in soglia in ambra
+- `Soglia` valida: `Vuoto` oppure `>= 1` (mai `0`)

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Wine } from '@/domain/types';
-import type { LocalDbState, LocalSession } from '@/data/localDb';
+import type { LocalDbState } from '@/data/localDb';
 import { dbChangedEvent, loadDb, notifyDbChanged, resetDb, saveDb } from '@/data/localDb';
 import { listWines } from '@/data/wineRepository';
 
@@ -38,7 +38,6 @@ export function useLocalDb() {
 
   const inventory = db.inventory;
   const history = db.history;
-  const pending = db.pending;
 
   const setInventory = useCallback(
     (inv: Wine[] | ((prev: Wine[]) => Wine[])) => {
@@ -51,47 +50,8 @@ export function useLocalDb() {
     [commit]
   );
 
-  const addPending = useCallback(
-    (session: LocalSession) => {
-      commit((prev) => ({ ...prev, pending: [...prev.pending, session] }));
-    },
-    [commit]
-  );
-
-  const addHistory = useCallback(
-    (session: LocalSession) => {
-      commit((prev) => ({ ...prev, history: [session, ...prev.history] }));
-    },
-    [commit]
-  );
-
-  const deletePending = useCallback(
-    (id: string) => {
-      commit((prev) => ({ ...prev, pending: prev.pending.filter((s) => s.id !== id) }));
-    },
-    [commit]
-  );
-
   const clearHistory = useCallback(() => {
     commit((prev) => ({ ...prev, history: [] }));
-  }, [commit]);
-
-  const clearPending = useCallback(() => {
-    commit((prev) => ({ ...prev, pending: [] }));
-  }, [commit]);
-
-  const flushPendingToHistory = useCallback(() => {
-    commit((prev) => {
-      if (prev.pending.length === 0) return prev;
-      const ordered = [...prev.pending].sort((a, b) => a.createdAt - b.createdAt);
-      const now = Date.now();
-      const moved = ordered.map((s) => ({ ...s, submittedAt: s.submittedAt ?? now }));
-      return {
-        ...prev,
-        pending: [],
-        history: [...moved.reverse(), ...prev.history]
-      };
-    });
   }, [commit]);
 
   const hardResetAll = useCallback(() => {
@@ -119,14 +79,8 @@ export function useLocalDb() {
   return {
     inventory,
     history,
-    pending,
     setInventory,
-    addPending,
-    addHistory,
-    deletePending,
     clearHistory,
-    clearPending,
-    flushPendingToHistory,
     hardResetAll,
     refreshInventory,
     summary
