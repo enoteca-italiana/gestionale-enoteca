@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **16/03/2026 00:19 CET**.
+Ultimo aggiornamento: **16/03/2026 00:42 CET**.
 
 ## Stato attuale
 
@@ -88,6 +88,14 @@ Query check principale:
 - `out_of_stock = 1`
 - `in_threshold = 6`
 - `threshold_empty = 0`
+
+## Performance DB (dataset grandi)
+
+Per migliorare tempi di filtro/ordinamento lato app con migliaia di record, applicare in SQL Editor:
+
+- indici B-Tree sui campi filtro principali (`category`, `producer`, `origin`, `supplier`, `qty`, `threshold`);
+- indice funzionale su `lower(name)` per ricerche case-insensitive;
+- opzionale: `pg_trgm` + GIN su `name` per ricerche testuali parziali più rapide.
 
 ## Sicurezza (obbligatorio)
 

@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 00:19 CET**.
+Ultimo aggiornamento: **16/03/2026 00:42 CET**.
 
 ## Accesso
 
@@ -153,6 +153,11 @@ Funzioni principali:
 - categoria/provenienza/fornitore da liste gestite
 - tabella con header sticky, righe alternate e separatori verticali
 - ordinamento `A-Z / Z-A` su `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+- performance su dataset grandi:
+  - route `/admina` lazy-loaded
+  - tabella con rendering progressivo righe (`Carica altre righe`)
+  - filtro ricerca con `useDeferredValue`
+  - caricamento iniziale: hydration locale immediata + sync Supabase
 
 Regole business:
 

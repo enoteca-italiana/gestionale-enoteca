@@ -29,26 +29,16 @@ export function useLocalSession({
   const [items, setItems] = useState<Record<string, SessionItem>>({});
   const deferredQuery = useDeferredValue(query);
 
-  const inventoryById = useMemo(() => {
-    const map = new Map<string, Wine>();
-    for (const wine of inventory) map.set(wine.id, wine);
-    return map;
-  }, [inventory]);
-
-  const inventorySearchTextById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const wine of inventory) map.set(wine.id, buildWineSearchText(wine));
-    return map;
-  }, [inventory]);
-
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
     if (!q) return inventory;
+    const inventorySearchTextById = new Map<string, string>();
+    for (const wine of inventory) inventorySearchTextById.set(wine.id, buildWineSearchText(wine));
     return inventory.filter((w) => {
       const haystack = inventorySearchTextById.get(w.id) ?? '';
       return haystack.includes(q);
     });
-  }, [deferredQuery, inventory, inventorySearchTextById]);
+  }, [deferredQuery, inventory]);
 
   const sessionList = useMemo(() => {
     return Object.values(items)
@@ -89,7 +79,7 @@ export function useLocalSession({
 
   const addToSession = (wineId: string, amount: number) => {
     if (!sessionOpen) return;
-    const wine = inventoryById.get(wineId);
+    const wine = inventory.find((w) => w.id === wineId);
     if (!wine) return;
     if (wine.qty <= 0) return;
 

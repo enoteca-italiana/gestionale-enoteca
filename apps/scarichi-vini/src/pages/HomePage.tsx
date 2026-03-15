@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'wouter';
 import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
@@ -19,6 +20,10 @@ function isInThreshold(qty: number, threshold?: number) {
   return parsedQty <= parsedThreshold;
 }
 
+function isDesktopDevice() {
+  return window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+}
+
 export function HomePage({
   onIntroVisibilityChange
 }: {
@@ -29,6 +34,7 @@ export function HomePage({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
+  const [location, setLocation] = useLocation();
 
   const online = useOnlineStatus();
 
@@ -63,6 +69,13 @@ export function HomePage({
     onIntroVisibilityChange?.(showIntro);
     return () => onIntroVisibilityChange?.(false);
   }, [onIntroVisibilityChange, showIntro]);
+
+  useEffect(() => {
+    if (showIntro) return;
+    if (location !== '/') return;
+    if (!isDesktopDevice()) return;
+    setLocation('/admina', { replace: true });
+  }, [location, setLocation, showIntro]);
 
   useEffect(() => {
     void refreshInventory();

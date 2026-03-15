@@ -16,13 +16,14 @@ import {
   upsertSupabaseSupplier,
   upsertManagedSupplier
 } from '@/data/supplierRepository';
+import { loadDb } from '@/data/localDb';
 import { createWine, deleteWine, listWines, updateWine } from '@/data/wineRepository';
 import { AdminArchiveToolbar } from '@/pages/admina/components/AdminArchiveToolbar';
 import { AdminArchiveTable } from '@/pages/admina/components/AdminArchiveTable';
 import { AiAssistantModal } from '@/pages/admina/components/AiAssistantModal';
 import { CategoryCreateModal } from '@/pages/admina/components/CategoryCreateModal';
 import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormModal';
-import { isInThreshold, matchesFilters } from '@/pages/admina/utils/wineFilters';
+import { isInThreshold } from '@/pages/admina/utils/wineFilters';
 import {
   defaultFilters,
   emptyWine,
@@ -63,6 +64,10 @@ export function WineAdminPage() {
     setLoading(true);
     setError(null);
     try {
+      const local = loadDb().inventory;
+      if (local.length > 0) {
+        setWines(local);
+      }
       setWines(await listWines());
     } catch (err) {
       console.error('[WineAdminPage] load error', err);
@@ -128,10 +133,58 @@ export function WineAdminPage() {
     () => ({ ...filters, term: deferredTerm }),
     [deferredTerm, filters]
   );
-  const filteredWines = useMemo(
-    () => wines.filter((w) => matchesFilters(w, effectiveFilters)),
-    [effectiveFilters, wines]
-  );
+  const searchTextByWineId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const wine of wines) {
+      map.set(
+        wine.id,
+        [
+          wine.category,
+          wine.name,
+          wine.age,
+          wine.producer,
+          wine.origin,
+          wine.supplier,
+          wine.notes,
+          wine.warehouse
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+      );
+    }
+    return map;
+  }, [wines]);
+  const filteredWines = useMemo(() => {
+    const term = effectiveFilters.term.trim().toLowerCase();
+    const category = effectiveFilters.category.toLowerCase();
+    const producer = effectiveFilters.producer.toLowerCase();
+    const origin = effectiveFilters.origin.toLowerCase();
+    const supplier = effectiveFilters.supplier.toLowerCase();
+    const stock = effectiveFilters.stock;
+
+    return wines.filter((wine) => {
+      if (term) {
+        const haystack = searchTextByWineId.get(wine.id) ?? '';
+        if (!haystack.includes(term)) return false;
+      }
+      if (category !== 'all') {
+        if ((wine.category?.toLowerCase() ?? '') !== category) return false;
+      }
+      if (producer !== 'all') {
+        if ((wine.producer?.toLowerCase() ?? '') !== producer) return false;
+      }
+      if (origin !== 'all') {
+        if ((wine.origin?.toLowerCase() ?? '') !== origin) return false;
+      }
+      if (supplier !== 'all') {
+        if ((wine.supplier?.toLowerCase() ?? '') !== supplier) return false;
+      }
+      if (stock === 'threshold' && !isInThreshold(wine)) return false;
+      if (stock === 'out' && wine.qty > 0) return false;
+      return true;
+    });
+  }, [effectiveFilters, searchTextByWineId, wines]);
   const archiveStats = useMemo(() => {
     let thresholdCount = 0;
     let outCount = 0;

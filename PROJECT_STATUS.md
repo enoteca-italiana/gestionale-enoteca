@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 00:19 CET**.
+Ultimo aggiornamento: **16/03/2026 00:52 CET**.
 
 ## Scopo di questo file
 
@@ -90,6 +90,27 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - Hygiene:
   - nessun marker di conflitto (`<<<<<<<`, `=======`, `>>>>>>>`) rilevato;
   - documentazione Supabase riallineata ai file realmente presenti in repository.
+
+## Ultimi aggiornamenti (16/03/2026 - wave 2)
+
+- Performance runtime (enterprise hardening):
+  - `localDb` con coalescing scritture (batch ravvicinati) per ridurre blocchi UI durante modifiche quantità ad alta frequenza;
+  - Home: filtro testo deferred + riduzione lavoro O(n) ridondante durante sessione;
+  - Archivio: hydration locale immediata prima del refresh Supabase;
+  - Archivio: filtro testuale ottimizzato con indice in memoria per ridurre lavoro CPU per battitura.
+- Quality gate post-ottimizzazioni:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - UX desktop startup)
+
+- Intro + landing differenziata per device:
+  - desktop (Safari/Chrome, web/installata): dopo intro redirect a `/admina`;
+  - mobile: dopo intro resta su `/` (home).
+- Theme UI shell PWA:
+  - `theme_color` allineato al viola brand `#7c164a` (manifest + meta).
 
 ---
 

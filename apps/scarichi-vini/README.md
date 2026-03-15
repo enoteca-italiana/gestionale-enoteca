@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 00:19 CET**.
+Ultimo aggiornamento: **16/03/2026 00:52 CET**.
 
 ## Quick Start
 
@@ -23,6 +23,9 @@ Comandi utili:
 
 - Sessione scarico mobile-first (`/`) con supporto offline.
 - Intro iniziale (2.5s): durante l’intro la Bottom Nav non viene mostrata.
+- Routing post-intro:
+  - desktop (Safari/Chrome, web o installata): redirect automatico a `/admina` dopo intro
+  - mobile: resta su `/` (home) dopo intro
 - Conferma sessione integrata su Supabase (RPC `submit_discharge_session`).
 - Sessione scarico aggiornata:
   - CTA primaria rinominata in `Conferma Scarico`
@@ -72,6 +75,11 @@ Comandi utili:
   - standard rendering info sotto al nome vino: `Produttore • Anno(se presente) • Provenienza`
   - `Provenienza` salvata e mostrata sempre in **MAIUSCOLO**
   - export archivio: Excel/PDF con icone dockate in alto a destra (solo icone)
+  - performance avanzata (dataset grandi):
+    - route lazy-loaded (`/`, `/admin`, `/admina`) per startup più rapido
+    - rendering progressivo liste (`Carica altri vini` / `Carica altre righe`)
+    - filtri con `useDeferredValue` (Home + Archivio)
+    - coalescing scritture local DB (batch ravvicinati) per ridurre jank durante update quantità
 - Assistente AI archivio:
   - chat unica nel modale (nessuna vista impostazioni separata)
   - modello selezionabile inline vicino a `Invia`
@@ -81,6 +89,7 @@ Comandi utili:
 - Icone installazione PWA multi-device:
   - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`
   - iOS/Safari: `apple-touch-icon.png`
+- Tema PWA/title bar allineato al brand: `#7c164a` (manifest + meta theme-color)
 
 ## Quality Gate
 
