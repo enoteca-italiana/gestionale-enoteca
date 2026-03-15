@@ -1,5 +1,6 @@
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { SessionItem, Wine } from '@/domain/types';
+import { useDebouncedValue } from '@/app/useDebouncedValue';
 
 function buildWineSearchText(wine: Wine) {
   return [
@@ -27,18 +28,37 @@ export function useLocalSession({
   const [sessionOpen, setSessionOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Record<string, SessionItem>>({});
-  const deferredQuery = useDeferredValue(query);
+  const debouncedQuery = useDebouncedValue(query, 120);
+  const inventoryById = useMemo(() => {
+    const map = new Map<string, Wine>();
+    for (const wine of inventory) {
+      map.set(wine.id, wine);
+    }
+    return map;
+  }, [inventory]);
+  const inventoryIndexById = useMemo(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < inventory.length; i += 1) {
+      map.set(inventory[i].id, i);
+    }
+    return map;
+  }, [inventory]);
+  const inventorySearchTextById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const wine of inventory) {
+      map.set(wine.id, buildWineSearchText(wine));
+    }
+    return map;
+  }, [inventory]);
 
   const filtered = useMemo(() => {
-    const q = deferredQuery.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase();
     if (!q) return inventory;
-    const inventorySearchTextById = new Map<string, string>();
-    for (const wine of inventory) inventorySearchTextById.set(wine.id, buildWineSearchText(wine));
     return inventory.filter((w) => {
       const haystack = inventorySearchTextById.get(w.id) ?? '';
       return haystack.includes(q);
     });
-  }, [deferredQuery, inventory]);
+  }, [debouncedQuery, inventory, inventorySearchTextById]);
 
   const sessionList = useMemo(() => {
     return Object.values(items)
@@ -66,7 +86,10 @@ export function useLocalSession({
   const adjustWineQty = (wineId: string, delta: number) => {
     if (!delta) return;
     setInventory((prev) => {
-      const idx = prev.findIndex((wine) => wine.id === wineId);
+      let idx = inventoryIndexById.get(wineId) ?? -1;
+      if (idx < 0 || prev[idx]?.id !== wineId) {
+        idx = prev.findIndex((wine) => wine.id === wineId);
+      }
       if (idx < 0) return prev;
       const target = prev[idx];
       const nextQty = target.qty + delta;
@@ -79,7 +102,7 @@ export function useLocalSession({
 
   const addToSession = (wineId: string, amount: number) => {
     if (!sessionOpen) return;
-    const wine = inventory.find((w) => w.id === wineId);
+    const wine = inventoryById.get(wineId);
     if (!wine) return;
     if (wine.qty <= 0) return;
 

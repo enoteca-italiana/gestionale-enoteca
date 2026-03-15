@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 00:52 CET**.
+Ultimo aggiornamento: **16/03/2026 00:58 CET**.
 
 ## Scopo di questo file
 
@@ -99,6 +99,18 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - Archivio: hydration locale immediata prima del refresh Supabase;
   - Archivio: filtro testuale ottimizzato con indice in memoria per ridurre lavoro CPU per battitura.
 - Quality gate post-ottimizzazioni:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 3)
+
+- Performance runtime (home/sessione):
+  - ricerca testuale con debounce dedicato e indice testuale memoizzato per ridurre CPU durante digitazione;
+  - lookup vini ottimizzati con mappe `id -> wine` / `id -> qty` / `id -> index` (meno scansioni lineari su liste grandi);
+  - semplificato flusso Home rimuovendo passaggio deferred ridondante sulla lista filtrata.
+- Quality gate post-wave 3:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
   - `npm run test` ✅

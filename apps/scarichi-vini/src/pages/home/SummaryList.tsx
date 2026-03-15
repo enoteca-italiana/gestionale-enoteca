@@ -20,14 +20,21 @@ export function SummaryList({
   const [selectedWineId, setSelectedWineId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const winesById = useMemo(() => {
+    const map = new Map<string, Wine>();
+    for (const wine of wines) {
+      map.set(wine.id, wine);
+    }
+    return map;
+  }, [wines]);
 
   const selectedItem = useMemo(
     () => (selectedWineId ? items.find((item) => item.wineId === selectedWineId) ?? null : null),
     [items, selectedWineId]
   );
   const selectedWine = useMemo(
-    () => (selectedWineId ? wines.find((wine) => wine.id === selectedWineId) ?? null : null),
-    [selectedWineId, wines]
+    () => (selectedWineId ? winesById.get(selectedWineId) ?? null : null),
+    [selectedWineId, winesById]
   );
 
   useEffect(() => {
@@ -93,7 +100,7 @@ export function SummaryList({
                 </div>
               ) : (
                 items.map((i) => {
-                  const wine = wines.find((w) => w.id === i.wineId);
+                  const wine = winesById.get(i.wineId);
                   if (!wine) return null;
                   return (
                     <button

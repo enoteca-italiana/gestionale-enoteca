@@ -25,23 +25,30 @@ export function ResultsList({
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
   const [visibleCount, setVisibleCount] = useState(LIST_RENDER_BATCH);
   const confirmCloseTimer = useRef<number | null>(null);
+  const winesById = useMemo(() => {
+    const map = new Map<string, Wine>();
+    for (const wine of wines) {
+      map.set(wine.id, wine);
+    }
+    return map;
+  }, [wines]);
   const renderedWines = useMemo(() => wines.slice(0, visibleCount), [visibleCount, wines]);
   const hasMoreRows = renderedWines.length < wines.length;
   const selectedWine = useMemo(() => {
     if (!selectedWineId) return null;
-    const fromList = wines.find((wine) => wine.id === selectedWineId);
+    const fromList = winesById.get(selectedWineId);
     if (fromList) return fromList;
     if (selectedWineSnapshot?.id === selectedWineId) return selectedWineSnapshot;
     return null;
-  }, [selectedWineId, selectedWineSnapshot, wines]);
+  }, [selectedWineId, selectedWineSnapshot, winesById]);
   const selectedQty = selectedWineId && getSessionQty ? getSessionQty(selectedWineId) : 0;
 
   useEffect(() => {
     if (!selectedWineId) return;
-    const latest = wines.find((wine) => wine.id === selectedWineId);
+    const latest = winesById.get(selectedWineId);
     if (!latest) return;
     setSelectedWineSnapshot(latest);
-  }, [selectedWineId, wines]);
+  }, [selectedWineId, winesById]);
 
   useEffect(() => {
     setVisibleCount(LIST_RENDER_BATCH);

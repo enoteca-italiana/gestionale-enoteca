@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 00:52 CET**.
+Ultimo aggiornamento: **16/03/2026 00:58 CET**.
 
 ## Quick Start
 
@@ -80,6 +80,8 @@ Comandi utili:
     - rendering progressivo liste (`Carica altri vini` / `Carica altre righe`)
     - filtri con `useDeferredValue` (Home + Archivio)
     - coalescing scritture local DB (batch ravvicinati) per ridurre jank durante update quantità
+    - ricerca Home con debounce + indice testuale memoizzato (meno CPU su digitazione)
+    - lookup O(1) via mappe per sessione/riepilogo/modali (meno scansioni su migliaia di righe)
 - Assistente AI archivio:
   - chat unica nel modale (nessuna vista impostazioni separata)
   - modello selezionabile inline vicino a `Invia`

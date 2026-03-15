@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
@@ -54,7 +54,6 @@ export function HomePage({
     decrementItem,
     deleteItem
   } = useLocalSession({ inventory, setInventory });
-  const deferredFiltered = useDeferredValue(filtered);
 
   useEffect(() => {
     const r = window.requestAnimationFrame(() => setIntroVisible(true));
@@ -94,10 +93,7 @@ export function HomePage({
     }
 
     const expectedQtyByWineId = Object.fromEntries(
-      sessionList.map((item) => [
-        item.wineId,
-        inventory.find((wine) => wine.id === item.wineId)?.qty ?? 0
-      ])
+      sessionList.map((item) => [item.wineId, inventoryQtyByWineId.get(item.wineId) ?? 0])
     );
 
     try {
@@ -122,11 +118,16 @@ export function HomePage({
     for (const i of sessionList) m.set(i.wineId, i.qty);
     return m;
   }, [sessionList]);
+  const inventoryQtyByWineId = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const wine of inventory) m.set(wine.id, wine.qty);
+    return m;
+  }, [inventory]);
 
   const visibleWines = useMemo(() => {
     const winesAvailableForSelection = sessionOpen
-      ? deferredFiltered.filter((wine) => !sessionQtyByWineId.has(wine.id))
-      : deferredFiltered;
+      ? filtered.filter((wine) => !sessionQtyByWineId.has(wine.id))
+      : filtered;
 
     if (stockFilter === 'threshold') {
       return winesAvailableForSelection.filter((wine) => isInThreshold(wine.qty, wine.threshold));
@@ -135,7 +136,7 @@ export function HomePage({
       return winesAvailableForSelection.filter((wine) => wine.qty <= 0);
     }
     return winesAvailableForSelection;
-  }, [deferredFiltered, sessionOpen, sessionQtyByWineId, stockFilter]);
+  }, [filtered, sessionOpen, sessionQtyByWineId, stockFilter]);
 
   const getSessionQty = (wineId: string) => sessionQtyByWineId.get(wineId) ?? 0;
   const showResults = !sessionOpen || query.trim().length > 0 || stockFilter !== 'all';
