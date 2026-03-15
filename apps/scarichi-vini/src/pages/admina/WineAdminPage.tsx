@@ -344,6 +344,7 @@ export function WineAdminPage() {
         origins={origins}
         suppliers={suppliers}
         onFiltersChange={setFilters}
+        onResetFilters={() => setFilters(defaultFilters)}
         onOpenCreate={openCreate}
         onOpenAi={() => setAiModalOpen(true)}
       />

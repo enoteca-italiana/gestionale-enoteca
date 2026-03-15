@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Scopo
 
@@ -34,8 +34,8 @@ Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 - Risultati mostrano:
   - nome
   - produttore
-  - provenienza
   - annata (se presente)
+  - provenienza
 - Quantità visibile.
 - Vini con quantità `0`:
   - restano visibili
@@ -61,6 +61,7 @@ Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 - In archivio, campo `ANNO` vuoto quando il valore non è presente.
 - In archivio, le note sono consultabili da icona in colonna `Azioni` (non più come colonna dedicata).
 - Categoria e provenienza selezionabili da liste gestite (no input libero), con opzione `+ Aggiungi ...` e suggerimenti anti-duplicato.
+- Provenienza: salvata e mostrata sempre in **MAIUSCOLO**.
 - Settings (toggle):
   - associazione nome utente (predisposizione / future)
 - Storico Admin:

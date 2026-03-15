@@ -1,4 +1,5 @@
 import type { Wine } from '@/domain/types';
+import { normalizeOrigin } from '@/domain/normalizeOrigin';
 
 export type ArchiveCsvWineInput = {
   id?: string;
@@ -169,7 +170,7 @@ function toCsvRecord(wine: Wine): ArchiveCsvWineInput {
     name: wine.name,
     age: wine.age ?? '',
     producer: wine.producer,
-    origin: wine.origin,
+    origin: normalizeOrigin(wine.origin),
     supplier: wine.supplier ?? '',
     threshold: wine.threshold,
     purchasePrice: wine.purchasePrice,
@@ -235,7 +236,7 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
     const rowNumber = r + 1;
     const name = (record.name ?? '').toString().trim();
     const producer = (record.producer ?? '').toString().trim();
-    const origin = (record.origin ?? '').toString().trim();
+    const origin = normalizeOrigin((record.origin ?? '').toString());
     const qty = typeof record.qty === 'number' ? record.qty : undefined;
 
     if (!name || !producer || !origin || qty === undefined) {

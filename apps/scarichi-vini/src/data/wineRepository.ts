@@ -3,6 +3,7 @@ import type { ArchiveCsvWineInput } from '@/data/archiveCsv';
 import { supabase } from '@/lib/supabase';
 import { loadDb, notifyDbChanged, saveDb, newId } from '@/data/localDb';
 import { syncWineUpsert, syncWineDelete } from '@/integrations/googleSheetsSync';
+import { normalizeOrigin } from '@/domain/normalizeOrigin';
 
 type WineRow = {
   id: string;
@@ -71,7 +72,7 @@ function toWine(row: WineRow): Wine {
     name: row.name,
     age: row.age ?? undefined,
     producer: row.producer,
-    origin: row.origin,
+    origin: normalizeOrigin(row.origin),
     supplier: row.supplier ?? undefined,
     threshold: normalizeThreshold(row.threshold),
     purchasePrice: purchase,
@@ -100,7 +101,7 @@ function toRowPayload(wine: Wine) {
     name: wine.name,
     age: wine.age ?? null,
     producer: wine.producer,
-    origin: wine.origin,
+    origin: normalizeOrigin(wine.origin),
     supplier: wine.supplier ?? null,
     threshold: normalizeThreshold(wine.threshold) ?? null,
     purchase_price: wine.purchasePrice ?? null,
@@ -118,7 +119,7 @@ function toLegacyPayload(wine: Wine) {
     id: wine.id,
     name: wine.name,
     producer: wine.producer,
-    origin: wine.origin,
+    origin: normalizeOrigin(wine.origin),
     vintage: wine.vintage ?? null,
     category: wine.category ?? null,
     qty: wine.qty
@@ -134,6 +135,13 @@ function isSchemaColumnError(error: unknown): boolean {
 
 function sortWines(wines: Wine[]): Wine[] {
   return [...wines].sort((a, b) => a.name.localeCompare(b.name, 'it', { sensitivity: 'base' }));
+}
+
+function normalizeOrigins(wines: Wine[]): Wine[] {
+  return wines.map((wine) => ({
+    ...wine,
+    origin: normalizeOrigin(wine.origin)
+  }));
 }
 
 function getLocalInventory(): Wine[] {
@@ -154,17 +162,20 @@ export async function listWines(): Promise<Wine[]> {
     if (error) {
       console.error('[wineRepository] Supabase list error', error);
       const localWithThresholds = enrichThresholdsFromFallback(localInventory, localInventory);
-      persistLocalInventory(localWithThresholds);
-      return sortWines(localWithThresholds);
+      const normalizedLocal = normalizeOrigins(localWithThresholds);
+      persistLocalInventory(normalizedLocal);
+      return sortWines(normalizedLocal);
     }
     const wines = enrichThresholdsFromFallback((data ?? []).map(toWine), localInventory);
-    persistLocalInventory(wines);
-    return sortWines(wines);
+    const normalized = normalizeOrigins(wines);
+    persistLocalInventory(normalized);
+    return sortWines(normalized);
   }
 
   const wines = enrichThresholdsFromFallback(localInventory, localInventory);
-  persistLocalInventory(wines);
-  return sortWines(wines);
+  const normalized = normalizeOrigins(wines);
+  persistLocalInventory(normalized);
+  return sortWines(normalized);
 }
 
 export type WineInput = {
@@ -200,7 +211,7 @@ function normalizeInput(input: WineInput): Wine {
     name: input.name.trim(),
     age: input.age?.trim() || undefined,
     producer: input.producer.trim(),
-    origin: input.origin.trim(),
+    origin: normalizeOrigin(input.origin),
     supplier: input.supplier?.trim() || undefined,
     threshold,
     purchasePrice: hasPurchase ? purchasePrice : undefined,

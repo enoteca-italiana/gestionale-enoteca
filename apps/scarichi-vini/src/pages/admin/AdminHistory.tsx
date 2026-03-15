@@ -3,6 +3,7 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import { useState } from 'react';
 import { sha256Base64 } from '@/pages/admin/crypto';
 import { storageKeys } from '@/pages/admin/storage';
+import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 import {
   listSubmittedDischargeSessionItems,
   type DischargeSessionItemDetail
@@ -51,6 +52,14 @@ export function AdminHistory({
   const [selectedSession, setSelectedSession] = useState<DischargeSessionSummary | null>(null);
   const [detailItems, setDetailItems] = useState<DischargeSessionItemDetail[]>([]);
 
+  const closeSessionDetail = () => {
+    setDetailOpen(false);
+    setSelectedSession(null);
+    setDetailItems([]);
+    setDetailError(null);
+    setDetailLoading(false);
+  };
+
   const openSessionDetail = async (session: DischargeSessionSummary) => {
     setSelectedSession(session);
     setDetailOpen(true);
@@ -94,7 +103,7 @@ export function AdminHistory({
   return (
     <>
       <div className="adminHistoryListSection">
-        <div className="title">Storico Sessioni</div>
+        <div className="title centered">Storico Sessioni</div>
         <div className="list mt12">
           {history.length === 0 ? (
             <div className="listItem centered">
@@ -139,33 +148,25 @@ export function AdminHistory({
       {detailOpen ? (
         <div className="modalOverlay" role="dialog" aria-modal="true">
           <div className="modalCard adminHistoryModalCard">
-            <div className="row">
-              <div className="min0">
-                <div className="modalTitle">
-                  {selectedSession
-                    ? formatDateTimeLabel(selectedSession.submittedAt ?? selectedSession.createdAt)
-                    : '-'}
-                </div>
-                {selectedSession ? (
-                  <div className="modalDescription">
-                    {selectedSession.itemsCount} vini • {selectedSession.totalQty} bottiglie
-                    {selectedSession.userLabel ? ` • ${selectedSession.userLabel}` : ''}
-                  </div>
-                ) : null}
+            <button
+              className="adminHistoryModalClose"
+              type="button"
+              aria-label="Chiudi dettaglio sessione"
+              onClick={closeSessionDetail}
+            >
+              ×
+            </button>
+            <div className="adminHistoryModalHeader">
+              <div className="modalTitle adminHistoryModalTitle">
+                {selectedSession
+                  ? formatDateTimeLabel(selectedSession.submittedAt ?? selectedSession.createdAt)
+                  : '-'}
               </div>
-              <button
-                className="button buttonSecondary buttonAuto"
-                type="button"
-                onClick={() => {
-                  setDetailOpen(false);
-                  setSelectedSession(null);
-                  setDetailItems([]);
-                  setDetailError(null);
-                  setDetailLoading(false);
-                }}
-              >
-                Chiudi
-              </button>
+              {selectedSession ? (
+                <div className="modalDescription adminHistoryModalSubtitle">
+                  {selectedSession.itemsCount} vini • {selectedSession.totalQty} bottiglie
+                </div>
+              ) : null}
             </div>
 
             <div className="list mt12 adminHistoryDetailList">
@@ -180,14 +181,18 @@ export function AdminHistory({
               {!detailLoading && !detailError && detailItems.length > 0
                 ? detailItems.map((item) => (
                     <div key={`${item.sessionId}-${item.wineId}`} className="listItem">
-                      <div className="row">
-                        <div className="min0">
+                      <div className="min0">
+                        <div className="adminHistoryDetailTopRow">
                           <div className="lineTitle">{item.wineName}</div>
-                          <div className="subtle mt4">
-                            {[item.producer, item.origin].filter(Boolean).join(' • ') || '—'}
-                          </div>
+                          <div className="adminHistoryDetailQty">-{item.qty}</div>
                         </div>
-                        <div className="pill">-{item.qty}</div>
+                        <div className="subtle mt4">
+                          {formatWineInfoLine({
+                            producer: item.producer,
+                            year: item.age,
+                            origin: item.origin
+                          }) || '—'}
+                        </div>
                       </div>
                     </div>
                   ))

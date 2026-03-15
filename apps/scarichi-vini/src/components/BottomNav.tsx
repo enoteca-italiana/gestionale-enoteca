@@ -1,7 +1,8 @@
 import { Link } from 'wouter';
 import { Archive, House, Settings } from 'lucide-react';
 
-export function BottomNav({ currentPath }: { currentPath: string }) {
+export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden?: boolean }) {
+  if (hidden) return null;
   const isHome = currentPath === '/';
   const isArchive = currentPath.startsWith('/admina');
   const isSettings = currentPath.startsWith('/admin') && !isArchive;

@@ -167,8 +167,8 @@
 }
 
 .summaryToggle {
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   border: 0;
   background: transparent;
@@ -334,12 +334,68 @@
 }
 
 .adminHistoryModalCard {
-  width: min(900px, 96vw);
+  width: min(900px, 100%);
+  max-width: 900px;
+  margin-inline: auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.adminHistoryModalClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.adminHistoryModalHeader {
+  text-align: center;
+  padding-inline: 44px;
+}
+
+.adminHistoryModalTitle {
+  text-align: center;
+}
+
+.adminHistoryModalSubtitle {
+  text-align: center;
 }
 
 .adminHistoryDetailList {
   max-height: min(58vh, 520px);
   overflow-y: auto;
+}
+
+.adminHistoryDetailTopRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adminHistoryDetailQty {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.adminHistoryModalCard {
+  background: var(--bg);
+}
+
+.adminHistoryDetailList .listItem {
+  background: #f7f1e6;
+  border-color: #e6dcc8;
 }
 
 .adminHistoryListSection {

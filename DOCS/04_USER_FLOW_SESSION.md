@@ -1,6 +1,6 @@
 # Flusso utente — Sessione di scarico
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Entrata
 
@@ -44,7 +44,6 @@ Vincolo:
 ## Conferma
 
 - La conferma finale avviene con modale.
-- L’associazione `userLabel` (nome utente) è predisposta per uso futuro.
 
 ## Comportamento online/offline
 
@@ -60,3 +59,4 @@ Vincolo:
 
 - Durata: 2500ms.
 - Logo con fade-in (opacity/translate/blur) e supporto `prefers-reduced-motion`.
+- Durante l’intro la Bottom Nav non viene mostrata.

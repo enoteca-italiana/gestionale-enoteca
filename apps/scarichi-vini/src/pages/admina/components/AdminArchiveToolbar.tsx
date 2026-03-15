@@ -1,5 +1,6 @@
 import type { Wine } from '@/domain/types';
 import type { Filters, StockFilter } from '@/pages/admina/types';
+import { RefreshCcw } from 'lucide-react';
 
 type Props = {
   winesCount: number;
@@ -12,6 +13,7 @@ type Props = {
   origins: string[];
   suppliers: string[];
   onFiltersChange: (next: Filters) => void;
+  onResetFilters: () => void;
   onOpenCreate: () => void;
   onOpenAi: () => void;
 };
@@ -27,6 +29,7 @@ export function AdminArchiveToolbar({
   origins,
   suppliers,
   onFiltersChange,
+  onResetFilters,
   onOpenCreate,
   onOpenAi
 }: Props) {
@@ -342,6 +345,37 @@ export function AdminArchiveToolbar({
 
   return (
     <section className="archiveTopBar">
+      <div className="archiveExportDock" aria-label="Esporta archivio">
+        <button
+          className="archiveExportButton archiveExportButtonIconOnly"
+          type="button"
+          onClick={() => void exportExcel()}
+          aria-label="Esporta archivio in Excel"
+          title="Esporta Excel"
+        >
+          <img
+            className="archiveExportIconImage"
+            src="/icons8-esportare-excel-48.png"
+            alt=""
+            aria-hidden="true"
+          />
+        </button>
+        <button
+          className="archiveExportButton archiveExportButtonIconOnly"
+          type="button"
+          onClick={() => void exportPdf()}
+          aria-label="Esporta archivio in PDF"
+          title="Esporta PDF"
+        >
+          <img
+            className="archiveExportIconImage"
+            src="/icons8-esporta-in-formato-pdf-60.png"
+            alt=""
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
       <div className="archiveFilters">
         <input
           className="input archiveFilterControl"
@@ -351,93 +385,81 @@ export function AdminArchiveToolbar({
         />
 
         <div className="archiveFilterGroup" role="group" aria-label="Filtri archivio">
-          <select
-            className={`input archiveFilterControl archiveFilterSelect ${
-              filters.category !== 'all' ? 'archiveFilterSelectActive' : ''
-            }`}
-            value={filters.category}
-            onChange={(e) => onFiltersChange({ ...filters, category: e.target.value })}
-          >
-            <option value="all">Categoria: tutte</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <select
-            className={`input archiveFilterControl archiveFilterSelect ${
-              filters.producer !== 'all' ? 'archiveFilterSelectActive' : ''
-            }`}
-            value={filters.producer}
-            onChange={(e) => onFiltersChange({ ...filters, producer: e.target.value })}
-          >
-            <option value="all">Produttore: tutti</option>
-            {producers.map((producer) => (
-              <option key={producer} value={producer}>
-                {producer}
-              </option>
-            ))}
-          </select>
-          <select
-            className={`input archiveFilterControl archiveFilterSelect ${
-              filters.origin !== 'all' ? 'archiveFilterSelectActive' : ''
-            }`}
-            value={filters.origin}
-            onChange={(e) => onFiltersChange({ ...filters, origin: e.target.value })}
-          >
-            <option value="all">Provenienza: tutte</option>
-            {origins.map((origin) => (
-              <option key={origin} value={origin}>
-                {origin}
-              </option>
-            ))}
-          </select>
-          <select
-            className={`input archiveFilterControl archiveFilterSelect ${
-              filters.supplier !== 'all' ? 'archiveFilterSelectActive' : ''
-            }`}
-            value={filters.supplier}
-            onChange={(e) => onFiltersChange({ ...filters, supplier: e.target.value })}
-          >
-            <option value="all">Fornitore: tutti</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier} value={supplier}>
-                {supplier}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="archiveFilterField">
+            <div className="archiveFilterFieldLabel">Categoria</div>
+            <select
+              className={`input archiveFilterControl archiveFilterSelect ${
+                filters.category !== 'all' ? 'archiveFilterSelectActive' : ''
+              }`}
+              aria-label="Filtro categoria"
+              value={filters.category}
+              onChange={(e) => onFiltersChange({ ...filters, category: e.target.value })}
+            >
+              <option value="all">Tutte</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="archiveExportActions" aria-label="Esporta archivio">
-          <button
-            className="archiveExportButton"
-            type="button"
-            onClick={() => void exportExcel()}
-            aria-label="Esporta archivio in Excel"
-            title="Esporta Excel"
-          >
-            <img
-              className="archiveExportIconImage"
-              src="/icons8-esportare-excel-48.png"
-              alt=""
-              aria-hidden="true"
-            />
-          </button>
-          <button
-            className="archiveExportButton"
-            type="button"
-            onClick={() => void exportPdf()}
-            aria-label="Esporta archivio in PDF"
-            title="Esporta PDF"
-          >
-            <img
-              className="archiveExportIconImage"
-              src="/icons8-esporta-in-formato-pdf-60.png"
-              alt=""
-              aria-hidden="true"
-            />
-          </button>
+          <div className="archiveFilterField">
+            <div className="archiveFilterFieldLabel">Produttore</div>
+            <select
+              className={`input archiveFilterControl archiveFilterSelect ${
+                filters.producer !== 'all' ? 'archiveFilterSelectActive' : ''
+              }`}
+              aria-label="Filtro produttore"
+              value={filters.producer}
+              onChange={(e) => onFiltersChange({ ...filters, producer: e.target.value })}
+            >
+              <option value="all">Tutti</option>
+              {producers.map((producer) => (
+                <option key={producer} value={producer}>
+                  {producer}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="archiveFilterField">
+            <div className="archiveFilterFieldLabel">Provenienza</div>
+            <select
+              className={`input archiveFilterControl archiveFilterSelect ${
+                filters.origin !== 'all' ? 'archiveFilterSelectActive' : ''
+              }`}
+              aria-label="Filtro provenienza"
+              value={filters.origin}
+              onChange={(e) => onFiltersChange({ ...filters, origin: e.target.value })}
+            >
+              <option value="all">Tutte</option>
+              {origins.map((origin) => (
+                <option key={origin} value={origin}>
+                  {origin}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="archiveFilterField">
+            <div className="archiveFilterFieldLabel">Fornitore</div>
+            <select
+              className={`input archiveFilterControl archiveFilterSelect ${
+                filters.supplier !== 'all' ? 'archiveFilterSelectActive' : ''
+              }`}
+              aria-label="Filtro fornitore"
+              value={filters.supplier}
+              onChange={(e) => onFiltersChange({ ...filters, supplier: e.target.value })}
+            >
+              <option value="all">Tutti</option>
+              {suppliers.map((supplier) => (
+                <option key={supplier} value={supplier}>
+                  {supplier}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="archiveStatsBox" aria-label="Riepilogo vini">
@@ -447,7 +469,7 @@ export function AdminArchiveToolbar({
               filters.stock === 'all' ? 'archiveStatsItemActive' : ''
             }`}
             onClick={() => setStockFilter('all')}
-            aria-pressed={filters.stock === 'all'}
+            aria-pressed={filters.stock === 'all' ? 'true' : 'false'}
           >
             <div className="archiveStatLabel">Totale</div>
             <div className="archiveStatValue">{winesCount}</div>
@@ -458,7 +480,7 @@ export function AdminArchiveToolbar({
               filters.stock === 'threshold' ? 'archiveStatsItemActive' : ''
             }`}
             onClick={() => setStockFilter('threshold')}
-            aria-pressed={filters.stock === 'threshold'}
+            aria-pressed={filters.stock === 'threshold' ? 'true' : 'false'}
           >
             <div className="archiveStatLabel">Soglia</div>
             <div className="archiveStatValue">{thresholdCount}</div>
@@ -469,12 +491,22 @@ export function AdminArchiveToolbar({
               filters.stock === 'out' ? 'archiveStatsItemActive' : ''
             }`}
             onClick={() => setStockFilter('out')}
-            aria-pressed={filters.stock === 'out'}
+            aria-pressed={filters.stock === 'out' ? 'true' : 'false'}
           >
             <div className="archiveStatLabel">Esauriti</div>
             <div className="archiveStatValue">{outCount}</div>
           </button>
         </div>
+
+        <button
+          className="archiveResetButton"
+          type="button"
+          aria-label="Reset filtri"
+          title="Reset filtri"
+          onClick={onResetFilters}
+        >
+          <RefreshCcw size={18} strokeWidth={2.2} />
+        </button>
 
         <button className="button buttonAuto archiveAddButton" type="button" onClick={onOpenCreate}>
           Aggiungi vino

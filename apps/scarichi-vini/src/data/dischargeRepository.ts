@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { normalizeOrigin } from '@/domain/normalizeOrigin';
 
 export type DischargeStatus = 'pending' | 'submitted' | 'cancelled';
 
@@ -6,7 +7,6 @@ export type DischargeSessionSummary = {
   id: string;
   createdAt: number;
   submittedAt?: number;
-  userLabel?: string;
   totalQty: number;
   itemsCount: number;
   status: DischargeStatus;
@@ -24,6 +24,7 @@ export type DischargeSessionItemDetail = {
   submittedAt?: number;
   wineId: string;
   wineName: string;
+  age?: string;
   producer?: string;
   origin?: string;
   category?: string;
@@ -42,7 +43,6 @@ type SessionRow = {
   id: string;
   created_at: string;
   submitted_at?: string | null;
-  user_label?: string | null;
   total_qty?: number | null;
   status: DischargeStatus;
   discharge_session_items?: Array<{ count: number | null }> | null;
@@ -67,6 +67,7 @@ type SessionItemRow = {
   wines:
     | {
         name?: string | null;
+        age?: string | null;
         producer?: string | null;
         origin?: string | null;
         category?: string | null;
@@ -74,6 +75,7 @@ type SessionItemRow = {
       }
     | Array<{
         name?: string | null;
+        age?: string | null;
         producer?: string | null;
         origin?: string | null;
         category?: string | null;
@@ -96,7 +98,7 @@ export async function listDischargeSessions(
 
   const { data: sessions, error: sessionsError } = await client
     .from('discharge_sessions')
-    .select('id, created_at, submitted_at, user_label, total_qty, status, discharge_session_items(count)')
+    .select('id, created_at, submitted_at, total_qty, status, discharge_session_items(count)')
     .eq('status', status)
     .order(status === 'submitted' ? 'submitted_at' : 'created_at', { ascending: false })
     .limit(limit);
@@ -110,7 +112,6 @@ export async function listDischargeSessions(
     id: row.id,
     createdAt: new Date(row.created_at).getTime(),
     submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : undefined,
-    userLabel: row.user_label ?? undefined,
     totalQty: Number(row.total_qty ?? 0),
     itemsCount: Number(row.discharge_session_items?.[0]?.count ?? 0),
     status: row.status
@@ -118,7 +119,6 @@ export async function listDischargeSessions(
 }
 
 export async function createDischargeSession(input: {
-  userLabel?: string;
   items: DischargeItemInput[];
   source?: string;
 }): Promise<string> {
@@ -130,7 +130,6 @@ export async function createDischargeSession(input: {
     .from('discharge_sessions')
     .insert({
       status: 'pending',
-      user_label: input.userLabel ?? null,
       source: input.source ?? 'web'
     })
     .select('id')
@@ -160,7 +159,6 @@ export async function submitDischargeSession(sessionId: string): Promise<void> {
 }
 
 export async function createAndSubmitDischargeSession(input: {
-  userLabel?: string;
   items: DischargeItemInput[];
   source?: string;
   expectedQtyByWineId?: Record<string, number>;
@@ -214,7 +212,7 @@ export async function listSubmittedDischargeItemsForAi(limit = 500): Promise<Dis
   const { data, error } = await client
     .from('discharge_session_items')
     .select(
-      'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, producer, origin, category, supplier)'
+      'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category, supplier)'
     )
     .eq('discharge_sessions.status', 'submitted')
     .order('submitted_at', { foreignTable: 'discharge_sessions', ascending: false })
@@ -233,8 +231,9 @@ export async function listSubmittedDischargeItemsForAi(limit = 500): Promise<Dis
       submittedAt: session?.submitted_at ? new Date(session.submitted_at).getTime() : undefined,
       wineId: row.wine_id,
       wineName: wine?.name?.trim() || row.wine_id,
+      age: wine?.age ?? undefined,
       producer: wine?.producer ?? undefined,
-      origin: wine?.origin ?? undefined,
+      origin: wine?.origin ? normalizeOrigin(wine.origin) : undefined,
       category: wine?.category ?? undefined,
       supplier: wine?.supplier ?? undefined,
       qty: Math.max(0, Number(row.qty ?? 0))
@@ -250,7 +249,7 @@ export async function listSubmittedDischargeSessionItems(
   const { data, error } = await client
     .from('discharge_session_items')
     .select(
-      'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, producer, origin, category, supplier)'
+      'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category, supplier)'
     )
     .eq('session_id', sessionId)
     .eq('discharge_sessions.status', 'submitted');
@@ -268,8 +267,9 @@ export async function listSubmittedDischargeSessionItems(
       submittedAt: session?.submitted_at ? new Date(session.submitted_at).getTime() : undefined,
       wineId: row.wine_id,
       wineName: wine?.name?.trim() || row.wine_id,
+      age: wine?.age ?? undefined,
       producer: wine?.producer ?? undefined,
-      origin: wine?.origin ?? undefined,
+      origin: wine?.origin ? normalizeOrigin(wine.origin) : undefined,
       category: wine?.category ?? undefined,
       supplier: wine?.supplier ?? undefined,
       qty: Math.max(0, Number(row.qty ?? 0))

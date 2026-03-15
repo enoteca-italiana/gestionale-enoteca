@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { SessionItem, Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ChevronDown } from 'lucide-react';
+import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 
 export function SummaryList({
   items,
@@ -67,7 +68,12 @@ export function SummaryList({
   return (
     <>
       <div className="card summaryDock">
-        <button className="summaryToggle" type="button" onClick={toggleOpen} aria-expanded={isOpen}>
+        <button
+          className="summaryToggle"
+          type="button"
+          onClick={toggleOpen}
+          aria-expanded={isOpen ? 'true' : 'false'}
+        >
           <div className="summaryToggleMain">
             <div className="summaryToggleLead" aria-hidden="true" />
             <div className="sectionTitle summaryToggleTitle">Riepilogo</div>
@@ -100,8 +106,11 @@ export function SummaryList({
                         <div className="min0">
                           <div className="lineTitle">{wine.name}</div>
                           <div className="subtle mt4">
-                            {wine.producer} • {wine.origin}
-                            {wine.vintage ? ` • ${wine.vintage}` : ''}
+                            {formatWineInfoLine({
+                              producer: wine.producer,
+                              year: wine.age ?? wine.vintage,
+                              origin: wine.origin
+                            })}
                           </div>
                         </div>
                         <div className="pill summaryQtyPill">-{i.qty}</div>

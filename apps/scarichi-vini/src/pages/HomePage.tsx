@@ -19,7 +19,11 @@ function isInThreshold(qty: number, threshold?: number) {
   return parsedQty <= parsedThreshold;
 }
 
-export function HomePage() {
+export function HomePage({
+  onIntroVisibilityChange
+}: {
+  onIntroVisibilityChange?: (visible: boolean) => void;
+}) {
   const [showIntro, setShowIntro] = useState(true);
   const [introVisible, setIntroVisible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -53,6 +57,11 @@ export function HomePage() {
       window.clearTimeout(t);
     };
   }, []);
+
+  useEffect(() => {
+    onIntroVisibilityChange?.(showIntro);
+    return () => onIntroVisibilityChange?.(false);
+  }, [onIntroVisibilityChange, showIntro]);
 
   useEffect(() => {
     void refreshInventory();
@@ -166,7 +175,7 @@ export function HomePage() {
           }`}
           type="button"
           onClick={() => setStockFilter((prev) => (prev === 'threshold' ? 'all' : 'threshold'))}
-          aria-pressed={stockFilter === 'threshold'}
+          aria-pressed={stockFilter === 'threshold' ? 'true' : 'false'}
         >
           Soglia
         </button>
@@ -176,7 +185,7 @@ export function HomePage() {
           }`}
           type="button"
           onClick={() => setStockFilter((prev) => (prev === 'out' ? 'all' : 'out'))}
-          aria-pressed={stockFilter === 'out'}
+          aria-pressed={stockFilter === 'out' ? 'true' : 'false'}
         >
           Esaurito
         </button>

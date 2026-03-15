@@ -9,7 +9,6 @@ export type LocalSession = {
   id: string;
   createdAt: number;
   submittedAt?: number;
-  userLabel?: string;
   items: LocalSessionItem[];
 };
 

@@ -16,7 +16,7 @@
 .archiveLogoTop {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 32px;
 }
 
 .archiveLogoImg {
@@ -27,7 +27,20 @@
 
 .archiveTopBar {
   --archive-top-action-size: 35px;
+  position: relative;
   padding: 4px 0 10px;
+}
+
+.archiveExportDock {
+  position: absolute;
+  top: -58px;
+  right: 0;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  z-index: 10;
+  transform: scale(1.125);
+  transform-origin: top right;
 }
 
 .archiveTopRow {
@@ -59,7 +72,13 @@
 .archiveFilters {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: minmax(210px, 0.82fr) minmax(520px, 1.35fr) auto minmax(192px, auto) auto auto;
+  grid-template-columns:
+    minmax(230px, 0.95fr)
+    minmax(500px, 1.35fr)
+    minmax(192px, auto)
+    auto
+    auto
+    auto;
   gap: 10px;
   align-items: center;
 }
@@ -74,6 +93,24 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   min-width: 0;
+}
+
+.archiveFilterField {
+  min-width: 0;
+  position: relative;
+}
+
+.archiveFilterFieldLabel {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -18px;
+  pointer-events: none;
 }
 
 .archiveFilterSelect {
@@ -111,6 +148,22 @@
   cursor: pointer;
 }
 
+.archiveExportButtonIconOnly {
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  min-width: var(--archive-top-action-size);
+  width: var(--archive-top-action-size);
+  min-height: var(--archive-top-action-size);
+  height: var(--archive-top-action-size);
+  padding: 0;
+}
+
+.archiveExportButtonIconOnly:hover {
+  border-color: transparent;
+  background: rgba(124, 22, 74, 0.06);
+}
+
 .archiveExportIconImage {
   width: 24px;
   height: 24px;
@@ -118,7 +171,7 @@
   display: block;
 }
 
-.archiveExportButton:hover {
+.archiveExportButton:hover:not(.archiveExportButtonIconOnly) {
   border-color: #7c164a;
   background: #fcf8fa;
 }
@@ -248,6 +301,32 @@
   line-height: 0;
   cursor: pointer;
   overflow: hidden;
+}
+
+.archiveResetButton {
+  appearance: none;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #7c164a;
+  border-radius: 999px;
+  width: var(--archive-top-action-size);
+  height: var(--archive-top-action-size);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.archiveResetButton:hover {
+  border-color: #c3cad4;
+  background: #fcfcfd;
+}
+
+.archiveResetButton svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
 }
 
 .archiveAiButtonIcon {
@@ -621,7 +700,7 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto minmax(192px, auto);
+    grid-template-columns: minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto auto;
   }
 
   .archiveAddButton {
@@ -1048,6 +1127,10 @@
 .archiveNotesInput {
   min-height: 96px;
   resize: vertical;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .archiveModalActions {

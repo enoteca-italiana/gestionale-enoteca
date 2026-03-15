@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Scopo di questo file
 
@@ -46,6 +46,27 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 
 - UX Admin:
   - evitando schermate vuote: durante il loading dello storico (`/admin` → `Sessioni storico`) viene mostrata una card `Caricamento…` invece di rendering `null`.
+
+- Storico sessioni (UI):
+  - nessun nome/titolo sessione (solo data/ora + numero vini + numero bottiglie);
+  - nel dettaglio, quantità scaricate per vino mostrate inline (senza pill).
+
+- Home (Intro):
+  - durante l’intro la Bottom Nav non viene mostrata.
+
+- Standard UI metadati vino:
+  - riga info sotto al nome: `Produttore • Anno(se presente) • Provenienza`.
+
+- Provenienza (origin):
+  - salvata e mostrata sempre in **MAIUSCOLO** (input + rendering).
+
+- Archivio `/admina` (toolbar):
+  - label sopra i 4 filtri (Categoria/Produttore/Provenienza/Fornitore) senza disallineare la riga;
+  - i select mostrano solo il valore selezionato (default `Tutte/Tutti`);
+  - export Excel/PDF: icone dockate in alto a destra (solo icone) + ricerca più larga;
+  - pulsante reset filtri tondo tra `Esauriti` e `Aggiungi vino`:
+    - reset completo a default (`Totale` + select su `Tutti` + ricerca vuota);
+    - stile coerente: bianco con bordo grigio leggero, icona frecce viola.
 
 ---
 

@@ -1,10 +1,7 @@
 import type { Wine } from '@/domain/types';
+import { normalizeOrigin } from '@/domain/normalizeOrigin';
 
 const ORIGIN_STORAGE_KEY = 'scarichi.origins.v1';
-
-function normalizeOrigin(value: string) {
-  return value.trim().replace(/\s+/g, ' ');
-}
 
 export function loadManagedOrigins(): string[] {
   if (typeof window === 'undefined') return [];
@@ -29,7 +26,7 @@ function saveManagedOrigins(origins: string[]) {
 export function listOriginOptions(wines: Wine[], managedOrigins: string[]): string[] {
   const entries: string[] = [...managedOrigins];
   wines.forEach((wine) => {
-    if (wine.origin?.trim()) entries.push(wine.origin.trim());
+    if (wine.origin?.trim()) entries.push(normalizeOrigin(wine.origin));
   });
 
   const seen = new Map<string, string>();

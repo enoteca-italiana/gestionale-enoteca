@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Workspace
 
@@ -40,6 +40,10 @@ Asset logo:
 - `src/pages/AdminPage.tsx`
 - `src/pages/admina/WineAdminPage.tsx`
 
+Nota Intro:
+
+- durante la schermata intro, la `BottomNav` non viene renderizzata.
+
 ### Home (sessione)
 
 - `src/pages/home/`
@@ -73,6 +77,9 @@ Toolbar archivio:
 
 - filtri ottimizzati su una riga desktop;
 - box compatto statistiche (`Totale`, `Soglia`, `Esauriti`) con comportamento filtro (rimosso filtro `Tutte le giacenze`);
+- pulsante reset filtri dedicato tra box statistiche e `Aggiungi vino`:
+  - azzera term + select (`all`) e riporta il filtro stock su `Totale`;
+  - dimensioni e allineamento coerenti al pulsante AI.
 - indicatori: `Totale` verde, `Soglia` ambra, `Esauriti` rosso;
 - stato selezionato dei tre pulsanti con colori invertiti (testo bianco su sfondo colorato).
 - colonna `ANNO`: se dato assente, cella vuota (senza placeholder).
@@ -89,6 +96,11 @@ Toolbar archivio:
 - `src/data/categoryRepository.ts` (lista categorie gestite + upsert controllato)
 - `src/data/originRepository.ts` (lista provenienze gestite + upsert controllato)
 - `src/data/supplierRepository.ts` (lista fornitori gestiti + upsert controllato)
+
+Standard UI dati vino:
+
+- riga metadati sotto al nome vino: `Produttore • Anno(se presente) • Provenienza` (`formatWineInfoLine`).
+- `origin` (provenienza) normalizzata in **uppercase** tramite `normalizeOrigin` (input e display).
 
 ### Sessioni scarico (Supabase)
 

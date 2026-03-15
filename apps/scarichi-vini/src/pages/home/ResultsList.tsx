@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
+import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 
 export function ResultsList({
   wines,
@@ -72,8 +73,11 @@ export function ResultsList({
                 </div>
               </div>
               <div className="subtle mt4">
-                {w.producer} • {w.origin}
-                {w.vintage ? ` • ${w.vintage}` : ''}
+                {formatWineInfoLine({
+                  producer: w.producer,
+                  year: w.age ?? w.vintage,
+                  origin: w.origin
+                })}
               </div>
             </div>
           </div>
@@ -104,8 +108,11 @@ export function ResultsList({
                 <div className={`consultiveQty ${w.qty <= 0 ? 'consultiveQtyZero' : ''}`}>{w.qty}</div>
               </div>
               <div className="subtle mt4">
-                {w.producer} • {w.origin}
-                {w.vintage ? ` • ${w.vintage}` : ''}
+                {formatWineInfoLine({
+                  producer: w.producer,
+                  year: w.age ?? w.vintage,
+                  origin: w.origin
+                })}
               </div>
             </div>
           </button>

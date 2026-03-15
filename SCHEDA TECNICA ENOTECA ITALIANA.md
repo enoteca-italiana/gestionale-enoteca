@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Introduzione
 
@@ -14,12 +14,16 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
 
 - conferma sessione scarico collegata a Supabase (tabelle sessioni + RPC);
 - storico admin letto da Supabase;
+- storico sessioni: nessun nome/titolo sessione in UI (solo data/ora + conteggi);
+- standard UI metadati vino: `Produttore • Anno(se presente) • Provenienza`;
+- provenienza salvata e mostrata sempre in **MAIUSCOLO**;
 - installazione PWA ottimizzata per Android, iOS (Safari) e desktop con icone dedicate (`maskable` + `apple-touch-icon`);
 - backup operativo standard in formato `.tar.gz` (non zip).
 - archivio admin con export professionale:
   - Excel `.xlsx` nativo con layout coerente alla tabella archivio;
   - PDF nativo con logo Enoteca Italiana su ogni pagina;
   - naming uniforme data italiana (`archivio_vini_13 Marzo 2026.*`).
+  - export Excel/PDF disponibili come icone dockate in alto a destra in toolbar archivio.
 - impostazioni admin con import archivio CSV:
   - validazione tracciato colonne;
   - sostituzione totale record archivio in un’unica operazione.

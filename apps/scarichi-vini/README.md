@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Quick Start
 
@@ -22,6 +22,7 @@ Comandi utili:
 ## Funzionalità principali
 
 - Sessione scarico mobile-first (`/`) con supporto offline.
+- Intro iniziale (2.5s): durante l’intro la Bottom Nav non viene mostrata.
 - Conferma sessione integrata su Supabase (RPC `submit_discharge_session`).
 - Sessione scarico aggiornata:
   - CTA primaria rinominata in `Conferma Scarico`
@@ -35,6 +36,9 @@ Comandi utili:
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)
+  - pulsante reset filtri tondo (tra `Esauriti` e `Aggiungi vino`), stesso diametro del pulsante AI:
+    - reset completo filtri a default (`Totale` + tutti i select su `Tutti` + ricerca vuota)
+    - stile: sfondo bianco, bordo grigio leggero, icona frecce viola
   - il box statistiche sostituisce il vecchio filtro `Tutte le giacenze`
   - pulsanti statistiche con stato selezionato a colori invertiti (testo bianco)
   - `Soglia` in tono giallo/ambra, `Esauriti` in tono rosso
@@ -58,6 +62,9 @@ Comandi utili:
   - calcoli automatici:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
+  - standard rendering info sotto al nome vino: `Produttore • Anno(se presente) • Provenienza`
+  - `Provenienza` salvata e mostrata sempre in **MAIUSCOLO**
+  - export archivio: Excel/PDF con icone dockate in alto a destra (solo icone)
 - Assistente AI archivio:
   - chat unica nel modale (nessuna vista impostazioni separata)
   - modello selezionabile inline vicino a `Invia`

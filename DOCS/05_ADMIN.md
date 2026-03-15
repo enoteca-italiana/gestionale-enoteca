@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Accesso
 
@@ -78,6 +78,12 @@ File: `AdminHistory.tsx`
 - card cliccabili con dettaglio contenuto sessione;
 - formato data: `18 Marzo 2026`;
 - formato ora: `15:05` (senza secondi);
+- in lista e dettaglio, le info sessione sono solo:
+  - data/ora
+  - numero vini
+  - numero bottiglie
+- nessun nome/titolo sessione viene mostrato o gestito in UI.
+- nel dettaglio, la quantità scaricata per vino è mostrata come testo inline (senza pill/contenitore).
 - reset storico:
   - doppia conferma;
   - conferma finale con PIN admin.
@@ -130,6 +136,8 @@ Funzioni principali:
 
 - ricerca e filtri (testo, categoria, soglia/esauriti)
 - filtri su singola riga desktop con box statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
+- pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra `Esauriti` e `Aggiungi vino`
+  - resetta tutti i filtri allo stato default (`Totale` + select su `Tutti` + ricerca vuota)
 - CRUD vini
 - categoria/provenienza/fornitore da liste gestite
 - tabella con header sticky, righe alternate e separatori verticali

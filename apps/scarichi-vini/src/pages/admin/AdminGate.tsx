@@ -12,7 +12,6 @@ type SettingsAction = 'password' | 'import' | 'threshold' | 'reset' | null;
 
 export function AdminGate() {
   const { ready, isAuthed, login, logout, changePassword } = useAdminAuth();
-  const [toast, setToast] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('home');
   const [settingsAction, setSettingsAction] = useState<SettingsAction>(null);
   const { hardResetAll } = useLocalDb();
@@ -44,18 +43,7 @@ export function AdminGate() {
   if (!isAuthed) {
     return (
       <>
-        <AdminLogin
-          onLogin={async (pwd) => {
-            const ok = await login(pwd);
-            if (ok) setToast('Accesso effettuato');
-            return ok;
-          }}
-        />
-        {toast ? (
-          <div className="mt12">
-            <div className="toastInline">{toast}</div>
-          </div>
-        ) : null}
+        <AdminLogin onLogin={async (pwd) => login(pwd)} />
       </>
     );
   }
@@ -76,7 +64,6 @@ export function AdminGate() {
             onReset={() => {
               void clearHistory().catch((error) => {
                 console.error('[AdminGate] clearHistory failed', error);
-                setToast('Errore reset storico');
               });
             }}
           />
@@ -90,24 +77,14 @@ export function AdminGate() {
         onActionHandled={() => setSettingsAction(null)}
         onLogout={() => {
           logout();
-          setToast('Logout');
         }}
         onHardReset={() => {
           hardResetAll();
-          setToast('Reset totale eseguito');
         }}
         onChangePassword={async (currentPwd, newPwd) => {
-          const ok = await changePassword(currentPwd, newPwd);
-          if (ok) setToast('Password aggiornata');
-          return ok;
+          return changePassword(currentPwd, newPwd);
         }}
       />
-
-      {toast ? (
-        <div className="mt12">
-          <div className="toastInline">{toast}</div>
-        </div>
-      ) : null}
     </>
   );
 }

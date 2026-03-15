@@ -1,6 +1,6 @@
 # Modello dati locale (localStorage)
 
-Ultimo aggiornamento: **15/03/2026 20:30 CET**.
+Ultimo aggiornamento: **15/03/2026 23:05 CET**.
 
 ## Obiettivo
 
@@ -42,7 +42,6 @@ Campi `Wine` rilevanti nello stato attuale:
 - `id`: string (generata con `newId()`)
 - `createdAt`: epoch ms
 - `submittedAt` (opzionale): epoch ms
-- `userLabel` (opzionale): string
 - `items`: `{ wineId, qty }[]`
 
 Nota:
