@@ -65,12 +65,7 @@ export function AdminGate() {
       {section === 'home' ? <AdminHome onOpen={openRootSection} /> : null}
 
       {section === 'history' ? (
-        sessionsLoading ? (
-          <div className="card adminCard">
-            <div className="title">Storico Sessioni</div>
-            <div className="subtle mt6">Caricamento…</div>
-          </div>
-        ) : sessionsError ? (
+        sessionsLoading ? null : sessionsError ? (
           <div className="card adminCard">
             <div className="title">Storico Sessioni</div>
             <div className="errorText mt6">{sessionsError}</div>
