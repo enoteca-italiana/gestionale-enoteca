@@ -45,10 +45,7 @@ type SessionRow = {
   user_label?: string | null;
   total_qty?: number | null;
   status: DischargeStatus;
-};
-
-type ItemCountRow = {
-  session_id: string;
+  discharge_session_items?: Array<{ count: number | null }> | null;
 };
 
 type SessionItemRow = {
@@ -90,32 +87,24 @@ type WineQtyRow = {
   qty?: number | null;
 };
 
-export async function listDischargeSessions(status: DischargeStatus): Promise<DischargeSessionSummary[]> {
+export async function listDischargeSessions(
+  status: DischargeStatus,
+  options?: { limit?: number }
+): Promise<DischargeSessionSummary[]> {
   const client = requireSupabase();
+  const limit = Math.max(1, Math.min(options?.limit ?? 300, 2000));
 
   const { data: sessions, error: sessionsError } = await client
     .from('discharge_sessions')
-    .select('id, created_at, submitted_at, user_label, total_qty, status')
+    .select('id, created_at, submitted_at, user_label, total_qty, status, discharge_session_items(count)')
     .eq('status', status)
-    .order(status === 'submitted' ? 'submitted_at' : 'created_at', { ascending: false });
+    .order(status === 'submitted' ? 'submitted_at' : 'created_at', { ascending: false })
+    .limit(limit);
 
   if (sessionsError) throw sessionsError;
 
   const rows = (sessions ?? []) as SessionRow[];
   if (rows.length === 0) return [];
-
-  const ids = rows.map((row) => row.id);
-  const { data: items, error: itemsError } = await client
-    .from('discharge_session_items')
-    .select('session_id')
-    .in('session_id', ids);
-
-  if (itemsError) throw itemsError;
-
-  const counts = new Map<string, number>();
-  for (const row of (items ?? []) as ItemCountRow[]) {
-    counts.set(row.session_id, (counts.get(row.session_id) ?? 0) + 1);
-  }
 
   return rows.map((row) => ({
     id: row.id,
@@ -123,7 +112,7 @@ export async function listDischargeSessions(status: DischargeStatus): Promise<Di
     submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : undefined,
     userLabel: row.user_label ?? undefined,
     totalQty: Number(row.total_qty ?? 0),
-    itemsCount: counts.get(row.id) ?? 0,
+    itemsCount: Number(row.discharge_session_items?.[0]?.count ?? 0),
     status: row.status
   }));
 }

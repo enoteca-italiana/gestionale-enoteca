@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **14/03/2026 18:42 CET**.
+Ultimo aggiornamento: **15/03/2026 11:23 CET**.
 
 ## Accesso
 
@@ -81,6 +81,22 @@ File: `AdminHistory.tsx`
 - reset storico:
   - doppia conferma;
   - conferma finale con PIN admin.
+
+## Ottimizzazioni performance Supabase
+
+File principali:
+
+- `useDischargeSessions.ts`
+- `dischargeRepository.ts`
+- `AdminGate.tsx`
+
+Ottimizzazioni introdotte:
+
+- storico caricato solo su sezione `history` (on-demand);
+- `/admin` non resta più bloccata su “Caricamento dati Supabase…” in home;
+- cache in memoria per storico (`TTL` breve) per ridurre reload ravvicinati;
+- query storico limitata lato server (`limit` default 300, cap 2000);
+- conteggio elementi sessione calcolato nella query principale (`discharge_session_items(count)`), senza seconda query bulk sugli item.
 
 ## Sessioni sospese
 

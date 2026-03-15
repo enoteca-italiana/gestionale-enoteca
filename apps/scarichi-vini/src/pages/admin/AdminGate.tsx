@@ -21,7 +21,7 @@ export function AdminGate() {
     loading: sessionsLoading,
     error: sessionsError,
     clearHistory
-  } = useDischargeSessions();
+  } = useDischargeSessions(section === 'history');
 
   const openRootSection = (target: AdminRootSection) => {
     if (target === 'history') {
@@ -60,39 +60,32 @@ export function AdminGate() {
     );
   }
 
-  if (sessionsLoading) {
-    return (
-      <div className="card adminCard">
-        <div className="title">Sessioni</div>
-        <div className="subtle mt6">Caricamento dati Supabase…</div>
-      </div>
-    );
-  }
-
-  if (sessionsError) {
-    return (
-      <div className="card adminCard">
-        <div className="title">Sessioni</div>
-        <div className="errorText mt6">{sessionsError}</div>
-      </div>
-    );
-  }
-
   return (
     <>
       {section === 'home' ? <AdminHome onOpen={openRootSection} /> : null}
 
       {section === 'history' ? (
-        <AdminHistory
-          history={history}
-          onReset={() => {
-            void clearHistory()
-              .catch((error) => {
+        sessionsLoading ? (
+          <div className="card adminCard">
+            <div className="title">Storico Sessioni</div>
+            <div className="subtle mt6">Caricamento dati Supabase…</div>
+          </div>
+        ) : sessionsError ? (
+          <div className="card adminCard">
+            <div className="title">Storico Sessioni</div>
+            <div className="errorText mt6">{sessionsError}</div>
+          </div>
+        ) : (
+          <AdminHistory
+            history={history}
+            onReset={() => {
+              void clearHistory().catch((error) => {
                 console.error('[AdminGate] clearHistory failed', error);
                 setToast('Errore reset storico');
               });
-          }}
-        />
+            }}
+          />
+        )
       ) : null}
 
       <AdminSettings

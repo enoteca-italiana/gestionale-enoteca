@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **14/03/2026 18:42 CET**.
+Ultimo aggiornamento: **15/03/2026 11:23 CET**.
 
 ## Scopo di questo file
 
@@ -30,6 +30,19 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - reset storico fisso in basso, con doppia conferma e PIN.
 - Sessioni sospese:
   - rimosse dal flusso operativo e dalla UI admin.
+
+## Ultimi aggiornamenti (15/03/2026)
+
+- Performance Admin/Supabase:
+  - caricamento storico sessioni reso **on-demand** (solo quando apri `Sessioni storico`);
+  - rimossa la chiamata Supabase bloccante all’ingresso in `/admin`;
+  - cache in memoria per storico con TTL breve per ridurre round-trip ripetuti;
+  - query storico alleggerita:
+    - limite server-side (default 300 sessioni);
+    - conteggio item per sessione letto in una singola query con relation count;
+    - eliminata query separata che scaricava tutte le righe `discharge_session_items`.
+- Reset storico:
+  - dopo reset, aggiornamento stato/cache locale senza refetch immediata (evitata query superflua).
 
 ---
 
