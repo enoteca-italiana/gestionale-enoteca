@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import type { SessionItem, Wine } from '@/domain/types';
 
 function buildWineSearchText(wine: Wine) {
@@ -27,6 +27,7 @@ export function useLocalSession({
   const [sessionOpen, setSessionOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Record<string, SessionItem>>({});
+  const deferredQuery = useDeferredValue(query);
 
   const inventoryById = useMemo(() => {
     const map = new Map<string, Wine>();
@@ -41,13 +42,13 @@ export function useLocalSession({
   }, [inventory]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     if (!q) return inventory;
     return inventory.filter((w) => {
       const haystack = inventorySearchTextById.get(w.id) ?? '';
       return haystack.includes(q);
     });
-  }, [inventory, inventorySearchTextById, query]);
+  }, [deferredQuery, inventory, inventorySearchTextById]);
 
   const sessionList = useMemo(() => {
     return Object.values(items)
@@ -73,7 +74,17 @@ export function useLocalSession({
   };
 
   const adjustWineQty = (wineId: string, delta: number) => {
-    setInventory((prev) => prev.map((w) => (w.id === wineId ? { ...w, qty: w.qty + delta } : w)));
+    if (!delta) return;
+    setInventory((prev) => {
+      const idx = prev.findIndex((wine) => wine.id === wineId);
+      if (idx < 0) return prev;
+      const target = prev[idx];
+      const nextQty = target.qty + delta;
+      if (nextQty === target.qty) return prev;
+      const next = [...prev];
+      next[idx] = { ...target, qty: nextQty };
+      return next;
+    });
   };
 
   const addToSession = (wineId: string, amount: number) => {

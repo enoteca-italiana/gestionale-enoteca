@@ -25,6 +25,7 @@ type WineRow = {
 };
 
 const WINES_PAGE_SIZE = 1000;
+const WINE_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 
 function randomThreshold(): number {
   return Math.floor(Math.random() * 12) + 1;
@@ -151,7 +152,7 @@ function isNotNullViolation(error: unknown): boolean {
 }
 
 function sortWines(wines: Wine[]): Wine[] {
-  return [...wines].sort((a, b) => a.name.localeCompare(b.name, 'it', { sensitivity: 'base' }));
+  return [...wines].sort((a, b) => WINE_NAME_COLLATOR.compare(a.name, b.name));
 }
 
 function normalizeOrigins(wines: Wine[]): Wine[] {

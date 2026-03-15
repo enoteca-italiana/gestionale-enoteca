@@ -16,6 +16,7 @@ const BASE_ROWS = 14;
 const ROW_HEIGHT_ESTIMATE = 33;
 const TABLE_OFFSET = 340;
 const TABLE_RENDER_BATCH = 300;
+const TABLE_SORT_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 type SortKey = 'category' | 'name' | 'producer' | 'origin' | 'supplier';
 type SortDir = 'az' | 'za';
 
@@ -86,7 +87,7 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
               : sortState.key === 'supplier'
                 ? b.supplier ?? ''
               : b.name ?? '';
-      return aValue.localeCompare(bValue, 'it', { sensitivity: 'base' });
+      return TABLE_SORT_COLLATOR.compare(aValue, bValue);
     });
     return sortState.dir === 'az' ? byField : byField.reverse();
   }, [sortState, wines]);

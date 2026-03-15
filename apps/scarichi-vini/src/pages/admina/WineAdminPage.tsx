@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import {
@@ -57,6 +57,7 @@ export function WineAdminPage() {
   const [supplierResultHandler, setSupplierResultHandler] =
     useState<((created: string | null) => void) | null>(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const deferredTerm = useDeferredValue(filters.term);
 
   const loadWines = useCallback(async () => {
     setLoading(true);
@@ -123,9 +124,13 @@ export function WineAdminPage() {
     [wines, managedSuppliers, supabaseSuppliers]
   );
 
+  const effectiveFilters = useMemo(
+    () => ({ ...filters, term: deferredTerm }),
+    [deferredTerm, filters]
+  );
   const filteredWines = useMemo(
-    () => wines.filter((w) => matchesFilters(w, filters)),
-    [wines, filters]
+    () => wines.filter((w) => matchesFilters(w, effectiveFilters)),
+    [effectiveFilters, wines]
   );
   const archiveStats = useMemo(() => {
     let thresholdCount = 0;

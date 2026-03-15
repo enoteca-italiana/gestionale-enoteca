@@ -67,8 +67,8 @@ export function resetDb() {
   localStorage.removeItem(DB_KEY);
 }
 
-export function notifyDbChanged() {
-  window.dispatchEvent(new CustomEvent(dbChangedEvent));
+export function notifyDbChanged(sourceId?: string) {
+  window.dispatchEvent(new CustomEvent(dbChangedEvent, { detail: { sourceId } }));
 }
 
 export function newId(prefix: string) {
