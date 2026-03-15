@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **13/03/2026 17:53 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Introduzione
 
@@ -13,7 +13,7 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
 ### Stato tecnico attuale (aggiornato)
 
 - conferma sessione scarico collegata a Supabase (tabelle sessioni + RPC);
-- storico e sospesi admin letti da Supabase;
+- storico admin letto da Supabase;
 - installazione PWA ottimizzata per Android, iOS (Safari) e desktop con icone dedicate (`maskable` + `apple-touch-icon`);
 - backup operativo standard in formato `.tar.gz` (non zip).
 - archivio admin con export professionale:
@@ -25,7 +25,7 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
   - sostituzione totale record archivio in un’unica operazione.
 - assistente AI archivio (`/admina`) con modale dedicato:
   - chat analitica su dati correnti archivio;
-  - vista impostazioni separata con soli campi chiave API e tipo agent;
+  - chat unica (nessuna vista impostazioni separata nel modale);
   - import chiave da file `.txt` e validazione/sanitizzazione automatica formato `sk-...`;
   - nessuna scrittura automatica su Supabase (solo consultazione/analisi).
 
@@ -396,7 +396,7 @@ La conferma finale deve essere:
 
 La conferma finale deve essere progettata come:
 
-- **opzione disattivabile da admin**
+- **comportamento stabile via modale** (nel progetto attuale la conferma finale è sempre presente)
 
 ### Correzioni nel riepilogo
 
@@ -463,9 +463,7 @@ Le sessioni in sospeso devono stare:
 Gli utenti operativi non devono vedere il numero delle sessioni pendenti.
 Questa informazione deve essere disponibile solo in admin, in una sezione tipo:
 
-- status
-- sospesi
-- coda sincronizzazione
+- status / sospesi / coda sincronizzazione (baseline)
 
 ### Permessi admin sulle sessioni sospese
 
@@ -475,6 +473,10 @@ L’admin deve poter:
 - aprire il dettaglio di ciascuna sessione
 - vedere i vini contenuti nella sessione prima di eliminarla
 - eliminare manualmente la sessione
+
+Nota stato attuale:
+
+- nel progetto attuale la gestione “sessioni in sospeso” è stata rimossa dal flusso e dalla UI admin.
 
 ### Eliminazione sessione sospesa
 

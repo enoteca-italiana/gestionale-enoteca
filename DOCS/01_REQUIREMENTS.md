@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Scopo
 
@@ -62,16 +62,12 @@ Ultimo aggiornamento: **13/03/2026 03:12 CET**.
 - In archivio, le note sono consultabili da icona in colonna `Azioni` (non più come colonna dedicata).
 - Categoria e provenienza selezionabili da liste gestite (no input libero), con opzione `+ Aggiungi ...` e suggerimenti anti-duplicato.
 - Settings (toggle):
-  - conferma finale on/off
-  - associazione nome utente on/off (predisposizione)
+  - associazione nome utente (predisposizione / future)
 - Storico Admin:
   - mostra solo sessioni inviate correttamente da Supabase
   - reset storico con **doppia conferma**
-- Sospesi Admin:
-  - lista sessioni in stato `pending` su Supabase
-  - dettaglio (baseline: riepilogo in lista)
-  - delete singolo con conferma
-  - delete tutti con conferma
+- Sessioni sospese:
+  - rimosse dal flusso operativo e dalla UI admin.
 - Reset totale:
   - cancella inventario locale + storico + sospesi con **doppia conferma**
 

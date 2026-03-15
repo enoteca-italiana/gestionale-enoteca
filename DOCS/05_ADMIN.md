@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **15/03/2026 11:23 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Accesso
 
@@ -97,6 +97,10 @@ Ottimizzazioni introdotte:
 - cache in memoria per storico (`TTL` breve) per ridurre reload ravvicinati;
 - query storico limitata lato server (`limit` default 300, cap 2000);
 - conteggio elementi sessione calcolato nella query principale (`discharge_session_items(count)`), senza seconda query bulk sugli item.
+
+Nota UX:
+
+- durante il caricamento dello storico, viene mostrato uno stato `Caricamento…` (evitato rendering vuoto).
 
 ## Sessioni sospese
 

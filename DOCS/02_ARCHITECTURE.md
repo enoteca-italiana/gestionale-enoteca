@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **13/03/2026 13:40 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Workspace
 

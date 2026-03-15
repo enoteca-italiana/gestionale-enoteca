@@ -1,6 +1,6 @@
 # Assistente AI Archivio
 
-Ultimo aggiornamento: **14/03/2026 17:33 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Scopo
 

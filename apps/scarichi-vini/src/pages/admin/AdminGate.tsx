@@ -68,7 +68,7 @@ export function AdminGate() {
         sessionsLoading ? (
           <div className="card adminCard">
             <div className="title">Storico Sessioni</div>
-            <div className="subtle mt6">Caricamento dati Supabase…</div>
+            <div className="subtle mt6">Caricamento…</div>
           </div>
         ) : sessionsError ? (
           <div className="card adminCard">

@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **15/03/2026 11:23 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Scopo di questo file
 
@@ -43,6 +43,9 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
     - eliminata query separata che scaricava tutte le righe `discharge_session_items`.
 - Reset storico:
   - dopo reset, aggiornamento stato/cache locale senza refetch immediata (evitata query superflua).
+
+- UX Admin:
+  - evitando schermate vuote: durante il loading dello storico (`/admin` → `Sessioni storico`) viene mostrata una card `Caricamento…` invece di rendering `null`.
 
 ---
 
@@ -296,6 +299,13 @@ Comandi root:
   - riduzione dimensionale progressiva dei pulsanti top in base alla richiesta utente.
 
 ### Verifica qualità (14/03/2026 15:20 CET)
+
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run test` ✅ (8 test passati)
+- `npm run build` ✅
+
+### Verifica qualità (15/03/2026 20:29 CET)
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅

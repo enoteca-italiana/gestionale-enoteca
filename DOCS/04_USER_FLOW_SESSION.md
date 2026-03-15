@@ -1,6 +1,6 @@
 # Flusso utente — Sessione di scarico
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Entrata
 
@@ -43,10 +43,8 @@ Vincolo:
 
 ## Conferma
 
-- Se setting `conferma finale` è ON:
-  - appare modale di conferma.
-- Se setting `nome utente` è ON:
-  - la modale mostra input e salva `userLabel`.
+- La conferma finale avviene con modale.
+- L’associazione `userLabel` (nome utente) è predisposta per uso futuro.
 
 ## Comportamento online/offline
 

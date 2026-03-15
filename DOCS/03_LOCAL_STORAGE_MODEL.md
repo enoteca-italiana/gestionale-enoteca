@@ -1,6 +1,6 @@
 # Modello dati locale (localStorage)
 
-Ultimo aggiornamento: **13/03/2026 03:12 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Obiettivo
 

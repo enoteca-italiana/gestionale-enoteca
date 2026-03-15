@@ -1,6 +1,6 @@
 # Offline & PWA
 
-Ultimo aggiornamento: **13/03/2026 13:07 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Obiettivo
 

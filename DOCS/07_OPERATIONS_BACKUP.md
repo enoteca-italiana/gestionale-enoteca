@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **15/03/2026 11:24 CET**.
+Ultimo aggiornamento: **15/03/2026 20:30 CET**.
 
 ## Dev server
 
