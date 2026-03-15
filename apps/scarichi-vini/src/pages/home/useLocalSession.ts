@@ -1,6 +1,22 @@
 import { useMemo, useState } from 'react';
 import type { SessionItem, Wine } from '@/domain/types';
 
+function buildWineSearchText(wine: Wine) {
+  return [
+    wine.category,
+    wine.name,
+    wine.age,
+    wine.producer,
+    wine.origin,
+    wine.supplier,
+    wine.notes,
+    wine.warehouse
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
 export function useLocalSession({
   inventory,
   setInventory
@@ -12,26 +28,26 @@ export function useLocalSession({
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Record<string, SessionItem>>({});
 
+  const inventoryById = useMemo(() => {
+    const map = new Map<string, Wine>();
+    for (const wine of inventory) map.set(wine.id, wine);
+    return map;
+  }, [inventory]);
+
+  const inventorySearchTextById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const wine of inventory) map.set(wine.id, buildWineSearchText(wine));
+    return map;
+  }, [inventory]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return inventory;
     return inventory.filter((w) => {
-      const haystack = [
-        w.category,
-        w.name,
-        w.age,
-        w.producer,
-        w.origin,
-        w.supplier,
-        w.notes,
-        w.warehouse
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+      const haystack = inventorySearchTextById.get(w.id) ?? '';
       return haystack.includes(q);
     });
-  }, [query, inventory]);
+  }, [inventory, inventorySearchTextById, query]);
 
   const sessionList = useMemo(() => {
     return Object.values(items)
@@ -62,7 +78,7 @@ export function useLocalSession({
 
   const addToSession = (wineId: string, amount: number) => {
     if (!sessionOpen) return;
-    const wine = inventory.find((w) => w.id === wineId);
+    const wine = inventoryById.get(wineId);
     if (!wine) return;
     if (wine.qty <= 0) return;
 

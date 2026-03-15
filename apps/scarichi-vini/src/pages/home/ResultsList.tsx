@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 
+const LIST_RENDER_BATCH = 180;
+
 export function ResultsList({
   wines,
   getSessionQty,
@@ -21,7 +23,10 @@ export function ResultsList({
   const [selectedWineId, setSelectedWineId] = useState<string | null>(null);
   const [selectedWineSnapshot, setSelectedWineSnapshot] = useState<Wine | null>(null);
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(LIST_RENDER_BATCH);
   const confirmCloseTimer = useRef<number | null>(null);
+  const renderedWines = useMemo(() => wines.slice(0, visibleCount), [visibleCount, wines]);
+  const hasMoreRows = renderedWines.length < wines.length;
   const selectedWine = useMemo(() => {
     if (!selectedWineId) return null;
     const fromList = wines.find((wine) => wine.id === selectedWineId);
@@ -37,6 +42,10 @@ export function ResultsList({
     if (!latest) return;
     setSelectedWineSnapshot(latest);
   }, [selectedWineId, wines]);
+
+  useEffect(() => {
+    setVisibleCount(LIST_RENDER_BATCH);
+  }, [wines, interactive, sessionOpen]);
 
   useEffect(() => {
     return () => {
@@ -58,38 +67,51 @@ export function ResultsList({
 
   if (!interactive) {
     return (
-      <div className="mt12 consultiveList" role="list" aria-label="Lista vini consultiva">
-        {wines.map((w, idx) => (
-          <div
-            key={w.id}
-            className={`consultiveRow ${idx === 0 ? 'consultiveRowFirst' : ''}`}
-            role="listitem"
-          >
-            <div className="min0">
-              <div className="consultiveTopRow">
-                <div className="lineTitle">{w.name}</div>
-                <div className={`consultiveQty ${w.qty <= 0 ? 'consultiveQtyZero' : ''}`}>
-                  {w.qty}
+      <>
+        <div className="mt12 consultiveList" role="list" aria-label="Lista vini consultiva">
+          {renderedWines.map((w, idx) => (
+            <div
+              key={w.id}
+              className={`consultiveRow ${idx === 0 ? 'consultiveRowFirst' : ''}`}
+              role="listitem"
+            >
+              <div className="min0">
+                <div className="consultiveTopRow">
+                  <div className="lineTitle">{w.name}</div>
+                  <div className={`consultiveQty ${w.qty <= 0 ? 'consultiveQtyZero' : ''}`}>
+                    {w.qty}
+                  </div>
+                </div>
+                <div className="subtle mt4">
+                  {formatWineInfoLine({
+                    producer: w.producer,
+                    year: w.age ?? w.vintage,
+                    origin: w.origin
+                  })}
                 </div>
               </div>
-              <div className="subtle mt4">
-                {formatWineInfoLine({
-                  producer: w.producer,
-                  year: w.age ?? w.vintage,
-                  origin: w.origin
-                })}
-              </div>
             </div>
+          ))}
+        </div>
+        {hasMoreRows ? (
+          <div className="centered mt12">
+            <button
+              className="button buttonSecondary"
+              type="button"
+              onClick={() => setVisibleCount((prev) => prev + LIST_RENDER_BATCH)}
+            >
+              Carica altri vini ({wines.length - renderedWines.length})
+            </button>
           </div>
-        ))}
-      </div>
+        ) : null}
+      </>
     );
   }
 
   return (
     <>
       <div className="mt12 consultiveList" role="list" aria-label="Lista vini sessione">
-        {wines.map((w, idx) => (
+        {renderedWines.map((w, idx) => (
           <button
             key={w.id}
             className={`consultiveRow consultiveRowButton ${idx === 0 ? 'consultiveRowFirst' : ''}`}
@@ -118,6 +140,17 @@ export function ResultsList({
           </button>
         ))}
       </div>
+      {hasMoreRows ? (
+        <div className="centered mt12">
+          <button
+            className="button buttonSecondary"
+            type="button"
+            onClick={() => setVisibleCount((prev) => prev + LIST_RENDER_BATCH)}
+          >
+            Carica altri vini ({wines.length - renderedWines.length})
+          </button>
+        </div>
+      ) : null}
 
       {showActions && selectedWine ? (
         <div className="modalOverlay" role="dialog" aria-modal="true">

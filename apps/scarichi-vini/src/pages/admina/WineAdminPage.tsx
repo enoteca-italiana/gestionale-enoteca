@@ -127,6 +127,19 @@ export function WineAdminPage() {
     () => wines.filter((w) => matchesFilters(w, filters)),
     [wines, filters]
   );
+  const archiveStats = useMemo(() => {
+    let thresholdCount = 0;
+    let outCount = 0;
+    for (const wine of wines) {
+      if (isInThreshold(wine)) thresholdCount += 1;
+      if (wine.qty <= 0) outCount += 1;
+    }
+    return {
+      winesCount: wines.length,
+      thresholdCount,
+      outCount
+    };
+  }, [wines]);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -334,9 +347,9 @@ export function WineAdminPage() {
       </div>
 
       <AdminArchiveToolbar
-        winesCount={wines.length}
-        thresholdCount={wines.filter((w) => isInThreshold(w)).length}
-        outCount={wines.filter((w) => w.qty <= 0).length}
+        winesCount={archiveStats.winesCount}
+        thresholdCount={archiveStats.thresholdCount}
+        outCount={archiveStats.outCount}
         wines={filteredWines}
         filters={filters}
         categories={categories}

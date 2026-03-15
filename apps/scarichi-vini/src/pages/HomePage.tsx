@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
@@ -48,6 +48,7 @@ export function HomePage({
     decrementItem,
     deleteItem
   } = useLocalSession({ inventory, setInventory });
+  const deferredFiltered = useDeferredValue(filtered);
 
   useEffect(() => {
     const r = window.requestAnimationFrame(() => setIntroVisible(true));
@@ -111,8 +112,8 @@ export function HomePage({
 
   const visibleWines = useMemo(() => {
     const winesAvailableForSelection = sessionOpen
-      ? filtered.filter((wine) => !sessionQtyByWineId.has(wine.id))
-      : filtered;
+      ? deferredFiltered.filter((wine) => !sessionQtyByWineId.has(wine.id))
+      : deferredFiltered;
 
     if (stockFilter === 'threshold') {
       return winesAvailableForSelection.filter((wine) => isInThreshold(wine.qty, wine.threshold));
@@ -121,7 +122,7 @@ export function HomePage({
       return winesAvailableForSelection.filter((wine) => wine.qty <= 0);
     }
     return winesAvailableForSelection;
-  }, [filtered, sessionOpen, sessionQtyByWineId, stockFilter]);
+  }, [deferredFiltered, sessionOpen, sessionQtyByWineId, stockFilter]);
 
   const getSessionQty = (wineId: string) => sessionQtyByWineId.get(wineId) ?? 0;
   const showResults = !sessionOpen || query.trim().length > 0 || stockFilter !== 'all';

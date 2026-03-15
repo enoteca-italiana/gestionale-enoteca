@@ -15,6 +15,7 @@ const TOTAL_COLUMNS = 12;
 const BASE_ROWS = 14;
 const ROW_HEIGHT_ESTIMATE = 33;
 const TABLE_OFFSET = 340;
+const TABLE_RENDER_BATCH = 300;
 type SortKey = 'category' | 'name' | 'producer' | 'origin' | 'supplier';
 type SortDir = 'az' | 'za';
 
@@ -52,6 +53,7 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
   const [editingQtyWineId, setEditingQtyWineId] = useState<string | null>(null);
   const [editingQtyValue, setEditingQtyValue] = useState<string>('');
   const [savingQtyWineId, setSavingQtyWineId] = useState<string | null>(null);
+  const [visibleRows, setVisibleRows] = useState(TABLE_RENDER_BATCH);
   const [qtyConfirmModal, setQtyConfirmModal] = useState<{
     wine: Wine;
     currentQty: number;
@@ -88,6 +90,11 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
     });
     return sortState.dir === 'az' ? byField : byField.reverse();
   }, [sortState, wines]);
+  const renderedWines = useMemo(
+    () => sortedWines.slice(0, Math.max(TABLE_RENDER_BATCH, visibleRows)),
+    [sortedWines, visibleRows]
+  );
+  const hasMoreRows = renderedWines.length < sortedWines.length;
 
   const toggleSort = (key: SortKey) => {
     setSortState((prev) => {
@@ -115,10 +122,14 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
     return () => window.removeEventListener('resize', computeTargetRows);
   }, []);
 
+  useEffect(() => {
+    setVisibleRows(TABLE_RENDER_BATCH);
+  }, [loading, sortState, wines]);
+
   const fillerRows = useMemo(() => {
     if (loading) return 0;
-    return Math.max(0, targetRows - sortedWines.length);
-  }, [loading, sortedWines.length, targetRows]);
+    return Math.max(0, targetRows - renderedWines.length);
+  }, [loading, renderedWines.length, targetRows]);
 
   const beginQtyEdit = (wine: Wine) => {
     if (savingQtyWineId) return;
@@ -317,7 +328,7 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
                 </td>
               </tr>
             ) : (
-              sortedWines.map((wine) => {
+              renderedWines.map((wine) => {
                 const qty = Number(wine.qty);
                 const isZeroQty = Number.isFinite(qty) && qty === 0;
                 const threshold = Number(wine.threshold);
@@ -433,6 +444,19 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
               );
               })
             )}
+            {hasMoreRows ? (
+              <tr>
+                <td colSpan={TOTAL_COLUMNS} className="archiveTableEmptyCell">
+                  <button
+                    className="button buttonSecondary archiveLoadMoreButton"
+                    type="button"
+                    onClick={() => setVisibleRows((prev) => prev + TABLE_RENDER_BATCH)}
+                  >
+                    Carica altre righe ({sortedWines.length - renderedWines.length})
+                  </button>
+                </td>
+              </tr>
+            ) : null}
             {Array.from({ length: fillerRows }).map((_, idx) => (
               <tr key={`empty-${idx}`} className="archiveEmptyRow" aria-hidden="true">
                 {Array.from({ length: TOTAL_COLUMNS }).map((__, colIdx) => (

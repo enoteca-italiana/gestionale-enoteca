@@ -329,6 +329,10 @@
   stroke: currentColor;
 }
 
+.archiveLoadMoreButton {
+  min-width: 240px;
+}
+
 .archiveAiButtonIcon {
   width: 20px;
   height: 20px;
