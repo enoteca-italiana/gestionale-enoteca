@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import { extractApiKey } from '@/pages/admina/components/aiAssistantKey';
 import {
@@ -23,6 +23,15 @@ const AGENT_MODELS = [
   { value: 'gpt-4.1', label: 'GPT-4.1' }
 ] as const;
 const WELCOME_MESSAGE = 'Salve, in cosa posso esserti utile?';
+const AI_SESSIONS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+let aiSessionsCache:
+  | {
+      at: number;
+      submittedSessions: DischargeSessionSummary[];
+      submittedItems: DischargeSessionItemDetail[];
+    }
+  | null = null;
 
 function buildInventorySnapshot(wines: Wine[]) {
   const total = wines.length;
@@ -50,7 +59,11 @@ function buildInventorySnapshot(wines: Wine[]) {
   };
 }
 
-function pickRelevantWines(wines: Wine[], query: string): Wine[] {
+function pickRelevantWines(
+  wines: Wine[],
+  query: string,
+  searchTextByWineId: Map<string, string>
+): Wine[] {
   const normalized = query
     .toLowerCase()
     .normalize('NFD')
@@ -63,18 +76,7 @@ function pickRelevantWines(wines: Wine[], query: string): Wine[] {
 
   const scored = wines
     .map((wine) => {
-      const haystack = [
-        wine.name,
-        wine.category ?? '',
-        wine.producer,
-        wine.origin,
-        wine.supplier ?? '',
-        wine.notes ?? ''
-      ]
-        .join(' ')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+      const haystack = searchTextByWineId.get(wine.id) ?? '';
 
       let score = 0;
       for (const token of tokens) {
@@ -149,10 +151,26 @@ function aggregateBy(items: AnalyticWine[], field: 'category' | 'producer' | 'or
     .slice(0, 30);
 }
 
-function buildAiContext(wines: Wine[], question: string, snapshot: ReturnType<typeof buildInventorySnapshot>) {
-  const all = wines.map(toAnalyticWine);
-  const relevantWines = pickRelevantWines(wines, question).map(toAnalyticWine);
+type InventoryAnalytics = {
+  all: AnalyticWine[];
+  leaderboards: {
+    topMargins: AnalyticWine[];
+    lowestMargins: AnalyticWine[];
+    topStockValue: AnalyticWine[];
+    lowestQty: AnalyticWine[];
+    outOfStock: AnalyticWine[];
+    inThreshold: AnalyticWine[];
+  };
+  breakdowns: {
+    byCategory: ReturnType<typeof aggregateBy>;
+    byProducer: ReturnType<typeof aggregateBy>;
+    byOrigin: ReturnType<typeof aggregateBy>;
+    bySupplier: ReturnType<typeof aggregateBy>;
+  };
+};
 
+function buildInventoryAnalytics(wines: Wine[]): InventoryAnalytics {
+  const all = wines.map(toAnalyticWine);
   const byMarginDesc = [...all].sort((a, b) => b.margin - a.margin);
   const byMarginAsc = [...all].sort((a, b) => a.margin - b.margin);
   const byStockValueDesc = [...all].sort((a, b) => b.stockValue - a.stockValue);
@@ -164,14 +182,7 @@ function buildAiContext(wines: Wine[], question: string, snapshot: ReturnType<ty
   );
 
   return {
-    snapshot: {
-      totalWines: snapshot.total,
-      totalQty: snapshot.qtyTotal,
-      outOfStock: snapshot.out,
-      thresholdCount: snapshot.threshold,
-      stockValueEuro: snapshot.stockValue,
-      avgMarginEuro: snapshot.marginAvg
-    },
+    all,
     leaderboards: {
       topMargins: byMarginDesc.slice(0, 20),
       lowestMargins: byMarginAsc.slice(0, 20),
@@ -185,7 +196,28 @@ function buildAiContext(wines: Wine[], question: string, snapshot: ReturnType<ty
       byProducer: aggregateBy(all, 'producer'),
       byOrigin: aggregateBy(all, 'origin'),
       bySupplier: aggregateBy(all, 'supplier')
+    }
+  };
+}
+
+function buildAiContext(
+  snapshot: ReturnType<typeof buildInventorySnapshot>,
+  analytics: InventoryAnalytics,
+  relevantWines: AnalyticWine[]
+) {
+  const { leaderboards, breakdowns } = analytics;
+
+  return {
+    snapshot: {
+      totalWines: snapshot.total,
+      totalQty: snapshot.qtyTotal,
+      outOfStock: snapshot.out,
+      thresholdCount: snapshot.threshold,
+      stockValueEuro: snapshot.stockValue,
+      avgMarginEuro: snapshot.marginAvg
     },
+    leaderboards,
+    breakdowns,
     relevantWines,
     note:
       'Le classifiche usano tutto l’archivio caricato in questa pagina. I relevantWines servono solo per dettaglio domanda.'
@@ -299,6 +331,19 @@ async function readApiError(response: Response): Promise<string> {
   return `Richiesta AI fallita (${response.status}). ${payload.slice(0, 180)}`;
 }
 
+function readAiSessionsCache() {
+  if (!aiSessionsCache) return null;
+  if (Date.now() - aiSessionsCache.at > AI_SESSIONS_CACHE_TTL_MS) return null;
+  return aiSessionsCache;
+}
+
+function writeAiSessionsCache(payload: {
+  submittedSessions: DischargeSessionSummary[];
+  submittedItems: DischargeSessionItemDetail[];
+}) {
+  aiSessionsCache = { at: Date.now(), ...payload };
+}
+
 export function AiAssistantModal({
   open,
   wines,
@@ -322,7 +367,66 @@ export function AiAssistantModal({
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const snapshot = useMemo(() => buildInventorySnapshot(wines), [wines]);
+  const searchTextByWineId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const wine of wines) {
+      map.set(
+        wine.id,
+        [
+          wine.name,
+          wine.category ?? '',
+          wine.producer,
+          wine.origin,
+          wine.supplier ?? '',
+          wine.notes ?? ''
+        ]
+          .join(' ')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+      );
+    }
+    return map;
+  }, [wines]);
+  const analytics = useMemo(() => buildInventoryAnalytics(wines), [wines]);
+  const sessionsContext = useMemo(
+    () => buildSessionsContext(submittedSessions, submittedItems),
+    [submittedItems, submittedSessions]
+  );
   const effectiveApiKey = ENV_API_KEY;
+
+  const loadSessionsData = useCallback(
+    async (options?: { force?: boolean }) => {
+      const force = options?.force ?? false;
+      if (!force) {
+        const cached = readAiSessionsCache();
+        if (cached) {
+          setSubmittedSessions(cached.submittedSessions);
+          setSubmittedItems(cached.submittedItems);
+          setSessionsLoaded(true);
+          return;
+        }
+      }
+      try {
+        const [submitted, items] = await Promise.all([
+          listDischargeSessions('submitted', { limit: 600 }),
+          listSubmittedDischargeItemsForAi(1200)
+        ]);
+        setSubmittedSessions(submitted);
+        setSubmittedItems(items);
+        setSessionsLoaded(true);
+        writeAiSessionsCache({
+          submittedSessions: submitted,
+          submittedItems: items
+        });
+      } catch {
+        setSubmittedSessions([]);
+        setSubmittedItems([]);
+        setSessionsLoaded(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -340,31 +444,8 @@ export function AiAssistantModal({
 
   useEffect(() => {
     if (!open) return;
-    let cancelled = false;
-
-    async function loadSessionsData() {
-      try {
-        const [submitted, items] = await Promise.all([
-          listDischargeSessions('submitted'),
-          listSubmittedDischargeItemsForAi(1200)
-        ]);
-        if (cancelled) return;
-        setSubmittedSessions(submitted);
-        setSubmittedItems(items);
-        setSessionsLoaded(true);
-      } catch {
-        if (cancelled) return;
-        setSubmittedSessions([]);
-        setSubmittedItems([]);
-        setSessionsLoaded(false);
-      }
-    }
-
     void loadSessionsData();
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
+  }, [loadSessionsData, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -411,6 +492,9 @@ export function AiAssistantModal({
     setBusy(true);
 
     try {
+      if (!sessionsLoaded) {
+        await loadSessionsData({ force: true });
+      }
       const systemPrompt = [
         'Sei l’assistente AI interno di Enoteca Italiana.',
         'Rispondi in italiano, tono professionale e sintetico.',
@@ -423,10 +507,11 @@ export function AiAssistantModal({
         'Per richieste di classifica (top/bottom margini, quantità, valore magazzino) usa SEMPRE i leaderboards globali.',
         'Usa anche il blocco sessions per risposte su storico, andamenti temporali e vini più scaricati.'
       ].join(' ');
+      const relevantWines = pickRelevantWines(wines, question, searchTextByWineId).map(toAnalyticWine);
 
       const contextPayload = {
-        inventory: buildAiContext(wines, question, snapshot),
-        sessions: buildSessionsContext(submittedSessions, submittedItems),
+        inventory: buildAiContext(snapshot, analytics, relevantWines),
+        sessions: sessionsContext,
         meta: {
           sessionsLoaded
         }

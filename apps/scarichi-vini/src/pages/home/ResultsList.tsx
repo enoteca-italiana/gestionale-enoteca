@@ -25,6 +25,7 @@ export function ResultsList({
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
   const [visibleCount, setVisibleCount] = useState(LIST_RENDER_BATCH);
   const confirmCloseTimer = useRef<number | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const winesById = useMemo(() => {
     const map = new Map<string, Wine>();
     for (const wine of wines) {
@@ -61,6 +62,22 @@ export function ResultsList({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasMoreRows) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleCount((prev) => prev + LIST_RENDER_BATCH);
+        }
+      },
+      { rootMargin: '180px 0px' }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMoreRows, renderedWines.length, wines.length]);
 
   const closeModal = () => {
     if (confirmCloseTimer.current !== null) {
@@ -101,7 +118,7 @@ export function ResultsList({
           ))}
         </div>
         {hasMoreRows ? (
-          <div className="centered mt12">
+          <div className="centered mt12" ref={loadMoreRef}>
             <button
               className="button buttonSecondary"
               type="button"
@@ -148,7 +165,7 @@ export function ResultsList({
         ))}
       </div>
       {hasMoreRows ? (
-        <div className="centered mt12">
+        <div className="centered mt12" ref={loadMoreRef}>
           <button
             className="button buttonSecondary"
             type="button"

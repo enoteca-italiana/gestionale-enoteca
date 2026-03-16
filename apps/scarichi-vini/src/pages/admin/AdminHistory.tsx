@@ -1,6 +1,6 @@
 import type { DischargeSessionSummary } from '@/data/dischargeRepository';
 import { ConfirmModal } from '@/components/ConfirmModal';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RefreshCcw } from 'lucide-react';
 import { sha256Base64 } from '@/pages/admin/crypto';
 import { storageKeys } from '@/pages/admin/storage';
@@ -44,6 +44,7 @@ function toLocalDateKey(ts: number) {
 }
 
 type DatePreset = 'all' | 'today' | '7d' | '30d' | '90d' | '6m' | '12m' | 'ytd' | 'custom';
+const HISTORY_RENDER_BATCH = 120;
 
 function toInputDate(date: Date) {
   const year = date.getFullYear();
@@ -89,12 +90,36 @@ export function AdminHistory({
   const [detailError, setDetailError] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<DischargeSessionSummary | null>(null);
   const [detailItems, setDetailItems] = useState<DischargeSessionItemDetail[]>([]);
+  const [visibleCount, setVisibleCount] = useState(HISTORY_RENDER_BATCH);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const filteredHistory = history.filter((session) => {
     const sessionDate = toLocalDateKey(session.submittedAt ?? session.createdAt);
     if (dateFrom && sessionDate < dateFrom) return false;
     if (dateTo && sessionDate > dateTo) return false;
     return true;
   });
+  const renderedHistory = filteredHistory.slice(0, visibleCount);
+  const hasMoreRows = renderedHistory.length < filteredHistory.length;
+
+  useEffect(() => {
+    setVisibleCount(HISTORY_RENDER_BATCH);
+  }, [dateFrom, dateTo, datePreset, history]);
+
+  useEffect(() => {
+    if (!hasMoreRows) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleCount((prev) => prev + HISTORY_RENDER_BATCH);
+        }
+      },
+      { rootMargin: '220px 0px' }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMoreRows, renderedHistory.length, filteredHistory.length]);
 
   const closeSessionDetail = () => {
     setDetailOpen(false);
@@ -242,7 +267,7 @@ export function AdminHistory({
               </div>
             </div>
           ) : (
-            filteredHistory.map((s) => {
+            renderedHistory.map((s) => {
               const { formattedDate, formattedTime } = formatDateTime(s.submittedAt ?? s.createdAt);
               return (
                 <button
@@ -262,6 +287,17 @@ export function AdminHistory({
             })
           )}
         </div>
+        {hasMoreRows ? (
+          <div className="centered mt12" ref={loadMoreRef}>
+            <button
+              className="button buttonSecondary"
+              type="button"
+              onClick={() => setVisibleCount((prev) => prev + HISTORY_RENDER_BATCH)}
+            >
+              Carica altre sessioni ({filteredHistory.length - renderedHistory.length})
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="adminHistoryResetSpacer" />

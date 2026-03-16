@@ -24,7 +24,7 @@ type WineRow = {
   notes?: string | null;
 };
 
-const WINES_PAGE_SIZE = 1000;
+const WINES_PAGE_SIZE = 2000;
 const WINE_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 
 function randomThreshold(): number {

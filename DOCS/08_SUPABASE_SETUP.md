@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **16/03/2026 00:42 CET**.
+Ultimo aggiornamento: **16/03/2026 01:07 CET**.
 
 ## Stato attuale
 
@@ -45,8 +45,9 @@ Riferimento codice:
 
 Stato repository:
 
-- al momento non sono presenti file `.sql` versionati in repo;
-- gli script operativi sono gestiti in Supabase SQL Editor o condivisi in chat operativa.
+- è presente script SQL versionato per cleanup performance indici:
+  - `scripts/sql/supabase_enterprise_index_cleanup.sql`
+- gli altri script operativi restano disponibili via SQL Editor/chat operativa.
 
 Ordine esecuzione:
 
@@ -96,6 +97,20 @@ Per migliorare tempi di filtro/ordinamento lato app con migliaia di record, appl
 - indici B-Tree sui campi filtro principali (`category`, `producer`, `origin`, `supplier`, `qty`, `threshold`);
 - indice funzionale su `lower(name)` per ricerche case-insensitive;
 - opzionale: `pg_trgm` + GIN su `name` per ricerche testuali parziali più rapide.
+
+### Cleanup indici duplicati (raccomandato)
+
+Con dataset ampi e molte scritture, evitare indici duplicati sulle stesse colonne.
+
+Script pronto:
+
+- `scripts/sql/supabase_enterprise_index_cleanup.sql`
+
+Effetti:
+
+- rimuove indici duplicati su `discharge_session_items(session_id)`, `discharge_session_items(wine_id)`, `wines(supplier)`;
+- preserva gli indici univoci e quelli realmente usati;
+- esegue `ANALYZE` finale per riallineare planner statistiche.
 
 ## Sicurezza (obbligatorio)
 

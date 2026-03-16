@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 00:58 CET**.
+Ultimo aggiornamento: **16/03/2026 01:07 CET**.
 
 ## Quick Start
 
@@ -82,11 +82,15 @@ Comandi utili:
     - coalescing scritture local DB (batch ravvicinati) per ridurre jank durante update quantità
     - ricerca Home con debounce + indice testuale memoizzato (meno CPU su digitazione)
     - lookup O(1) via mappe per sessione/riepilogo/modali (meno scansioni su migliaia di righe)
+    - autoload progressivo con `IntersectionObserver` su liste lunghe (Home/Archivio/Storico)
+    - normalizzazione memoizzata campi filtro archivio per ridurre lavoro per-riga
+    - fetch paginato `wines` più efficiente (page size 2000)
 - Assistente AI archivio:
   - chat unica nel modale (nessuna vista impostazioni separata)
   - modello selezionabile inline vicino a `Invia`
   - contesto completo su archivio + sessioni storiche/sospese per risposte più affidabili
   - supporto modalità web+app con vincoli di sicurezza su dati interni
+  - cache TTL locale su sessioni storiche AI + analytics inventario precomputati (meno latenza su invio)
 - Logo applicativo ottimizzato in `public/logo.png` per ridurre peso asset.
 - Icone installazione PWA multi-device:
   - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`
@@ -115,6 +119,7 @@ Comandi utili:
 - AI: impostare `VITE_OPENAI_API_KEY` (consigliato) e opzionalmente `VITE_OPENAI_MODEL`.
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
 - Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
+- Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 
 ## Regole Deploy (Render)
 

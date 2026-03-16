@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 00:58 CET**.
+Ultimo aggiornamento: **16/03/2026 01:07 CET**.
 
 ## Scopo di questo file
 
@@ -115,6 +115,22 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - `npm run typecheck` ✅
   - `npm run test` ✅
   - `npm run build` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 4)
+
+- Performance liste grandi:
+  - Home risultati: autoload progressivo via `IntersectionObserver` + fallback pulsante `Carica altri vini`;
+  - Archivio tabella desktop: autoload progressivo righe + fallback pulsante `Carica altre righe`;
+  - Storico sessioni: rendering progressivo con batch, autoload e fallback pulsante.
+- Performance filtri e query locali:
+  - Archivio: campi filtro normalizzati memoizzati per vino (`category/producer/origin/supplier`) per ridurre trasformazioni ripetute;
+  - fetch paginato Supabase su `wines` con pagina aumentata (`2000`) per ridurre round-trip.
+- Assistente AI (stabilità + velocità):
+  - cache in memoria TTL per storico sessioni usato dal contesto AI;
+  - precomputo analytics inventario memoizzato (leaderboard/breakdown) evitando ricalcolo completo a ogni domanda.
+- DB ops:
+  - aggiunto script SQL versionato per cleanup indici duplicati:
+    - `scripts/sql/supabase_enterprise_index_cleanup.sql`
 
 ## Ultimi aggiornamenti (16/03/2026 - UX desktop startup)
 

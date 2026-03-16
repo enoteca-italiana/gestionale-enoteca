@@ -155,6 +155,21 @@ export function WineAdminPage() {
     }
     return map;
   }, [wines]);
+  const normalizedFilterFieldsByWineId = useMemo(() => {
+    const map = new Map<
+      string,
+      { category: string; producer: string; origin: string; supplier: string }
+    >();
+    for (const wine of wines) {
+      map.set(wine.id, {
+        category: wine.category?.toLowerCase() ?? '',
+        producer: wine.producer?.toLowerCase() ?? '',
+        origin: wine.origin?.toLowerCase() ?? '',
+        supplier: wine.supplier?.toLowerCase() ?? ''
+      });
+    }
+    return map;
+  }, [wines]);
   const filteredWines = useMemo(() => {
     const term = effectiveFilters.term.trim().toLowerCase();
     const category = effectiveFilters.category.toLowerCase();
@@ -164,27 +179,29 @@ export function WineAdminPage() {
     const stock = effectiveFilters.stock;
 
     return wines.filter((wine) => {
+      const normalized = normalizedFilterFieldsByWineId.get(wine.id);
+      if (!normalized) return false;
       if (term) {
         const haystack = searchTextByWineId.get(wine.id) ?? '';
         if (!haystack.includes(term)) return false;
       }
       if (category !== 'all') {
-        if ((wine.category?.toLowerCase() ?? '') !== category) return false;
+        if (normalized.category !== category) return false;
       }
       if (producer !== 'all') {
-        if ((wine.producer?.toLowerCase() ?? '') !== producer) return false;
+        if (normalized.producer !== producer) return false;
       }
       if (origin !== 'all') {
-        if ((wine.origin?.toLowerCase() ?? '') !== origin) return false;
+        if (normalized.origin !== origin) return false;
       }
       if (supplier !== 'all') {
-        if ((wine.supplier?.toLowerCase() ?? '') !== supplier) return false;
+        if (normalized.supplier !== supplier) return false;
       }
       if (stock === 'threshold' && !isInThreshold(wine)) return false;
       if (stock === 'out' && wine.qty > 0) return false;
       return true;
     });
-  }, [effectiveFilters, searchTextByWineId, wines]);
+  }, [effectiveFilters, normalizedFilterFieldsByWineId, searchTextByWineId, wines]);
   const archiveStats = useMemo(() => {
     let thresholdCount = 0;
     let outCount = 0;

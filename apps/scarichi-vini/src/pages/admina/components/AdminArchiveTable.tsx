@@ -49,6 +49,7 @@ function computeMargin(wine: Wine) {
 
 export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQty }: Props) {
   const qtyInlineBoxRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRowRef = useRef<HTMLTableRowElement | null>(null);
   const [targetRows, setTargetRows] = useState(BASE_ROWS);
   const [notePreview, setNotePreview] = useState<{ wineName: string; note: string } | null>(null);
   const [editingQtyWineId, setEditingQtyWineId] = useState<string | null>(null);
@@ -126,6 +127,22 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
   useEffect(() => {
     setVisibleRows(TABLE_RENDER_BATCH);
   }, [loading, sortState, wines]);
+
+  useEffect(() => {
+    if (!hasMoreRows) return;
+    const target = loadMoreRowRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleRows((prev) => prev + TABLE_RENDER_BATCH);
+        }
+      },
+      { rootMargin: '220px 0px' }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMoreRows, renderedWines.length, sortedWines.length]);
 
   const fillerRows = useMemo(() => {
     if (loading) return 0;
@@ -446,7 +463,7 @@ export function AdminArchiveTable({ wines, loading, onEdit, onDelete, onUpdateQt
               })
             )}
             {hasMoreRows ? (
-              <tr>
+              <tr ref={loadMoreRowRef}>
                 <td colSpan={TOTAL_COLUMNS} className="archiveTableEmptyCell">
                   <button
                     className="button buttonSecondary archiveLoadMoreButton"
