@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 00:42 CET**.
+Ultimo aggiornamento: **16/03/2026 02:12 CET**.
 
 ## Accesso
 
@@ -158,6 +158,10 @@ Funzioni principali:
   - tabella con rendering progressivo righe (`Carica altre righe`)
   - filtro ricerca con `useDeferredValue`
   - caricamento iniziale: hydration locale immediata + sync Supabase
+- assistente AI in `/admina`:
+  - export report contestuale solo PDF;
+  - pulsante `Esporta PDF` mostrato nel singolo messaggio report (non fisso in header);
+  - PDF con logo in alto e numerazione pagine `1/N`.
 
 Regole business:
 

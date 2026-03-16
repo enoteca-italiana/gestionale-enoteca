@@ -12,6 +12,7 @@ type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   text: string;
+  pdfExportEligible?: boolean;
 };
 
 const STORAGE_MODEL = 'scarichi.ai.openaiModel.v1';
@@ -200,6 +201,7 @@ type DataQualityContext = {
     qtyNonPositive: number;
     duplicatedSessionWinePairs: number;
     dateIncoherent: number;
+    futureDated: number;
   };
   samples: {
     qtyNonPositive: Array<{ sessionId: string; wineId: string; wineName: string; qty: number }>;
@@ -211,12 +213,25 @@ type DataQualityContext = {
       qtyTotal: number;
     }>;
     dateIncoherent: Array<{ sessionId: string; wineId: string; createdAt?: number; submittedAt?: number }>;
+    futureDated: Array<{ sessionId: string; wineId: string; submittedAt?: number }>;
   };
   consistency: {
     hasQtyNonPositive: boolean;
     hasDuplicatedSessionWinePairs: boolean;
     hasDateIncoherent: boolean;
+    hasFutureDated: boolean;
   };
+};
+
+type DecisionBucketRow = {
+  wineId: string;
+  wineName: string;
+  producer: string;
+  qty: number;
+  threshold: number | null;
+  dischargeEvents: number;
+  daysSinceLastDischarge: number | null;
+  reason: string;
 };
 
 function buildInventoryAnalytics(wines: Wine[]): InventoryAnalytics {
@@ -300,8 +315,11 @@ function buildRecencyContext(wines: Wine[], submittedItems: DischargeSessionItem
   const recencyRows: WineRecencyRow[] = wines.map((wine) => {
     const agg = aggregateByWineId.get(wine.id);
     const lastDischargeAt = agg?.lastDischargeAt ?? null;
-    const daysSinceLastDischarge =
-      lastDischargeAt !== null ? Math.floor((now - lastDischargeAt) / (1000 * 60 * 60 * 24)) : null;
+    const daysSinceLastDischarge = (() => {
+      if (lastDischargeAt === null) return null;
+      const days = Math.floor((now - lastDischargeAt) / (1000 * 60 * 60 * 24));
+      return Math.max(0, days);
+    })();
     return {
       wineId: wine.id,
       wineName: wine.name,
@@ -415,6 +433,7 @@ function buildProducerContext(
 }
 
 function buildDataQualityContext(submittedItems: DischargeSessionItemDetail[]): DataQualityContext {
+  const now = Date.now();
   const qtyNonPositive = submittedItems
     .filter((item) => item.qty <= 0)
     .map((item) => ({
@@ -463,22 +482,38 @@ function buildDataQualityContext(submittedItems: DischargeSessionItemDetail[]): 
       submittedAt: item.submittedAt
     }));
 
+  const futureDated = submittedItems
+    .filter(
+      (item) =>
+        typeof item.submittedAt === 'number' &&
+        Number.isFinite(item.submittedAt) &&
+        item.submittedAt > now
+    )
+    .map((item) => ({
+      sessionId: item.sessionId,
+      wineId: item.wineId,
+      submittedAt: item.submittedAt
+    }));
+
   return {
     counts: {
       missingWineName,
       qtyNonPositive: qtyNonPositive.length,
       duplicatedSessionWinePairs: duplicatedSessionWinePairs.length,
-      dateIncoherent: dateIncoherent.length
+      dateIncoherent: dateIncoherent.length,
+      futureDated: futureDated.length
     },
     samples: {
       qtyNonPositive: qtyNonPositive.slice(0, 40),
       duplicatedSessionWinePairs: duplicatedSessionWinePairs.slice(0, 40),
-      dateIncoherent: dateIncoherent.slice(0, 40)
+      dateIncoherent: dateIncoherent.slice(0, 40),
+      futureDated: futureDated.slice(0, 40)
     },
     consistency: {
       hasQtyNonPositive: qtyNonPositive.length > 0,
       hasDuplicatedSessionWinePairs: duplicatedSessionWinePairs.length > 0,
-      hasDateIncoherent: dateIncoherent.length > 0
+      hasDateIncoherent: dateIncoherent.length > 0,
+      hasFutureDated: futureDated.length > 0
     }
   };
 }
@@ -522,6 +557,111 @@ function buildSessionOutlierContext(submittedSessions: DischargeSessionSummary[]
       outliersCount: outliers.length
     },
     outliers
+  };
+}
+
+function buildReorderDecisionContext(wines: Wine[], submittedItems: DischargeSessionItemDetail[]) {
+  const aggregateByWineId = new Map<string, { lastDischargeAt: number | null; dischargeEvents: number }>();
+  for (const item of submittedItems) {
+    const submittedAt = item.submittedAt ?? item.createdAt;
+    const current = aggregateByWineId.get(item.wineId) ?? {
+      lastDischargeAt: null,
+      dischargeEvents: 0
+    };
+    current.dischargeEvents += 1;
+    if (!current.lastDischargeAt || submittedAt > current.lastDischargeAt) {
+      current.lastDischargeAt = submittedAt;
+    }
+    aggregateByWineId.set(item.wineId, current);
+  }
+
+  const now = Date.now();
+  const reorder: DecisionBucketRow[] = [];
+  const freeze: DecisionBucketRow[] = [];
+  const borderline: DecisionBucketRow[] = [];
+
+  for (const wine of wines) {
+    const qty = Math.max(0, Number(wine.qty) || 0);
+    const thresholdRaw = Number(wine.threshold);
+    const threshold = Number.isFinite(thresholdRaw) && thresholdRaw > 0 ? thresholdRaw : null;
+    const agg = aggregateByWineId.get(wine.id);
+    const dischargeEvents = agg?.dischargeEvents ?? 0;
+    const daysSinceLastDischarge =
+      agg?.lastDischargeAt !== null && agg?.lastDischargeAt !== undefined
+        ? Math.max(0, Math.floor((now - agg.lastDischargeAt) / (1000 * 60 * 60 * 24)))
+        : null;
+
+    const isReorder =
+      (qty === 0 || (threshold !== null && qty <= threshold)) &&
+      dischargeEvents > 0 &&
+      daysSinceLastDischarge !== null &&
+      daysSinceLastDischarge <= 180;
+    const isFreeze = dischargeEvents === 0 || (daysSinceLastDischarge !== null && daysSinceLastDischarge > 365);
+
+    const row: DecisionBucketRow = {
+      wineId: wine.id,
+      wineName: wine.name,
+      producer: wine.producer,
+      qty,
+      threshold,
+      dischargeEvents,
+      daysSinceLastDischarge,
+      reason: ''
+    };
+
+    if (isReorder) {
+      row.reason = qty === 0 ? 'esaurito con domanda recente' : 'sotto soglia con domanda recente';
+      reorder.push(row);
+      continue;
+    }
+    if (isFreeze) {
+      row.reason = dischargeEvents === 0 ? 'mai scaricato' : 'fermo da oltre 12 mesi';
+      freeze.push(row);
+      continue;
+    }
+    row.reason = 'caso intermedio da monitorare';
+    borderline.push(row);
+  }
+
+  reorder.sort((a, b) => {
+    const aOut = a.qty === 0 ? 1 : 0;
+    const bOut = b.qty === 0 ? 1 : 0;
+    if (bOut !== aOut) return bOut - aOut;
+    const aGap = a.threshold !== null ? a.threshold - a.qty : -9999;
+    const bGap = b.threshold !== null ? b.threshold - b.qty : -9999;
+    if (bGap !== aGap) return bGap - aGap;
+    return (a.daysSinceLastDischarge ?? 9999) - (b.daysSinceLastDischarge ?? 9999);
+  });
+
+  freeze.sort((a, b) => {
+    const aNever = a.dischargeEvents === 0 ? 1 : 0;
+    const bNever = b.dischargeEvents === 0 ? 1 : 0;
+    if (bNever !== aNever) return bNever - aNever;
+    return (b.daysSinceLastDischarge ?? 9999) - (a.daysSinceLastDischarge ?? 9999);
+  });
+
+  borderline.sort((a, b) => {
+    const aDays = a.daysSinceLastDischarge ?? 0;
+    const bDays = b.daysSinceLastDischarge ?? 0;
+    if (bDays !== aDays) return bDays - aDays;
+    return a.qty - b.qty;
+  });
+
+  return {
+    rules: {
+      reorder:
+        '(qty = 0 OR (threshold > 0 AND qty <= threshold)) AND dischargeEvents > 0 AND daysSinceLastDischarge <= 180',
+      freeze: 'dischargeEvents = 0 OR daysSinceLastDischarge > 365',
+      borderline: 'all records not in reorder/freeze'
+    },
+    counts: {
+      reorder: reorder.length,
+      freeze: freeze.length,
+      borderline: borderline.length
+    },
+    reorder: reorder.slice(0, 300),
+    freeze: freeze.slice(0, 300),
+    borderline: borderline.slice(0, 300)
   };
 }
 
@@ -632,6 +772,52 @@ async function readApiError(response: Response): Promise<string> {
   return `Richiesta AI fallita (${response.status}). ${payload.slice(0, 180)}`;
 }
 
+function buildAiExportFileBaseName() {
+  const now = new Date();
+  const day = new Intl.DateTimeFormat('it-IT', { day: '2-digit' }).format(now);
+  const month = new Intl.DateTimeFormat('it-IT', { month: '2-digit' }).format(now);
+  const year = new Intl.DateTimeFormat('it-IT', { year: 'numeric' }).format(now);
+  const hours = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', hour12: false }).format(now);
+  const minutes = new Intl.DateTimeFormat('it-IT', { minute: '2-digit' }).format(now);
+  return `assistente_ai_${day}-${month}-${year}_${hours}-${minutes}`;
+}
+
+function parseTextToRows(text: string): { rows: string[][]; isTableLike: boolean } {
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  const tableRows: string[][] = [];
+  for (const line of lines) {
+    if (!line.includes('|')) continue;
+    const parts = line.split('|').map((cell) => cell.trim()).filter((cell) => cell.length > 0);
+    if (parts.length >= 2) tableRows.push(parts);
+  }
+
+  const validTableRows = tableRows.filter((row) => !row.every((cell) => /^-+$/.test(cell)));
+  if (validTableRows.length >= 2) {
+    const targetLen = Math.max(...validTableRows.map((row) => row.length));
+    return {
+      isTableLike: true,
+      rows: validTableRows.map((row) => {
+        const next = row.slice(0, targetLen);
+        while (next.length < targetLen) next.push('');
+        return next;
+      })
+    };
+  }
+
+  return {
+    isTableLike: false,
+    rows: [['contenuto'], ...lines.map((line) => [line])]
+  };
+}
+
+function isExplicitReportRequest(question: string): boolean {
+  return /\b(report|riepilogo|analisi|sintesi|diagnosi|kpi|tabella|esporta|export|pdf)\b/i.test(question);
+}
+
 function readAiSessionsCache() {
   if (!aiSessionsCache) return null;
   if (Date.now() - aiSessionsCache.at > AI_SESSIONS_CACHE_TTL_MS) return null;
@@ -657,6 +843,7 @@ export function AiAssistantModal({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [submittedSessions, setSubmittedSessions] = useState<DischargeSessionSummary[]>([]);
   const [submittedItems, setSubmittedItems] = useState<DischargeSessionItemDetail[]>([]);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
@@ -766,9 +953,106 @@ export function AiAssistantModal({
     writeStorage(STORAGE_MODEL, model || DEFAULT_MODEL);
   }, [model]);
 
+  const exportAssistantPdf = async (sourceText: string) => {
+    if (!sourceText.trim()) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `${Date.now()}_exp_pdf`, role: 'assistant', text: 'Nessuna risposta assistente da esportare.' }
+      ]);
+      return;
+    }
+    try {
+      setExporting(true);
+      const parsed = parseTextToRows(sourceText);
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      const loadLogoDataUrl = async (): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+        try {
+          const response = await fetch('/logo.png');
+          if (!response.ok) return null;
+          const blob = await response.blob();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result ?? ''));
+            reader.onerror = () => reject(new Error('logo read failed'));
+            reader.readAsDataURL(blob);
+          });
+          const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
+            img.onerror = () => reject(new Error('logo size read failed'));
+            img.src = dataUrl;
+          });
+          return { dataUrl, ...dimensions };
+        } catch {
+          return null;
+        }
+      };
+
+      const logo = await loadLogoDataUrl();
+      const maxLogoWidth = 180;
+      const maxLogoHeight = 42;
+      const logoScale = logo
+        ? Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height, 1)
+        : 1;
+      const logoWidth = logo ? Number((logo.width * logoScale).toFixed(2)) : 0;
+      const logoHeight = logo ? Number((logo.height * logoScale).toFixed(2)) : 0;
+      const logoX = logo ? Number(((pageWidth - logoWidth) / 2).toFixed(2)) : 0;
+      const logoY = 16;
+      const tableStartY = logo ? logoY + logoHeight + 12 : 48;
+
+      const withHeader = logo
+        ? {
+            didDrawPage: () => {
+              doc.addImage(logo.dataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+            }
+          }
+        : {};
+
+      if (parsed.isTableLike) {
+        autoTable(doc, {
+          head: [parsed.rows[0]],
+          body: parsed.rows.slice(1),
+          startY: tableStartY,
+          styles: { fontSize: 9, cellPadding: 4, textColor: [31, 41, 55] },
+          headStyles: { fillColor: [237, 243, 234], textColor: [75, 85, 99] },
+          margin: { left: 24, right: 24 },
+          ...withHeader
+        });
+      } else {
+        autoTable(doc, {
+          head: [['contenuto']],
+          body: parsed.rows.slice(1),
+          startY: tableStartY,
+          styles: { fontSize: 9, cellPadding: 4, textColor: [31, 41, 55] },
+          headStyles: { fillColor: [237, 243, 234], textColor: [75, 85, 99] },
+          margin: { left: 24, right: 24 },
+          ...withHeader
+        });
+      }
+
+      const totalPages = doc.getNumberOfPages();
+      for (let page = 1; page <= totalPages; page += 1) {
+        doc.setPage(page);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(8);
+        doc.text(`${page}/${totalPages}`, pageWidth / 2, pageHeight - 12, { align: 'center' });
+      }
+
+      doc.save(`${buildAiExportFileBaseName()}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const send = async () => {
     const question = prompt.trim();
     if (!question || busy) return;
+    const reportRequested = isExplicitReportRequest(question);
     if (!effectiveApiKey) {
       setMessages((prev) => [
         ...prev,
@@ -819,6 +1103,13 @@ export function AiAssistantModal({
         'Non inventare numeri.',
         'Per richieste di classifica (top/bottom margini, quantità, valore magazzino) usa SEMPRE i leaderboards globali.',
         'Usa sempre il blocco inventory.recency per domande su vini non scaricati da 3/6/12 mesi o mai scaricati.',
+        'Regola obbligatoria per richieste di riordino: nella lista "da riordinare subito" inserisci SOLO vini esauriti o sotto soglia che NON siano "mai scaricati" e che abbiano evidenza di domanda storica (dischargeEvents > 0, preferenza per eventi recenti/frequenti).',
+        'I vini "mai scaricati" NON possono essere proposti come "da riordinare subito": inseriscili in "non riordinare ora" oppure "da valutare".',
+        'Per richieste con blocchi riordino/congelare/borderline usa PRIORITARIAMENTE inventory.decision (calcolo già fatto con regole rigide).',
+        'Non mostrare mai righe escluse dentro un blocco: ogni riga deve rispettare la regola del blocco.',
+        'Se un blocco non ha record conformi, scrivi esattamente: nessun vino conforme.',
+        'Per borderline usa solo il set residuo inventory.decision.borderline e non lasciare mai il blocco senza verifica.',
+        'I giorni dall’ultimo scarico non possono essere negativi: se il dato sorgente è futuro, considera 0 giorni e segnala anomalia data futura nei controlli qualità.',
         'Per analisi per produttore usa il blocco inventory.byProducer.',
         'Per audit qualità dati usa il blocco sessions.dataQuality.',
         'Per outlier sessione usa il blocco sessions.outliers.',
@@ -830,11 +1121,13 @@ export function AiAssistantModal({
       const producerContext = buildProducerContext(wines, effectiveItems, recency);
       const dataQuality = buildDataQualityContext(effectiveItems);
       const outlierContext = buildSessionOutlierContext(effectiveSessions);
+      const decisionContext = buildReorderDecisionContext(wines, effectiveItems);
 
       const contextPayload = {
         inventory: {
           ...buildAiContext(snapshot, analytics, relevantWines, recency),
-          byProducer: producerContext
+          byProducer: producerContext,
+          decision: decisionContext
         },
         sessions: {
           ...effectiveSessionsContext,
@@ -889,7 +1182,8 @@ export function AiAssistantModal({
         {
           id: `${Date.now()}_a`,
           role: 'assistant',
-          text: reply
+          text: reply,
+          pdfExportEligible: reportRequested
         }
       ]);
     } catch (err) {
@@ -933,6 +1227,17 @@ export function AiAssistantModal({
               >
                 <div className="archiveAiMessageRole">{message.role === 'user' ? 'Tu' : 'Assistente'}</div>
                 <div className="archiveAiMessageText">{message.text}</div>
+                {message.role === 'assistant' && message.pdfExportEligible ? (
+                  <button
+                    className="archiveAiMessageExportPdfButton"
+                    type="button"
+                    onClick={() => void exportAssistantPdf(message.text)}
+                    disabled={busy || exporting}
+                    aria-label="Esporta questo report in PDF"
+                  >
+                    {exporting ? 'Esportazione PDF…' : 'Esporta PDF'}
+                  </button>
+                ) : null}
               </div>
             ))}
             {busy ? (

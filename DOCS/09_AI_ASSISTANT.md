@@ -1,6 +1,6 @@
 # Assistente AI Archivio
 
-Ultimo aggiornamento: **16/03/2026 01:32 CET**.
+Ultimo aggiornamento: **16/03/2026 02:14 CET**.
 
 ## Scopo
 
@@ -13,12 +13,23 @@ Fornire in `/admina` una chat AI unica per analisi dei dati archivio vini e sess
   - titolo `Assistente AI`;
   - chiusura con pulsante `X` in alto a destra;
   - lista messaggi verticale classica (utente/assistente);
+  - pulsante `Esporta PDF` visibile solo sui messaggi assistente generati da richieste esplicite di report/export;
   - composer in basso con:
     - campo domanda (invio con tasto `Enter`)
     - selettore modello
   - logo brand in basso al centro.
 
 Nota: non esiste più una vista impostazioni separata nel modale, né pulsante `Invia`/`Chiudi`.
+
+## Export report PDF (nuovo)
+
+- Formato supportato: **solo PDF**.
+- Il pulsante di export non è fisso nella testata: compare direttamente nel messaggio AI quando la domanda contiene intento esplicito di report/export (`report`, `analisi`, `riepilogo`, `diagnosi`, `kpi`, `tabella`, `esporta`, `export`, `pdf`).
+- L’export usa il contenuto del singolo messaggio:
+  - se tabellare (righe con `|`) genera una tabella PDF;
+  - altrimenti esporta testo formattato.
+- Il PDF include sempre il logo Enoteca Italiana in alto, con proporzioni originali preservate.
+- Il PDF include in footer la numerazione pagine in piccolo (`1/3`, `2/3`, ...).
 
 ## Configurazione API key (stabile)
 

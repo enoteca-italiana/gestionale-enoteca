@@ -331,14 +331,22 @@ export function AdminArchiveToolbar({
         doc.setTextColor(107, 114, 128);
         doc.setFontSize(9);
         doc.text(`Data export: ${dateLabel}`, pageWidth - marginX, 52, { align: 'right' });
-        doc.text(
-          `Enoteca Italiana · Export Archivio · Pagina ${doc.getCurrentPageInfo().pageNumber}`,
-          pageWidth / 2,
-          pageHeight - 12,
-          { align: 'center' }
-        );
       }
     });
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(107, 114, 128);
+      doc.setFontSize(8);
+      doc.text(
+        `Enoteca Italiana · Export Archivio · ${page}/${totalPages}`,
+        pageWidth / 2,
+        pageHeight - 12,
+        { align: 'center' }
+      );
+    }
 
     doc.save(`${buildExportFileBaseName()}.pdf`);
   };

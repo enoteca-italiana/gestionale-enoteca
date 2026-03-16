@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 01:32 CET**.
+Ultimo aggiornamento: **16/03/2026 02:12 CET**.
 
 ## Quick Start
 
@@ -97,11 +97,16 @@ Comandi utili:
     - blocco `sessions.dataQuality` (anomalie deterministiche),
     - blocco `sessions.outliers` (sessioni anomale su base statistica),
     - risposta vincolata: niente stime/ipotesi, uso esplicito di `non disponibile nel contesto` quando manca dato.
+  - export report AI:
+    - formato disponibile: **PDF**;
+    - pulsante `Esporta PDF` visibile solo nei messaggi report richiesti esplicitamente in chat;
+    - PDF con logo `Enoteca Italiana` in alto (proporzioni preservate) e numerazione pagine `1/N`.
 - Logo applicativo ottimizzato in `public/logo.png` per ridurre peso asset.
 - Icone installazione PWA multi-device:
   - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`
   - iOS/Safari: `apple-touch-icon.png`
 - Tema PWA/title bar allineato al brand: `#7c164a` (manifest + meta theme-color)
+- Export PDF (Archivio + Assistente AI): numerazione pagine in footer `1/N`.
 
 ## Quality Gate
 

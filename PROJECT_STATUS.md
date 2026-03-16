@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 01:32 CET**.
+Ultimo aggiornamento: **16/03/2026 02:12 CET**.
 
 ## Scopo di questo file
 
@@ -171,6 +171,21 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - mobile: dopo intro resta su `/` (home).
 - Theme UI shell PWA:
   - `theme_color` allineato al viola brand `#7c164a` (manifest + meta).
+
+## Ultimi aggiornamenti (16/03/2026 - wave 7, AI export PDF)
+
+- Assistente AI (`/admina`):
+  - export messaggi assistente limitato a **PDF** (rimossi CSV/XLSX dal flusso AI);
+  - pulsante `Esporta PDF` mostrato **solo** sui messaggi assistente derivanti da richieste esplicite di report/export;
+  - PDF assistente con logo `Enoteca Italiana` in alto, proporzioni preservate;
+  - numerazione pagine in piccolo formato `1/N` su tutte le pagine.
+- Export PDF Archivio:
+  - aggiunta numerazione pagine globale in footer `1/N` su tutte le pagine.
+- Quality gate post-wave 7:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
 
 ---
 
