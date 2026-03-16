@@ -5,6 +5,14 @@ import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
 import { createAndSubmitDischargeSession } from '@/data/dischargeRepository';
+import {
+  dischargeNoteChangedEvent,
+} from '@/data/dischargeNote';
+import {
+  completeInProgressDischargeNote,
+  getReadyDischargeNoteItems,
+  startReadyDischargeNoteItems
+} from '@/data/dischargeNoteRepository';
 import { useLocalDb } from '@/data/useLocalDb';
 import { ResultsList } from '@/pages/home/ResultsList';
 import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
@@ -73,6 +81,10 @@ export function HomePage({
   const [pendingNavPath, setPendingNavPath] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
+  const [readyDischargeNoteItems, setReadyDischargeNoteItems] = useState<{
+    wineId: string;
+    qty: number;
+  }[]>([]);
   const [location, setLocation] = useLocation();
 
   const online = useOnlineStatus();
@@ -89,6 +101,7 @@ export function HomePage({
     resetSession,
     endSession,
     startSession,
+    startSessionWithItems,
     addToSession,
     incrementItem,
     decrementItem,
@@ -141,6 +154,41 @@ export function HomePage({
   }, [location, sessionCount, sessionOpen]);
 
   useEffect(() => {
+    let alive = true;
+    const syncReadyNote = async () => {
+      try {
+        const items = await getReadyDischargeNoteItems();
+        if (!alive) return;
+        setReadyDischargeNoteItems(items);
+      } catch (error) {
+        console.error('[HomePage] sync ready note failed', error);
+      }
+    };
+    const onFocus = () => {
+      void syncReadyNote();
+    };
+    const onPageShow = () => {
+      void syncReadyNote();
+    };
+
+    void syncReadyNote();
+    const poll = window.setInterval(() => {
+      void syncReadyNote();
+    }, 4000);
+
+    window.addEventListener(dischargeNoteChangedEvent, onFocus);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      alive = false;
+      window.clearInterval(poll);
+      window.removeEventListener(dischargeNoteChangedEvent, onFocus);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, [location]);
+
+  useEffect(() => {
     if (sessionOpen && sessionCount > 0) return;
     if (!leaveSessionConfirmOpen && !pendingNavPath) return;
     setLeaveSessionConfirmOpen(false);
@@ -150,6 +198,17 @@ export function HomePage({
   const confirmSubmit = () => {
     if (sessionCount <= 0) return;
     setConfirmOpen(true);
+  };
+
+  const startSessionFromReadyNote = async () => {
+    const noteItems = await startReadyDischargeNoteItems();
+    if (noteItems.length === 0) {
+      startSession();
+      return;
+    }
+    startSessionWithItems(noteItems);
+    setReadyDischargeNoteItems([]);
+    setToast('Nota scarico caricata');
   };
 
   const submitSession = async () => {
@@ -168,6 +227,8 @@ export function HomePage({
         items: sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty })),
         expectedQtyByWineId
       });
+      await completeInProgressDischargeNote();
+      setReadyDischargeNoteItems([]);
       await refreshInventory();
       setToast('Sessione inviata');
     } catch (error) {
@@ -254,8 +315,20 @@ export function HomePage({
             Conferma Scarico
           </button>
         ) : (
-          <button className="button" type="button" onClick={startSession}>
-            Inizia sessione di scarico
+          <button
+            className={`button ${readyDischargeNoteItems.length > 0 ? 'buttonSessionConfirmActive' : ''}`}
+            type="button"
+            onClick={() => {
+              if (readyDischargeNoteItems.length > 0) {
+                void startSessionFromReadyNote();
+                return;
+              }
+              startSession();
+            }}
+          >
+            {readyDischargeNoteItems.length > 0
+              ? `Avvia scarico da nota (${readyDischargeNoteItems.length})`
+              : 'Inizia sessione di scarico'}
           </button>
         )}
       </div>
@@ -263,7 +336,7 @@ export function HomePage({
       <div className="mt12 searchRow">
         <input
           className="input inputSearch inputSearchCompact"
-          placeholder="Cerca per nome, produttore, provenienza, note…"
+          placeholder="Cerca vino..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

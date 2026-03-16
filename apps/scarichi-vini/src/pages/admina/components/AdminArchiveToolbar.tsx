@@ -16,6 +16,8 @@ type Props = {
   onResetFilters: () => void;
   onOpenCreate: () => void;
   onOpenAi: () => void;
+  noteReady: boolean;
+  onOpenDischargeNote: () => void;
 };
 
 export function AdminArchiveToolbar({
@@ -31,7 +33,9 @@ export function AdminArchiveToolbar({
   onFiltersChange,
   onResetFilters,
   onOpenCreate,
-  onOpenAi
+  onOpenAi,
+  noteReady,
+  onOpenDischargeNote
 }: Props) {
   const setStockFilter = (stock: StockFilter) => onFiltersChange({ ...filters, stock });
 
@@ -385,9 +389,19 @@ export function AdminArchiveToolbar({
       </div>
 
       <div className="archiveFilters">
+        <button
+          className={`archiveNoteButton ${noteReady ? 'archiveNoteButtonReady' : ''}`}
+          type="button"
+          aria-label="Apri nota scarico"
+          title="Nota scarico"
+          onClick={onOpenDischargeNote}
+        >
+          Nota
+        </button>
+
         <input
           className="input archiveFilterControl"
-          placeholder="Cerca per nome, produttore, provenienza, note…"
+          placeholder="Cerca vino..."
           value={filters.term}
           onChange={(e) => onFiltersChange({ ...filters, term: e.target.value })}
         />

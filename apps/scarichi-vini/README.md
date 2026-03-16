@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 02:49 CET**.
+Ultimo aggiornamento: **16/03/2026 15:12 CET**.
 
 ## Quick Start
 
@@ -76,6 +76,14 @@ Comandi utili:
     - input solo numerico da tastiera (senza selector)
     - conferma via modale su tasto `Invio`
   - ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+  - Nota Scarico (desktop, drawer laterale sinistro):
+    - pulsante `Nota` in toolbar (verde quando esiste una nota con vini in `draft/ready/in_progress`);
+    - bozza nota con ricerca vino (`Cerca vino...`) e lista vini aggiunti con q.tà (`1..99`) + cestino;
+    - `Conferma nota scarico` con modale di conferma;
+    - dopo conferma bozza, la Home mostra CTA verde `Avvia scarico da nota`;
+    - avvio da Home: nota passa a `in_progress`;
+    - submit sessione Home completato: nota chiusa (`completed`);
+    - se nota `in_progress`, in Archivio appare avviso `Nota scarico precedente ancora da concludere in Home`.
   - calcoli automatici:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
@@ -136,6 +144,9 @@ Comandi utili:
 - Crea `.env` da `.env.example`.
 - AI: impostare `VITE_OPENAI_API_KEY` (consigliato) e opzionalmente `VITE_OPENAI_MODEL`.
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
+- Nota Scarico usa Supabase in modalità **strict** (niente fallback locale):
+  - tabelle: `public.discharge_notes`, `public.discharge_note_items`
+  - RPC: `save_discharge_note_draft`, `confirm_discharge_note_draft`, `start_ready_discharge_note`, `complete_in_progress_discharge_note`, `get_discharge_note_state`
 - Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
 - Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 

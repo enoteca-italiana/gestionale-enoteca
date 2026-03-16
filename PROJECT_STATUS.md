@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 02:49 CET**.
+Ultimo aggiornamento: **16/03/2026 15:12 CET**.
 
 ## Scopo di questo file
 
@@ -214,6 +214,33 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - Stabilità routing Home:
   - click su pulsante `Home` forzato verso pagina Home reale, senza riattivare redirect non desiderati nel flusso di navigazione esplicita.
 - Quality gate post-wave 9:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 10, Nota Scarico Supabase strict)
+
+- Nota Scarico end-to-end:
+  - nuovo repository dati `dischargeNoteRepository.ts` collegato a RPC Supabase;
+  - flusso stati supportato: `draft -> ready -> in_progress -> completed`;
+  - Home sincronizzata con stato remoto (`get_discharge_note_state`) senza refresh manuale (eventi + focus/pageshow + polling leggero);
+  - avvio da Home con RPC `start_ready_discharge_note`;
+  - chiusura nota a submit sessione riuscito con RPC `complete_in_progress_discharge_note`.
+- Archivio `/admina`:
+  - drawer `Nota Scarico` semplificato in stile blocco note;
+  - ricerca unificata placeholder `Cerca vino...`;
+  - esclusione vini già presenti nella lista nota;
+  - conferma nota con modale;
+  - avviso operativo se esiste nota precedente ancora `in_progress`.
+- Toolbar archivio:
+  - pulsante `Nota` in prima posizione riga;
+  - stato visivo verde quando esiste nota con contenuto (`draft/ready/in_progress`).
+- Governance codice:
+  - rimosso fallback locale per Nota Scarico (modalità strict Supabase);
+  - nessun marker di conflitto;
+  - quality gate rieseguito completo.
+- Quality gate post-wave 10:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
   - `npm run test` ✅

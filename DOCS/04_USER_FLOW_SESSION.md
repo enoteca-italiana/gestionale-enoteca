@@ -1,13 +1,15 @@
 # Flusso utente — Sessione di scarico
 
-Ultimo aggiornamento: **15/03/2026 23:05 CET**.
+Ultimo aggiornamento: **16/03/2026 15:12 CET**.
 
 ## Entrata
 
 - Home mostra header con logo.
 - Box sessione:
   - stato OFF/ON
-  - CTA `Inizia sessione di scarico`
+  - CTA:
+    - viola `Inizia sessione di scarico` (nessuna nota pronta)
+    - verde `Avvia scarico da nota (N)` (nota pronta disponibile)
   - input ricerca (abilitato solo quando sessione aperta)
 - Sessione OFF:
   - lista consultiva visibile (solo lettura).
@@ -44,6 +46,17 @@ Vincolo:
 ## Conferma
 
 - La conferma finale avviene con modale.
+
+## Avvio da Nota Scarico
+
+- Se esiste nota `ready`, la CTA Home diventa verde.
+- Click su CTA verde:
+  - carica automaticamente i vini della nota nel riepilogo sessione;
+  - nota passa a stato `in_progress`.
+- Durante la sessione:
+  - è sempre possibile aggiungere altri vini con la normale ricerca.
+- A submit sessione riuscito:
+  - nota marcata `completed` lato Supabase.
 
 ## Comportamento online/offline
 

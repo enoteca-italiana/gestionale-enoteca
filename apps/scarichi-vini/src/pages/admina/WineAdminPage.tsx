@@ -17,11 +17,14 @@ import {
   upsertManagedSupplier
 } from '@/data/supplierRepository';
 import { loadDb } from '@/data/localDb';
+import { dischargeNoteChangedEvent } from '@/data/dischargeNote';
+import { getDischargeNoteState } from '@/data/dischargeNoteRepository';
 import { createWine, deleteWine, listWines, updateWine } from '@/data/wineRepository';
 import { AdminArchiveToolbar } from '@/pages/admina/components/AdminArchiveToolbar';
 import { AdminArchiveTable } from '@/pages/admina/components/AdminArchiveTable';
 import { AiAssistantModal } from '@/pages/admina/components/AiAssistantModal';
 import { CategoryCreateModal } from '@/pages/admina/components/CategoryCreateModal';
+import { DischargeNoteDrawer } from '@/pages/admina/components/DischargeNoteDrawer';
 import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormModal';
 import { isInThreshold } from '@/pages/admina/utils/wineFilters';
 import {
@@ -58,6 +61,8 @@ export function WineAdminPage() {
   const [supplierResultHandler, setSupplierResultHandler] =
     useState<((created: string | null) => void) | null>(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [dischargeNoteOpen, setDischargeNoteOpen] = useState(false);
+  const [hasDischargeNote, setHasDischargeNote] = useState(false);
   const deferredTerm = useDeferredValue(filters.term);
 
   const loadWines = useCallback(async () => {
@@ -91,6 +96,38 @@ export function WineAdminPage() {
     void loadCategoryRegistry();
     return () => {
       alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const syncReadyState = async () => {
+      try {
+        const state = await getDischargeNoteState();
+        if (!alive) return;
+        setHasDischargeNote(state.hasDraft || state.hasReady || state.hasInProgress);
+      } catch (error) {
+        console.error('[WineAdminPage] sync discharge note state failed', error);
+      }
+    };
+    const onFocus = () => {
+      void syncReadyState();
+    };
+
+    void syncReadyState();
+    const poll = window.setInterval(() => {
+      void syncReadyState();
+    }, 4000);
+
+    window.addEventListener(dischargeNoteChangedEvent, onFocus);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('pageshow', onFocus);
+    return () => {
+      alive = false;
+      window.clearInterval(poll);
+      window.removeEventListener(dischargeNoteChangedEvent, onFocus);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pageshow', onFocus);
     };
   }, []);
 
@@ -435,6 +472,8 @@ export function WineAdminPage() {
         onResetFilters={() => setFilters(defaultFilters)}
         onOpenCreate={openCreate}
         onOpenAi={() => setAiModalOpen(true)}
+        noteReady={hasDischargeNote}
+        onOpenDischargeNote={() => setDischargeNoteOpen(true)}
       />
 
       {error ? (
@@ -466,6 +505,11 @@ export function WineAdminPage() {
         onCancel={closeForm}
       />
       <AiAssistantModal open={aiModalOpen} wines={wines} onClose={() => setAiModalOpen(false)} />
+      <DischargeNoteDrawer
+        open={dischargeNoteOpen}
+        wines={wines}
+        onClose={() => setDischargeNoteOpen(false)}
+      />
 
       <CategoryCreateModal
         open={categoryModalOpen}

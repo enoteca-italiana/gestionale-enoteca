@@ -75,9 +75,11 @@
   margin-top: 10px;
   display: grid;
   grid-template-columns:
+    auto
     minmax(230px, 0.95fr)
     minmax(500px, 1.35fr)
     minmax(192px, auto)
+    auto
     auto
     auto
     auto;
@@ -305,6 +307,39 @@
   overflow: hidden;
 }
 
+.archiveNoteButton {
+  appearance: none;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #7c164a;
+  border-radius: 999px;
+  min-width: 82px;
+  height: var(--archive-top-action-size);
+  display: inline-grid;
+  place-items: center;
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.archiveNoteButton:hover {
+  border-color: #7c164a;
+  background: #fcf6f9;
+}
+
+.archiveNoteButtonReady {
+  border-color: #15803d;
+  background: #15803d;
+  color: #ffffff;
+}
+
+.archiveNoteButtonReady:hover {
+  border-color: #166534;
+  background: #166534;
+}
+
 .archiveResetButton {
   appearance: none;
   border: 1px solid #d1d5db;
@@ -342,6 +377,211 @@
   object-position: center;
   display: block;
   transform: translate(1px, 1px);
+}
+
+.archiveNoteOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(10, 12, 16, 0.36);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.archiveNoteDrawer {
+  width: min(504px, 95vw);
+  height: 100%;
+  background: var(--bg);
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 16px 0 38px rgba(17, 24, 39, 0.22);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px 14px;
+}
+
+.archiveNoteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.archiveNoteTitle {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1f2937;
+}
+
+.archiveNoteSubtle {
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.archiveNoteClose {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+}
+
+.archiveNoteSearchRow {
+  margin-top: 12px;
+}
+
+.archiveNoteSearchInput {
+  border-radius: 14px;
+  padding: 11px 13px;
+  font-size: 14px;
+}
+
+.archiveNoteWarning {
+  border: 1px solid #f59e0b;
+  background: #fff7ed;
+  color: #9a3412;
+  border-radius: 12px;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.archiveNoteSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.archiveNoteSuggestions {
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: auto;
+  max-height: 210px;
+}
+
+.archiveNoteSuggestionRow {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-top: 1px solid #eef2f7;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.archiveNoteSuggestionRow:first-child {
+  border-top: 0;
+}
+
+.archiveNoteSuggestionRow:hover {
+  background: #faf4f8;
+}
+
+.archiveNoteList {
+  margin-top: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.archiveNoteListSimple {
+  max-height: none;
+  min-height: 0;
+}
+
+.archiveNoteListRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 10px;
+  border-top: 1px solid #eef2f7;
+}
+
+.archiveNoteListRow:first-child {
+  border-top: 0;
+}
+
+.archiveNoteRowActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.archiveNoteQtySelect {
+  width: 56px;
+  min-width: 56px;
+  border-radius: 10px;
+  padding: 6px 4px;
+  font-size: 14px;
+  height: 36px;
+}
+
+.archiveNoteListRow .lineTitle {
+  font-size: 12px;
+  line-height: 1.15;
+  letter-spacing: -0.15px;
+}
+
+.archiveNoteListRow .subtle {
+  font-size: 11px;
+  letter-spacing: -0.1px;
+}
+
+.archiveNoteTrashButton {
+  appearance: none;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #b91c1c;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.archiveNoteTrashButton:hover {
+  border-color: #fca5a5;
+  background: #fff6f6;
+}
+
+.archiveNoteEmpty {
+  padding: 14px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.archiveNoteFooter {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.archiveNoteFooterButton {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .archiveAiModalCard {
@@ -703,10 +943,15 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto auto;
+    grid-template-columns: auto minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto auto auto;
   }
 
   .archiveAddButton {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .archiveNoteButton {
     grid-column: 1 / -1;
     justify-self: end;
   }
@@ -1183,6 +1428,15 @@
     justify-self: stretch;
     min-width: 0;
     width: 100%;
+  }
+
+  .archiveNoteButton {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .archiveNoteFooter {
+    grid-template-columns: 1fr;
   }
 
   .archiveAiModalCard {

@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 02:49 CET**.
+Ultimo aggiornamento: **16/03/2026 15:12 CET**.
 
 ## Accesso
 
@@ -185,6 +185,45 @@ Funzioni principali:
   - export report contestuale solo PDF;
   - pulsante `Esporta PDF` mostrato nel singolo messaggio report (non fisso in header);
   - PDF con logo in alto e numerazione pagine `1/N`.
+
+## Nota Scarico (Archivio)
+
+File principali:
+
+- `pages/admina/components/DischargeNoteDrawer.tsx`
+- `data/dischargeNoteRepository.ts`
+
+Comportamento operativo:
+
+- pulsante `Nota` in toolbar archivio:
+  - è il primo controllo nella riga filtri;
+  - diventa verde (testo bianco) quando esiste nota con contenuto (`draft`, `ready`, `in_progress`);
+- drawer laterale sx rapido:
+  - titolo `Nota Scarico` + data (`16 Marzo 2026`);
+  - input ricerca unificato `Cerca vino...`;
+  - ricerca per `nome`, `produttore`, `fornitore`, `provenienza`;
+  - vini già presenti nella nota non vengono riproposti nel box risultati;
+  - lista nota con selector quantità `1..99` e pulsante cestino;
+  - azioni in footer: `Svuota nota`, `Conferma nota scarico`.
+
+Stati nota:
+
+- `draft`: bozza in archivio;
+- `ready`: nota confermata, pronta per Home;
+- `in_progress`: nota caricata in Home e ancora non conclusa;
+- `completed`: nota chiusa dopo submit sessione Home.
+
+Vincoli:
+
+- conferma nota con modale dedicato;
+- se esiste nota `in_progress`, in drawer appare avviso:
+  - `Nota scarico precedente ancora da concludere in Home.`
+  - conferma nuova nota bloccata finché non viene conclusa la precedente.
+
+Persistenza:
+
+- modalità strict Supabase (nessun fallback locale nota):
+  - RPC usate: `save_discharge_note_draft`, `confirm_discharge_note_draft`, `start_ready_discharge_note`, `complete_in_progress_discharge_note`, `get_discharge_note_state`.
 
 Regole business:
 

@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **16/03/2026 01:07 CET**.
+Ultimo aggiornamento: **16/03/2026 15:12 CET**.
 
 ## Stato attuale
 
@@ -19,6 +19,16 @@ Conferme principali:
 - tabelle sessioni presenti:
   - `public.discharge_sessions`
   - `public.discharge_session_items`
+- modulo Nota Scarico presente:
+  - tabelle:
+    - `public.discharge_notes`
+    - `public.discharge_note_items`
+  - RPC:
+    - `save_discharge_note_draft`
+    - `confirm_discharge_note_draft`
+    - `start_ready_discharge_note`
+    - `complete_in_progress_discharge_note`
+    - `get_discharge_note_state`
 
 ## Integrazione frontend completata
 
@@ -29,6 +39,12 @@ Conferme principali:
   - storico letto da `discharge_sessions.status = 'submitted'`
   - sospesi letti da `discharge_sessions.status = 'pending'`
   - reset/elimina agiscono direttamente su Supabase
+- Nota Scarico:
+  - archivio salva bozza su RPC `save_discharge_note_draft`
+  - conferma bozza su RPC `confirm_discharge_note_draft`
+  - Home avvia nota pronta con RPC `start_ready_discharge_note`
+  - submit sessione chiude nota con RPC `complete_in_progress_discharge_note`
+  - stato UI archivio/home letto da RPC `get_discharge_note_state`
 
 ## Variabili ambiente usate dall'app
 
@@ -48,6 +64,11 @@ Stato repository:
 - è presente script SQL versionato per cleanup performance indici:
   - `scripts/sql/supabase_enterprise_index_cleanup.sql`
 - gli altri script operativi restano disponibili via SQL Editor/chat operativa.
+
+Script Nota Scarico (operativi in SQL Editor):
+
+1. `SCRIPT 1` schema + RLS (`discharge_notes`, `discharge_note_items`)
+2. `SCRIPT 2` RPC (`save/confirm/start/complete/get_state`)
 
 Ordine esecuzione:
 

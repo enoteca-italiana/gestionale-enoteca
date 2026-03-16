@@ -78,6 +78,45 @@ export function useLocalSession({
     resetSession();
   };
 
+  const startSessionWithItems = (initialItems: SessionItem[]) => {
+    const qtyByWineId = new Map<string, number>();
+    for (const rawItem of initialItems) {
+      const wineId = String(rawItem.wineId ?? '').trim();
+      const qty = Number.isFinite(rawItem.qty) ? Math.max(0, Math.round(rawItem.qty)) : 0;
+      if (!wineId || qty <= 0) continue;
+      qtyByWineId.set(wineId, (qtyByWineId.get(wineId) ?? 0) + qty);
+    }
+
+    const applied: Record<string, SessionItem> = {};
+    for (const [wineId, requestedQty] of qtyByWineId.entries()) {
+      const wine = inventoryById.get(wineId);
+      if (!wine) continue;
+      const allowedQty = Math.min(requestedQty, Math.max(0, Math.round(wine.qty)));
+      if (allowedQty <= 0) continue;
+      applied[wineId] = { wineId, qty: allowedQty };
+    }
+
+    setSessionOpen(true);
+    setQuery('');
+    setItems(applied);
+    setInventory((prev) => {
+      if (Object.keys(applied).length === 0) return prev;
+      const next = [...prev];
+      for (const [wineId, item] of Object.entries(applied)) {
+        let idx = inventoryIndexById.get(wineId) ?? -1;
+        if (idx < 0 || next[idx]?.id !== wineId) {
+          idx = next.findIndex((wine) => wine.id === wineId);
+        }
+        if (idx < 0) continue;
+        const wine = next[idx];
+        const nextQty = Math.max(0, wine.qty - item.qty);
+        if (nextQty === wine.qty) continue;
+        next[idx] = { ...wine, qty: nextQty };
+      }
+      return next;
+    });
+  };
+
   const endSession = () => {
     setSessionOpen(false);
     resetSession();
@@ -154,6 +193,7 @@ export function useLocalSession({
     setQuery,
     resetSession,
     startSession,
+    startSessionWithItems,
     endSession,
     addToSession,
     incrementItem,
