@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 01:21 CET**.
+Ultimo aggiornamento: **16/03/2026 01:32 CET**.
 
 ## Quick Start
 
@@ -92,6 +92,11 @@ Comandi utili:
   - supporto modalità web+app con vincoli di sicurezza su dati interni
   - cache TTL locale su sessioni storiche AI + analytics inventario precomputati (meno latenza su invio)
   - caricamento storico AI completo via paginazione (sessioni/items `submitted`) con blocco recency (`mai scaricati`, `>6 mesi`, `>12 mesi`)
+  - modalità analitica rigorosa:
+    - blocco `inventory.byProducer` (metriche aggregate per produttore),
+    - blocco `sessions.dataQuality` (anomalie deterministiche),
+    - blocco `sessions.outliers` (sessioni anomale su base statistica),
+    - risposta vincolata: niente stime/ipotesi, uso esplicito di `non disponibile nel contesto` quando manca dato.
 - Logo applicativo ottimizzato in `public/logo.png` per ridurre peso asset.
 - Icone installazione PWA multi-device:
   - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`

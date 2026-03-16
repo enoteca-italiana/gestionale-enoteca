@@ -183,6 +183,42 @@ type WineRecencyRow = {
   daysSinceLastDischarge: number | null;
 };
 
+type ProducerAnalyticsRow = {
+  producer: string;
+  winesCount: number;
+  qtyCurrent: number;
+  qtyDischargedTotal: number;
+  neverDischargedCount: number;
+  underThresholdOrOutCount: number;
+  underThresholdOrOutPct: number;
+  neverDischargedPct: number;
+};
+
+type DataQualityContext = {
+  counts: {
+    missingWineName: number;
+    qtyNonPositive: number;
+    duplicatedSessionWinePairs: number;
+    dateIncoherent: number;
+  };
+  samples: {
+    qtyNonPositive: Array<{ sessionId: string; wineId: string; wineName: string; qty: number }>;
+    duplicatedSessionWinePairs: Array<{
+      sessionId: string;
+      wineId: string;
+      wineName: string;
+      rowsCount: number;
+      qtyTotal: number;
+    }>;
+    dateIncoherent: Array<{ sessionId: string; wineId: string; createdAt?: number; submittedAt?: number }>;
+  };
+  consistency: {
+    hasQtyNonPositive: boolean;
+    hasDuplicatedSessionWinePairs: boolean;
+    hasDateIncoherent: boolean;
+  };
+};
+
 function buildInventoryAnalytics(wines: Wine[]): InventoryAnalytics {
   const all = wines.map(toAnalyticWine);
   const byMarginDesc = [...all].sort((a, b) => b.margin - a.margin);
@@ -303,6 +339,189 @@ function buildRecencyContext(wines: Wine[], submittedItems: DischargeSessionItem
     neverDischarged: neverDischarged.slice(0, 300),
     over6m: over6m.slice(0, 300),
     over12m: over12m.slice(0, 300)
+  };
+}
+
+function buildProducerContext(
+  wines: Wine[],
+  submittedItems: DischargeSessionItemDetail[],
+  recency: ReturnType<typeof buildRecencyContext>
+) {
+  const wineById = new Map<string, Wine>();
+  for (const wine of wines) wineById.set(wine.id, wine);
+
+  const dischargedByProducer = new Map<string, number>();
+  for (const item of submittedItems) {
+    const fromInventory = item.wineId ? wineById.get(item.wineId) : undefined;
+    const producer = (fromInventory?.producer || item.producer || '').trim() || '—';
+    dischargedByProducer.set(producer, (dischargedByProducer.get(producer) ?? 0) + Math.max(0, item.qty));
+  }
+
+  const neverByWineId = new Set(recency.neverDischarged.map((row) => row.wineId));
+  const rowsByProducer = new Map<string, ProducerAnalyticsRow>();
+  for (const wine of wines) {
+    const producer = (wine.producer || '').trim() || '—';
+    const current = rowsByProducer.get(producer) ?? {
+      producer,
+      winesCount: 0,
+      qtyCurrent: 0,
+      qtyDischargedTotal: dischargedByProducer.get(producer) ?? 0,
+      neverDischargedCount: 0,
+      underThresholdOrOutCount: 0,
+      underThresholdOrOutPct: 0,
+      neverDischargedPct: 0
+    };
+
+    current.winesCount += 1;
+    current.qtyCurrent += Math.max(0, Number(wine.qty) || 0);
+    if (neverByWineId.has(wine.id)) current.neverDischargedCount += 1;
+
+    const threshold = Number(wine.threshold);
+    const qty = Number(wine.qty);
+    const isOut = qty <= 0;
+    const isUnderThreshold =
+      Number.isFinite(qty) &&
+      qty > 0 &&
+      Number.isFinite(threshold) &&
+      threshold > 0 &&
+      qty <= threshold;
+    if (isOut || isUnderThreshold) current.underThresholdOrOutCount += 1;
+
+    rowsByProducer.set(producer, current);
+  }
+
+  const rows = Array.from(rowsByProducer.values()).map((row) => {
+    const winesCount = Math.max(1, row.winesCount);
+    return {
+      ...row,
+      qtyCurrent: Number(row.qtyCurrent.toFixed(2)),
+      underThresholdOrOutPct: Number(((row.underThresholdOrOutCount / winesCount) * 100).toFixed(2)),
+      neverDischargedPct: Number(((row.neverDischargedCount / winesCount) * 100).toFixed(2))
+    };
+  });
+
+  rows.sort((a, b) => b.winesCount - a.winesCount || b.qtyCurrent - a.qtyCurrent);
+  return {
+    rows,
+    topByWines: rows.slice(0, 30),
+    topCritical: [...rows]
+      .sort(
+        (a, b) =>
+          b.underThresholdOrOutPct - a.underThresholdOrOutPct ||
+          b.neverDischargedPct - a.neverDischargedPct
+      )
+      .slice(0, 30)
+  };
+}
+
+function buildDataQualityContext(submittedItems: DischargeSessionItemDetail[]): DataQualityContext {
+  const qtyNonPositive = submittedItems
+    .filter((item) => item.qty <= 0)
+    .map((item) => ({
+      sessionId: item.sessionId,
+      wineId: item.wineId,
+      wineName: item.wineName,
+      qty: item.qty
+    }));
+
+  const missingWineName = submittedItems.filter((item) => item.wineName.trim().length === 0).length;
+
+  const duplicatePairsMap = new Map<
+    string,
+    { sessionId: string; wineId: string; wineName: string; rowsCount: number; qtyTotal: number }
+  >();
+  for (const item of submittedItems) {
+    const key = `${item.sessionId}::${item.wineId}`;
+    const current = duplicatePairsMap.get(key) ?? {
+      sessionId: item.sessionId,
+      wineId: item.wineId,
+      wineName: item.wineName,
+      rowsCount: 0,
+      qtyTotal: 0
+    };
+    current.rowsCount += 1;
+    current.qtyTotal += Math.max(0, item.qty);
+    duplicatePairsMap.set(key, current);
+  }
+
+  const duplicatedSessionWinePairs = Array.from(duplicatePairsMap.values())
+    .filter((row) => row.rowsCount > 1)
+    .sort((a, b) => b.rowsCount - a.rowsCount || b.qtyTotal - a.qtyTotal);
+
+  const dateIncoherent = submittedItems
+    .filter(
+      (item) =>
+        typeof item.submittedAt === 'number' &&
+        Number.isFinite(item.submittedAt) &&
+        Number.isFinite(item.createdAt) &&
+        item.submittedAt < item.createdAt
+    )
+    .map((item) => ({
+      sessionId: item.sessionId,
+      wineId: item.wineId,
+      createdAt: item.createdAt,
+      submittedAt: item.submittedAt
+    }));
+
+  return {
+    counts: {
+      missingWineName,
+      qtyNonPositive: qtyNonPositive.length,
+      duplicatedSessionWinePairs: duplicatedSessionWinePairs.length,
+      dateIncoherent: dateIncoherent.length
+    },
+    samples: {
+      qtyNonPositive: qtyNonPositive.slice(0, 40),
+      duplicatedSessionWinePairs: duplicatedSessionWinePairs.slice(0, 40),
+      dateIncoherent: dateIncoherent.slice(0, 40)
+    },
+    consistency: {
+      hasQtyNonPositive: qtyNonPositive.length > 0,
+      hasDuplicatedSessionWinePairs: duplicatedSessionWinePairs.length > 0,
+      hasDateIncoherent: dateIncoherent.length > 0
+    }
+  };
+}
+
+function buildSessionOutlierContext(submittedSessions: DischargeSessionSummary[]) {
+  if (submittedSessions.length === 0) {
+    return {
+      summary: { sessionsCount: 0, avgTotalQty: 0, stdDevTotalQty: 0, outliersCount: 0 },
+      outliers: [] as Array<{
+        sessionId: string;
+        totalQty: number;
+        submittedAt?: number;
+        zScore: number;
+      }>
+    };
+  }
+
+  const values = submittedSessions.map((session) => Math.max(0, Number(session.totalQty) || 0));
+  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance =
+    values.reduce((sum, value) => sum + (value - avg) * (value - avg), 0) / Math.max(1, values.length);
+  const stdDev = Math.sqrt(Math.max(0, variance));
+  const threshold = avg + 2 * stdDev;
+
+  const outliers = submittedSessions
+    .filter((session) => session.totalQty > threshold && session.totalQty > avg * 1.8)
+    .map((session) => ({
+      sessionId: session.id,
+      totalQty: session.totalQty,
+      submittedAt: session.submittedAt,
+      zScore: stdDev > 0 ? Number(((session.totalQty - avg) / stdDev).toFixed(2)) : 0
+    }))
+    .sort((a, b) => b.totalQty - a.totalQty)
+    .slice(0, 60);
+
+  return {
+    summary: {
+      sessionsCount: submittedSessions.length,
+      avgTotalQty: Number(avg.toFixed(2)),
+      stdDevTotalQty: Number(stdDev.toFixed(2)),
+      outliersCount: outliers.length
+    },
+    outliers
   };
 }
 
@@ -591,21 +810,37 @@ export function AiAssistantModal({
         'Rispondi in italiano, tono professionale e sintetico.',
         'Usa SEMPRE sia i dati app (contesto JSON) sia il web quando la richiesta lo richiede.',
         'Se i dati app bastano per rispondere con precisione, usa prima i dati app e usa il web solo come integrazione.',
+        'Modalità rigorosa obbligatoria: non inventare numeri, non stimare, non usare approssimazioni.',
+        'Se un dato non è nel contesto, scrivi esattamente: non disponibile nel contesto.',
+        'Mantieni coerenza interna tra conteggi ed esempi.',
         'Non divulgare mai dati riservati del contesto app durante eventuali ricerche web.',
         'Per il web usa query generiche e non includere valori sensibili del contesto app.',
         'Se mancano dati dichiaralo chiaramente.',
         'Non inventare numeri.',
         'Per richieste di classifica (top/bottom margini, quantità, valore magazzino) usa SEMPRE i leaderboards globali.',
         'Usa sempre il blocco inventory.recency per domande su vini non scaricati da 3/6/12 mesi o mai scaricati.',
+        'Per analisi per produttore usa il blocco inventory.byProducer.',
+        'Per audit qualità dati usa il blocco sessions.dataQuality.',
+        'Per outlier sessione usa il blocco sessions.outliers.',
         'Usa anche il blocco sessions per risposte su storico, andamenti temporali e vini più scaricati.'
       ].join(' ');
       const relevantWines = pickRelevantWines(wines, question, searchTextByWineId).map(toAnalyticWine);
       const effectiveSessionsContext = buildSessionsContext(effectiveSessions, effectiveItems);
       const recency = buildRecencyContext(wines, effectiveItems);
+      const producerContext = buildProducerContext(wines, effectiveItems, recency);
+      const dataQuality = buildDataQualityContext(effectiveItems);
+      const outlierContext = buildSessionOutlierContext(effectiveSessions);
 
       const contextPayload = {
-        inventory: buildAiContext(snapshot, analytics, relevantWines, recency),
-        sessions: effectiveSessionsContext,
+        inventory: {
+          ...buildAiContext(snapshot, analytics, relevantWines, recency),
+          byProducer: producerContext
+        },
+        sessions: {
+          ...effectiveSessionsContext,
+          dataQuality,
+          outliers: outlierContext
+        },
         meta: {
           sessionsLoaded: effectiveSessionsLoaded,
           loadedSubmittedSessions: effectiveSessions.length,

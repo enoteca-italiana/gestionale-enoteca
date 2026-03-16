@@ -1,6 +1,6 @@
 # Assistente AI Archivio
 
-Ultimo aggiornamento: **16/03/2026 01:21 CET**.
+Ultimo aggiornamento: **16/03/2026 01:32 CET**.
 
 ## Scopo
 
@@ -69,6 +69,27 @@ VITE_OPENAI_MODEL=gpt-4.1-mini
   - `meta.loadedSubmittedSessions`
   - `meta.loadedSubmittedItems`
   - `meta.sessionsLoaded`.
+
+## Strict Analytics Mode (nuovo)
+
+Per ridurre risposte contraddittorie o stimate, il prompt di sistema impone:
+
+- nessuna stima/applicazione euristica non supportata;
+- se il dato manca: output esplicito `non disponibile nel contesto`;
+- coerenza interna tra conteggi ed esempi.
+
+Blocchi contesto aggiunti:
+
+- `inventory.byProducer`
+  - metriche aggregate per produttore (vini, qty attuale, qty scaricata storico, % mai scaricati, % sotto soglia/esauriti).
+- `sessions.dataQuality`
+  - conteggi + esempi deterministici per:
+    - `missingWineName`
+    - `qtyNonPositive`
+    - `duplicatedSessionWinePairs`
+    - `dateIncoherent`
+- `sessions.outliers`
+  - sintesi statistica sessioni e lista outlier (`avg`, `stdDev`, `zScore`).
 
 ## Sicurezza
 

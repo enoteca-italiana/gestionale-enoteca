@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 01:21 CET**.
+Ultimo aggiornamento: **16/03/2026 01:32 CET**.
 
 ## Scopo di questo file
 
@@ -144,6 +144,22 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
     - classifica “più vecchi o mai scaricati”;
   - metadata contesto con conteggi record effettivamente caricati (`loadedSubmittedSessions`, `loadedSubmittedItems`).
 - Quality gate post-wave 5:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 6)
+
+- Assistente AI “strict analytics mode”:
+  - regole prompt più rigide: niente stime/ipotesi, uso esplicito `non disponibile nel contesto` quando manca un dato;
+  - nuovo blocco `inventory.byProducer` con metriche determinate per produttore (vini, qty attuale, qty scaricata, % mai scaricati, % sotto soglia/esauriti);
+  - nuovo blocco `sessions.dataQuality` con conteggi/samples deterministici su:
+    - nomi mancanti,
+    - qty non positive,
+    - duplicati sessione-vino,
+    - date incoerenti;
+  - nuovo blocco `sessions.outliers` con analisi outlier sessioni basata su media/deviazione standard.
+- Quality gate post-wave 6:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
   - `npm run test` ✅
