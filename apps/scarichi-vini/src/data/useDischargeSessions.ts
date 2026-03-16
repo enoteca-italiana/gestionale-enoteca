@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  clearDischargeSessionsByStatus,
+  clearSubmittedHistoryByRetention,
   listDischargeSessions,
-  type DischargeSessionSummary
+  type DischargeSessionSummary,
+  type SubmittedHistoryRetention
 } from '@/data/dischargeRepository';
 
 const HISTORY_LIMIT = 300;
@@ -59,11 +60,12 @@ export function useDischargeSessions(enabled = true) {
     void refresh();
   }, [enabled, refresh]);
 
-  const clearHistory = useCallback(async () => {
+  const clearHistory = useCallback(async (retention: SubmittedHistoryRetention = 'all') => {
     if (!enabled) return;
-    await clearDischargeSessionsByStatus('submitted');
-    writeHistoryCache([]);
-    setHistory([]);
+    await clearSubmittedHistoryByRetention(retention);
+    const submittedRows = await listDischargeSessions('submitted', { limit: HISTORY_LIMIT });
+    writeHistoryCache(submittedRows);
+    setHistory(submittedRows);
     setLoading(false);
     setError(null);
   }, [enabled]);

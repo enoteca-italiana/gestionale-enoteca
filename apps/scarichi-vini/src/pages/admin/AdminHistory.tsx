@@ -7,15 +7,18 @@ import { storageKeys } from '@/pages/admin/storage';
 import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 import {
   listSubmittedDischargeSessionItems,
-  type DischargeSessionItemDetail
+  type DischargeSessionItemDetail,
+  type SubmittedHistoryRetention
 } from '@/data/dischargeRepository';
 
 function formatDateTime(ts: number) {
   const d = new Date(ts);
+  const italyTz = 'Europe/Rome';
   const dateParts = new Intl.DateTimeFormat('it-IT', {
     day: '2-digit',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: italyTz
   }).formatToParts(d);
   const day = dateParts.find((part) => part.type === 'day')?.value ?? '';
   const monthRaw = dateParts.find((part) => part.type === 'month')?.value ?? '';
@@ -25,7 +28,8 @@ function formatDateTime(ts: number) {
   const time = d.toLocaleTimeString('it-IT', {
     hour12: false,
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: italyTz
   });
   return { formattedDate, formattedTime: time };
 }
@@ -53,6 +57,15 @@ function toInputDate(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function subtractCalendarMonthsClamped(baseDate: Date, months: number): Date {
+  const day = baseDate.getDate();
+  const targetMonthStart = new Date(baseDate.getFullYear(), baseDate.getMonth() - months, 1);
+  const targetYear = targetMonthStart.getFullYear();
+  const targetMonth = targetMonthStart.getMonth();
+  const maxDayInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+  return new Date(targetYear, targetMonth, Math.min(day, maxDayInTargetMonth));
+}
+
 function getPresetRange(preset: DatePreset): { from: string; to: string } | null {
   if (preset === 'all' || preset === 'custom') return null;
   const now = new Date();
@@ -64,8 +77,14 @@ function getPresetRange(preset: DatePreset): { from: string; to: string } | null
   if (preset === '7d') start.setDate(start.getDate() - 6);
   if (preset === '30d') start.setDate(start.getDate() - 29);
   if (preset === '90d') start.setDate(start.getDate() - 89);
-  if (preset === '6m') start.setMonth(start.getMonth() - 6);
-  if (preset === '12m') start.setMonth(start.getMonth() - 12);
+  if (preset === '6m') {
+    const exact = subtractCalendarMonthsClamped(end, 6);
+    start.setFullYear(exact.getFullYear(), exact.getMonth(), exact.getDate());
+  }
+  if (preset === '12m') {
+    const exact = subtractCalendarMonthsClamped(end, 12);
+    start.setFullYear(exact.getFullYear(), exact.getMonth(), exact.getDate());
+  }
   if (preset === 'ytd') start.setMonth(0, 1);
   return { from: toInputDate(start), to: toInputDate(end) };
 }
@@ -75,7 +94,7 @@ export function AdminHistory({
   onReset
 }: {
   history: DischargeSessionSummary[];
-  onReset: () => void;
+  onReset: (retention: SubmittedHistoryRetention) => void;
 }) {
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [dateFrom, setDateFrom] = useState('');
@@ -83,6 +102,7 @@ export function AdminHistory({
   const [confirm1, setConfirm1] = useState(false);
   const [confirm2, setConfirm2] = useState(false);
   const [resetPin, setResetPin] = useState('');
+  const [resetRetention, setResetRetention] = useState<SubmittedHistoryRetention>('12m');
   const [resetPinError, setResetPinError] = useState<string | null>(null);
   const [resetBusy, setResetBusy] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -92,10 +112,14 @@ export function AdminHistory({
   const [detailItems, setDetailItems] = useState<DischargeSessionItemDetail[]>([]);
   const [visibleCount, setVisibleCount] = useState(HISTORY_RENDER_BATCH);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const normalizedDateFrom = dateFrom && dateTo && dateFrom > dateTo ? dateTo : dateFrom;
+  const normalizedDateTo = dateFrom && dateTo && dateFrom > dateTo ? dateFrom : dateTo;
+  const hasActiveDateFilter =
+    datePreset !== 'all' || normalizedDateFrom.length > 0 || normalizedDateTo.length > 0;
   const filteredHistory = history.filter((session) => {
     const sessionDate = toLocalDateKey(session.submittedAt ?? session.createdAt);
-    if (dateFrom && sessionDate < dateFrom) return false;
-    if (dateTo && sessionDate > dateTo) return false;
+    if (normalizedDateFrom && sessionDate < normalizedDateFrom) return false;
+    if (normalizedDateTo && sessionDate > normalizedDateTo) return false;
     return true;
   });
   const renderedHistory = filteredHistory.slice(0, visibleCount);
@@ -163,7 +187,7 @@ export function AdminHistory({
       }
       setConfirm2(false);
       setResetPin('');
-      onReset();
+      onReset(resetRetention);
     } finally {
       setResetBusy(false);
     }
@@ -176,7 +200,7 @@ export function AdminHistory({
         <div className="adminHistoryDateRangeWrap mt12">
           <div className="adminHistoryDateField">
             <label className="adminHistoryDateFilterLabel" htmlFor="admin-history-date-preset">
-              Periodo
+              {' '}
             </label>
             <select
               id="admin-history-date-preset"
@@ -251,53 +275,55 @@ export function AdminHistory({
               setDateFrom('');
               setDateTo('');
             }}
-            disabled={dateFrom.length === 0 && dateTo.length === 0}
+            disabled={!hasActiveDateFilter}
           >
             <RefreshCcw size={18} strokeWidth={2.2} />
           </button>
         </div>
-        <div className="list mt12">
-          {filteredHistory.length === 0 ? (
-            <div className="listItem centered">
-              <div className="lineTitle">{history.length === 0 ? 'Nessuna sessione' : 'Nessun risultato'}</div>
-              <div className="subtle mt6">
-                {history.length === 0
-                  ? 'Lo storico si popola dopo le conferme.'
-                  : 'Nessuna sessione trovata per la data selezionata.'}
+        <div className="adminHistoryCardsScroll mt12">
+          <div className="list">
+            {filteredHistory.length === 0 ? (
+              <div className="listItem centered">
+                <div className="lineTitle">{history.length === 0 ? 'Nessuna sessione' : 'Nessun risultato'}</div>
+                <div className="subtle mt6">
+                  {history.length === 0
+                    ? 'Lo storico si popola dopo le conferme.'
+                    : 'Nessuna sessione trovata per la data selezionata.'}
+                </div>
               </div>
-            </div>
-          ) : (
-            renderedHistory.map((s) => {
-              const { formattedDate, formattedTime } = formatDateTime(s.submittedAt ?? s.createdAt);
-              return (
-                <button
-                  key={s.id}
-                  className="listItem listItemButton"
-                  type="button"
-                  onClick={() => {
-                    void openSessionDetail(s);
-                  }}
-                >
-                  <div className="lineTitle adminHistoryDateLine">
-                    <span>{formattedDate}</span>, <span className="adminHistoryTime">{formattedTime}</span>
-                  </div>
-                  <div className="subtle mt4">{s.itemsCount} vini • {s.totalQty} bottiglie</div>
-                </button>
-              );
-            })
-          )}
-        </div>
-        {hasMoreRows ? (
-          <div className="centered mt12" ref={loadMoreRef}>
-            <button
-              className="button buttonSecondary"
-              type="button"
-              onClick={() => setVisibleCount((prev) => prev + HISTORY_RENDER_BATCH)}
-            >
-              Carica altre sessioni ({filteredHistory.length - renderedHistory.length})
-            </button>
+            ) : (
+              renderedHistory.map((s) => {
+                const { formattedDate, formattedTime } = formatDateTime(s.submittedAt ?? s.createdAt);
+                return (
+                  <button
+                    key={s.id}
+                    className="listItem listItemButton"
+                    type="button"
+                    onClick={() => {
+                      void openSessionDetail(s);
+                    }}
+                  >
+                    <div className="lineTitle adminHistoryDateLine">
+                      <span>{formattedDate}</span>, <span className="adminHistoryTime">{formattedTime}</span>
+                    </div>
+                    <div className="subtle mt4">{s.itemsCount} vini • {s.totalQty} bottiglie</div>
+                  </button>
+                );
+              })
+            )}
           </div>
-        ) : null}
+          {hasMoreRows ? (
+            <div className="centered mt12" ref={loadMoreRef}>
+              <button
+                className="button buttonSecondary"
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + HISTORY_RENDER_BATCH)}
+              >
+                Carica altre sessioni ({filteredHistory.length - renderedHistory.length})
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="adminHistoryResetSpacer" />
@@ -372,13 +398,16 @@ export function AdminHistory({
       <ConfirmModal
         open={confirm1}
         title="Reset storico?"
-        description="Questa azione cancella definitivamente tutte le sessioni in storico."
+        description="Scegli nel passaggio successivo quanto storico mantenere."
+        titleCentered
+        descriptionCentered
         confirmLabel="Continua"
         cancelLabel="Annulla"
         onConfirm={() => {
           setConfirm1(false);
           setResetPin('');
           setResetPinError(null);
+          setResetRetention('12m');
           setConfirm2(true);
         }}
         onCancel={() => setConfirm1(false)}
@@ -387,13 +416,38 @@ export function AdminHistory({
       {confirm2 ? (
         <div className="modalOverlay" role="dialog" aria-modal="true">
           <div className="modalCard">
-            <div className="modalTitle">Conferma reset definitivo</div>
-            <div className="modalDescription">
-              Inserisci il PIN admin per confermare l&apos;eliminazione definitiva dello storico.
+            <div className="modalTitle centered">Conferma reset definitivo</div>
+            <div className="modalDescription centered">
+              Seleziona quanto storico mantenere e
+              <br />
+              inserisci il PIN admin per confermare.
+            </div>
+            <div className="mt12 adminHistoryDateField adminHistoryResetRetentionRow">
+              <label className="adminHistoryDateFilterLabel adminHistoryResetRetentionLabel" htmlFor="admin-history-reset-retention">
+                Mantieni storico
+              </label>
+              <select
+                id="admin-history-reset-retention"
+                className="input adminHistoryDateFilterInput adminHistoryPresetInput adminHistoryResetRetentionInput mt6"
+                value={resetRetention}
+                onChange={(event) => {
+                  setResetRetention(event.target.value as SubmittedHistoryRetention);
+                }}
+                aria-label="Seleziona periodo storico da mantenere"
+              >
+                <option value="all">Niente (cancella tutto)</option>
+                <option value="7d">Ultimi 7 giorni</option>
+                <option value="30d">Ultimi 30 giorni</option>
+                <option value="3m">Ultimi 3 mesi</option>
+                <option value="12m">Ultimi 12 mesi</option>
+                <option value="18m">Ultimi 18 mesi</option>
+                <option value="2y">Ultimi 2 anni</option>
+                <option value="3y">Ultimi 3 anni</option>
+              </select>
             </div>
             <div className="mt12">
               <input
-                className="input adminInput"
+                className="input adminInput adminHistoryResetPinInput"
                 type="password"
                 inputMode="numeric"
                 placeholder="Inserisci PIN admin"
@@ -427,6 +481,7 @@ export function AdminHistory({
                   setConfirm2(false);
                   setResetPin('');
                   setResetPinError(null);
+                  setResetRetention('12m');
                 }}
               >
                 Annulla

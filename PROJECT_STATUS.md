@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 02:12 CET**.
+Ultimo aggiornamento: **16/03/2026 02:49 CET**.
 
 ## Scopo di questo file
 
@@ -182,6 +182,38 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - Export PDF Archivio:
   - aggiunta numerazione pagine globale in footer `1/N` su tutte le pagine.
 - Quality gate post-wave 7:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 8, reset storico selettivo)
+
+- Admin storico (`/admin` → `Sessioni storico`):
+  - nel modale di conferma con PIN è stata aggiunta la selezione “Mantieni storico” con opzioni:
+    - `Niente (cancella tutto)`
+    - `Ultimi 7 giorni`
+    - `Ultimi 30 giorni`
+    - `Ultimi 3 mesi`
+    - `Ultimi 12 mesi`
+  - il reset elimina solo le sessioni `submitted` più vecchie del periodo scelto.
+- Data layer:
+  - introdotta API repository `clearSubmittedHistoryByRetention(...)` con cutoff temporale server-side.
+  - hook storico aggiornato per refresh coerente dopo reset selettivo.
+- Quality gate post-wave 8:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+
+## Ultimi aggiornamenti (16/03/2026 - wave 9, guardia sessione navbar)
+
+- Home/sessione in corso:
+  - introdotta guardia navigazione su click Navbar (`Home`, `Archivio`, `Impostazioni`) quando sessione scarico è aperta e contiene almeno 1 vino;
+  - visualizzato modale conferma abbandono con azioni `Conferma` / `Annulla`;
+  - su conferma: la sessione viene chiusa correttamente (`endSession`) e l'utente viene sempre riportato alla Home (`/`), su mobile e desktop.
+- Stabilità routing Home:
+  - click su pulsante `Home` forzato verso pagina Home reale, senza riattivare redirect non desiderati nel flusso di navigazione esplicita.
+- Quality gate post-wave 9:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
   - `npm run test` ✅

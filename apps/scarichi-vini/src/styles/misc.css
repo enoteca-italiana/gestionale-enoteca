@@ -402,6 +402,10 @@
   margin-top: 12px;
 }
 
+.adminHistoryCardsScroll {
+  min-height: 0;
+}
+
 .adminHistoryTitle {
   margin: 0 auto;
 }
@@ -439,6 +443,38 @@
 .adminHistoryPresetInput {
   width: 190px;
   padding-right: 32px;
+}
+
+.adminHistoryResetRetentionInput {
+  width: 100%;
+  max-width: none;
+  min-height: 50px;
+  padding: 14px 14px;
+  border-radius: 16px;
+  border-color: var(--brand);
+}
+
+.adminHistoryResetRetentionInput:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(124, 22, 74, 0.16);
+}
+
+.adminHistoryResetRetentionLabel {
+  color: var(--brand);
+}
+
+.adminHistoryResetRetentionRow {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.adminHistoryResetPinInput {
+  text-align: center;
+}
+
+.adminHistoryResetPinInput::placeholder {
+  text-align: center;
 }
 
 .adminHistoryDateResetButton {
@@ -493,6 +529,27 @@
 
 .adminHistoryResetSpacer {
   height: 96px;
+}
+
+@media (min-width: 769px) {
+  .adminHistoryListSection {
+    height: calc(100dvh - 186px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .adminHistoryCardsScroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-right: 2px;
+    padding-bottom: 108px;
+    overscroll-behavior: contain;
+  }
+
+  .adminHistoryResetSpacer {
+    height: 0;
+  }
 }
 
 @media (max-width: 768px) {

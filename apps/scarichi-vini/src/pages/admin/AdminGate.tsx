@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { clearWineArchive } from '@/data/wineRepository';
 import { useDischargeSessions } from '@/data/useDischargeSessions';
 import { AdminHistory } from '@/pages/admin/AdminHistory';
@@ -20,6 +20,15 @@ export function AdminGate() {
     error: sessionsError,
     clearHistory
   } = useDischargeSessions(section === 'history');
+
+  useEffect(() => {
+    const onOpenAdminHome = () => {
+      setSection('home');
+      setSettingsAction(null);
+    };
+    window.addEventListener('scarichi:openAdminHome', onOpenAdminHome);
+    return () => window.removeEventListener('scarichi:openAdminHome', onOpenAdminHome);
+  }, []);
 
   const openRootSection = (target: AdminRootSection) => {
     if (target === 'history') {
@@ -60,8 +69,8 @@ export function AdminGate() {
         ) : (
           <AdminHistory
             history={history}
-            onReset={() => {
-              void clearHistory().catch((error) => {
+            onReset={(retention) => {
+              void clearHistory(retention).catch((error) => {
                 console.error('[AdminGate] clearHistory failed', error);
               });
             }}

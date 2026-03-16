@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 02:12 CET**.
+Ultimo aggiornamento: **16/03/2026 02:49 CET**.
 
 ## Accesso
 
@@ -86,7 +86,14 @@ File: `AdminHistory.tsx`
 - nel dettaglio, la quantità scaricata per vino è mostrata come testo inline (senza pill/contenitore).
 - reset storico:
   - doppia conferma;
-  - conferma finale con PIN admin.
+  - conferma finale con PIN admin;
+  - nel modale PIN è disponibile `Mantieni storico`:
+    - `Niente (cancella tutto)`,
+    - `Ultimi 7 giorni`,
+    - `Ultimi 30 giorni`,
+    - `Ultimi 3 mesi`,
+    - `Ultimi 12 mesi`.
+  - comportamento: elimina solo le sessioni `submitted` più vecchie del periodo scelto.
 - filtro temporale desktop aggiornato:
   - preset rapidi periodo (`Tutto`, `Oggi`, `Ultimi 7/30/90 giorni`, `Ultimi 6/12 mesi`, `Anno corrente`, `Personalizzato`);
   - selezione manuale intervallo `Da` / `A` su una riga unica;
@@ -116,6 +123,22 @@ Nota UX:
 ## Sessioni sospese
 
 Rimosse dal flusso e dall’interfaccia admin.
+
+## Guardia abbandono sessione (Navbar)
+
+File coinvolti:
+
+- `pages/HomePage.tsx`
+- `components/BottomNav.tsx`
+
+Comportamento:
+
+- quando la sessione scarico è aperta e contiene almeno 1 vino, il click su qualsiasi voce Navbar (`Home`, `Archivio`, `Impostazioni`) non naviga subito;
+- viene aperto un modale di conferma abbandono sessione (`Conferma` / `Annulla`);
+- se l’utente conferma:
+  - la sessione viene chiusa completamente (`endSession`, non solo reset item),
+  - la navigazione atterra sempre su Home (`/`) su mobile e desktop;
+- se annulla, resta nella sessione in corso senza perdere dati.
 
 ## Reset archivio
 

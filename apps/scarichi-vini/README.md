@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 02:12 CET**.
+Ultimo aggiornamento: **16/03/2026 02:49 CET**.
 
 ## Quick Start
 
@@ -33,6 +33,10 @@ Comandi utili:
   - in sessione aperta, i vini già presenti nel riepilogo non compaiono più nella lista principale
   - riepilogo semplificato (titolo centrato, rimosse etichette riassuntive ridondanti)
   - su mobile, scroll confinato alla sola lista vini (header/ricerca/CTA fissi)
+  - guardia abbandono sessione dalla Navbar:
+    - se sessione aperta con almeno 1 vino e l’utente clicca `Home/Archivio/Impostazioni`, viene richiesto conferma;
+    - su conferma, la sessione viene chiusa e l’utente viene portato sempre alla Home;
+    - su annulla, resta nella sessione in corso.
   - fix modale scarico: `+/-` aggiornano il valore senza chiusura involontaria
   - fix iOS Safari: titolo `Riepilogo` forzato su colore nero coerente con app
 - Admin impostazioni (`/admin`) con autenticazione locale.
@@ -43,6 +47,9 @@ Comandi utili:
     - filtro temporale desktop con preset rapidi (`Tutto`, `Oggi`, `7/30/90 giorni`, `6/12 mesi`, `Anno corrente`, `Personalizzato`)
     - intervallo manuale `Da/A` e pulsante reset filtri con icona frecce
     - filtraggio per giorno (senza ora)
+    - reset storico selettivo nel modale PIN:
+      - `Niente (cancella tutto)`, `Ultimi 7 giorni`, `Ultimi 30 giorni`, `Ultimi 3 mesi`, `Ultimi 12 mesi`
+      - vengono eliminate solo le sessioni `submitted` più vecchie della finestra scelta
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)

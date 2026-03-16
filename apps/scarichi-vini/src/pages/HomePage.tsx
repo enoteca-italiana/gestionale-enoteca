@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
@@ -11,6 +12,9 @@ import { SummaryList } from '@/pages/home/SummaryList';
 import { useLocalSession } from '@/pages/home/useLocalSession';
 
 type StockFilter = 'all' | 'threshold' | 'out';
+const INTRO_SEEN_SESSION_KEY = 'scarichi:intro-seen';
+const FORCE_HOME_ONCE_SESSION_KEY = 'scarichi:force-home-once';
+const BEFORE_NAV_EVENT = 'scarichi:beforeNav';
 
 function isInThreshold(qty: number, threshold?: number) {
   const parsedQty = Number(qty);
@@ -24,14 +28,49 @@ function isDesktopDevice() {
   return window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
 }
 
+function hasSeenIntroInSession() {
+  try {
+    return window.sessionStorage.getItem(INTRO_SEEN_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markIntroSeenInSession() {
+  try {
+    window.sessionStorage.setItem(INTRO_SEEN_SESSION_KEY, '1');
+  } catch {
+    // Ignore storage failures and keep runtime behavior.
+  }
+}
+
+function consumeForcedHomeNavigation() {
+  try {
+    const forced = window.sessionStorage.getItem(FORCE_HOME_ONCE_SESSION_KEY) === '1';
+    if (forced) {
+      window.sessionStorage.removeItem(FORCE_HOME_ONCE_SESSION_KEY);
+    }
+    return forced;
+  } catch {
+    return false;
+  }
+}
+
 export function HomePage({
   onIntroVisibilityChange
 }: {
   onIntroVisibilityChange?: (visible: boolean) => void;
 }) {
-  const [showIntro, setShowIntro] = useState(true);
+  const [forceHomeOnMount] = useState(() => consumeForcedHomeNavigation());
+  const [shouldShowIntroOnMount] = useState(() => !forceHomeOnMount && !hasSeenIntroInSession());
+  const [showIntro, setShowIntro] = useState(shouldShowIntroOnMount);
+  const [autoRedirectToArchiveAfterIntro] = useState(
+    () => !forceHomeOnMount && shouldShowIntroOnMount && isDesktopDevice()
+  );
   const [introVisible, setIntroVisible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false);
+  const [pendingNavPath, setPendingNavPath] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [location, setLocation] = useLocation();
@@ -48,6 +87,7 @@ export function HomePage({
     sessionCount,
     setQuery,
     resetSession,
+    endSession,
     startSession,
     addToSession,
     incrementItem,
@@ -56,13 +96,15 @@ export function HomePage({
   } = useLocalSession({ inventory, setInventory });
 
   useEffect(() => {
+    if (!shouldShowIntroOnMount) return;
+    markIntroSeenInSession();
     const r = window.requestAnimationFrame(() => setIntroVisible(true));
     const t = window.setTimeout(() => setShowIntro(false), 2500);
     return () => {
       window.cancelAnimationFrame(r);
       window.clearTimeout(t);
     };
-  }, []);
+  }, [shouldShowIntroOnMount]);
 
   useEffect(() => {
     onIntroVisibilityChange?.(showIntro);
@@ -71,14 +113,39 @@ export function HomePage({
 
   useEffect(() => {
     if (showIntro) return;
+    if (!autoRedirectToArchiveAfterIntro) return;
     if (location !== '/') return;
-    if (!isDesktopDevice()) return;
     setLocation('/admina', { replace: true });
-  }, [location, setLocation, showIntro]);
+  }, [autoRedirectToArchiveAfterIntro, location, setLocation, showIntro]);
 
   useEffect(() => {
     void refreshInventory();
   }, [refreshInventory]);
+
+  useEffect(() => {
+    if (!sessionOpen || sessionCount <= 0) return;
+
+    const onBeforeNav = (event: Event) => {
+      const navEvent = event as CustomEvent<{ href?: string }>;
+      const href = navEvent.detail?.href;
+      if (!href) return;
+      navEvent.preventDefault();
+      setPendingNavPath(href);
+      setLeaveSessionConfirmOpen(true);
+    };
+
+    window.addEventListener(BEFORE_NAV_EVENT, onBeforeNav as EventListener);
+    return () => {
+      window.removeEventListener(BEFORE_NAV_EVENT, onBeforeNav as EventListener);
+    };
+  }, [location, sessionCount, sessionOpen]);
+
+  useEffect(() => {
+    if (sessionOpen && sessionCount > 0) return;
+    if (!leaveSessionConfirmOpen && !pendingNavPath) return;
+    setLeaveSessionConfirmOpen(false);
+    setPendingNavPath(null);
+  }, [leaveSessionConfirmOpen, pendingNavPath, sessionCount, sessionOpen]);
 
   const confirmSubmit = () => {
     if (sessionCount <= 0) return;
@@ -111,6 +178,22 @@ export function HomePage({
 
     setConfirmOpen(false);
     resetSession();
+  };
+
+  const confirmLeaveSession = () => {
+    if (!pendingNavPath) {
+      setLeaveSessionConfirmOpen(false);
+      return;
+    }
+    endSession();
+    setLeaveSessionConfirmOpen(false);
+    setLocation('/');
+    setPendingNavPath(null);
+  };
+
+  const cancelLeaveSession = () => {
+    setLeaveSessionConfirmOpen(false);
+    setPendingNavPath(null);
   };
 
   const sessionQtyByWineId = useMemo(() => {
@@ -234,6 +317,16 @@ export function HomePage({
         sessionCount={sessionCount}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => submitSession()}
+      />
+
+      <ConfirmModal
+        open={leaveSessionConfirmOpen}
+        title="Abbandonare sessione in corso?"
+        description="Sei sicuro che vuoi abbandonare la sessione in corso?"
+        confirmLabel="Conferma"
+        cancelLabel="Annulla"
+        onConfirm={confirmLeaveSession}
+        onCancel={cancelLeaveSession}
       />
 
       {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}

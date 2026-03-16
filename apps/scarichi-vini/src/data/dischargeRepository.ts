@@ -305,6 +305,39 @@ export async function clearDischargeSessionsByStatus(status: DischargeStatus): P
   if (error) throw error;
 }
 
+export type SubmittedHistoryRetention = 'all' | '7d' | '30d' | '3m' | '12m' | '18m' | '2y' | '3y';
+
+function computeRetentionCutoffIso(retention: Exclude<SubmittedHistoryRetention, 'all'>): string {
+  const now = new Date();
+  const cutoff = new Date(now);
+  if (retention === '7d') cutoff.setDate(cutoff.getDate() - 7);
+  if (retention === '30d') cutoff.setDate(cutoff.getDate() - 30);
+  if (retention === '3m') cutoff.setMonth(cutoff.getMonth() - 3);
+  if (retention === '12m') cutoff.setMonth(cutoff.getMonth() - 12);
+  if (retention === '18m') cutoff.setMonth(cutoff.getMonth() - 18);
+  if (retention === '2y') cutoff.setFullYear(cutoff.getFullYear() - 2);
+  if (retention === '3y') cutoff.setFullYear(cutoff.getFullYear() - 3);
+  return cutoff.toISOString();
+}
+
+export async function clearSubmittedHistoryByRetention(
+  retention: SubmittedHistoryRetention
+): Promise<void> {
+  const client = requireSupabase();
+  if (retention === 'all') {
+    await clearDischargeSessionsByStatus('submitted');
+    return;
+  }
+
+  const cutoffIso = computeRetentionCutoffIso(retention);
+  const { error } = await client
+    .from('discharge_sessions')
+    .delete()
+    .eq('status', 'submitted')
+    .lt('submitted_at', cutoffIso);
+  if (error) throw error;
+}
+
 export async function detachDischargeItemsFromWines(): Promise<void> {
   const client = requireSupabase();
   const { error } = await client
