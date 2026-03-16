@@ -181,7 +181,9 @@ export function ResultsList({
             <div className="min0">
               <div className="consultiveTopRow">
                 <div className="lineTitle">{w.name}</div>
-                <div className={`consultiveQty ${w.qty <= 0 ? 'consultiveQtyZero' : ''}`}>{w.qty}</div>
+                <div className={`consultiveQty ${w.qty <= 0 ? 'consultiveQtyZero' : ''}`}>
+                  {w.qty}
+                </div>
               </div>
               <div className="subtle mt4">
                 {formatWineInfoLine({
@@ -236,7 +238,9 @@ export function ResultsList({
               >
                 -
               </button>
-              <div className="resultControlValue">{selectedHasPendingNote ? selectedDraftQty : selectedQty}</div>
+              <div className="resultControlValue">
+                {selectedHasPendingNote ? selectedDraftQty : selectedQty}
+              </div>
               <button
                 className="resultControlButton"
                 type="button"
@@ -273,7 +277,9 @@ export function ResultsList({
                 Conferma
               </button>
             </div>
-            {showConfirmMessage ? <div className="okText centered mt10">Scarico Aggiunto!</div> : null}
+            {showConfirmMessage ? (
+              <div className="okText centered mt10">Scarico Aggiunto!</div>
+            ) : null}
           </div>
         </div>
       ) : null}

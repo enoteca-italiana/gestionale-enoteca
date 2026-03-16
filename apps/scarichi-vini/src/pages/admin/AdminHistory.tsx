@@ -284,7 +284,9 @@ export function AdminHistory({
           <div className="list">
             {filteredHistory.length === 0 ? (
               <div className="listItem centered">
-                <div className="lineTitle">{history.length === 0 ? 'Nessuna sessione' : 'Nessun risultato'}</div>
+                <div className="lineTitle">
+                  {history.length === 0 ? 'Nessuna sessione' : 'Nessun risultato'}
+                </div>
                 <div className="subtle mt6">
                   {history.length === 0
                     ? 'Lo storico si popola dopo le conferme.'
@@ -293,7 +295,9 @@ export function AdminHistory({
               </div>
             ) : (
               renderedHistory.map((s) => {
-                const { formattedDate, formattedTime } = formatDateTime(s.submittedAt ?? s.createdAt);
+                const { formattedDate, formattedTime } = formatDateTime(
+                  s.submittedAt ?? s.createdAt
+                );
                 return (
                   <button
                     key={s.id}
@@ -304,9 +308,12 @@ export function AdminHistory({
                     }}
                   >
                     <div className="lineTitle adminHistoryDateLine">
-                      <span>{formattedDate}</span>, <span className="adminHistoryTime">{formattedTime}</span>
+                      <span>{formattedDate}</span>,{' '}
+                      <span className="adminHistoryTime">{formattedTime}</span>
                     </div>
-                    <div className="subtle mt4">{s.itemsCount} vini • {s.totalQty} bottiglie</div>
+                    <div className="subtle mt4">
+                      {s.itemsCount} vini • {s.totalQty} bottiglie
+                    </div>
                   </button>
                 );
               })
@@ -365,7 +372,9 @@ export function AdminHistory({
             <div className="list mt12 adminHistoryDetailList">
               {detailLoading ? <div className="subtle">Caricamento contenuto sessione…</div> : null}
 
-              {!detailLoading && detailError ? <div className="errorText">{detailError}</div> : null}
+              {!detailLoading && detailError ? (
+                <div className="errorText">{detailError}</div>
+              ) : null}
 
               {!detailLoading && !detailError && detailItems.length === 0 ? (
                 <div className="subtle">Nessun dettaglio disponibile per questa sessione.</div>
@@ -423,7 +432,10 @@ export function AdminHistory({
               inserisci il PIN admin per confermare.
             </div>
             <div className="mt12 adminHistoryDateField adminHistoryResetRetentionRow">
-              <label className="adminHistoryDateFilterLabel adminHistoryResetRetentionLabel" htmlFor="admin-history-reset-retention">
+              <label
+                className="adminHistoryDateFilterLabel adminHistoryResetRetentionLabel"
+                htmlFor="admin-history-reset-retention"
+              >
                 Mantieni storico
               </label>
               <select

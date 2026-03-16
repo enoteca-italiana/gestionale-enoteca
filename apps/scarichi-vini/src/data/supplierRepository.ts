@@ -9,7 +9,9 @@ function normalizeSupplier(value: string) {
 }
 
 function isSchemaColumnError(error: unknown): boolean {
-  const message = String((error as { message?: unknown } | null | undefined)?.message ?? '').toLowerCase();
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
   return message.includes('column') && message.includes('does not exist');
 }
 
@@ -67,7 +69,9 @@ export function upsertManagedSupplier(
     return { created: null as string | null, managedNext: managedSuppliers, changed: false };
   }
 
-  const existing = existingSuppliers.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  const existing = existingSuppliers.find(
+    (item) => item.toLowerCase() === normalized.toLowerCase()
+  );
   if (existing) {
     return { created: existing, managedNext: managedSuppliers, changed: false };
   }
@@ -84,7 +88,10 @@ type SupplierRow = {
 export async function listSupabaseSuppliers(): Promise<string[]> {
   if (!supabase) return [];
 
-  const { data, error } = await supabase.from('suppliers').select('name').order('name', { ascending: true });
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('name')
+    .order('name', { ascending: true });
   if (error) {
     if (!isSchemaColumnError(error)) {
       console.error('[supplierRepository] listSupabaseSuppliers error', error);
@@ -99,7 +106,9 @@ export async function listSupabaseSuppliers(): Promise<string[]> {
     const key = normalized.toLowerCase();
     if (!seen.has(key)) seen.set(key, normalized);
   }
-  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b, 'it', { sensitivity: 'base' }));
+  return Array.from(seen.values()).sort((a, b) =>
+    a.localeCompare(b, 'it', { sensitivity: 'base' })
+  );
 }
 
 export async function upsertSupabaseSupplier(rawValue: string): Promise<void> {

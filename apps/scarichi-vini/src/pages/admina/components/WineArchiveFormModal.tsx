@@ -90,6 +90,14 @@ export function WineArchiveFormModal({
   if (!open) return null;
 
   const setField = (key: keyof WineFormState, value: string) => {
+    if (key === 'name') {
+      setState((prev) => ({ ...prev, [key]: value.toLocaleUpperCase('it-IT') }));
+      return;
+    }
+    if (key === 'origin') {
+      setState((prev) => ({ ...prev, [key]: value.toLocaleUpperCase('it-IT') }));
+      return;
+    }
     setState((prev) => ({ ...prev, [key]: value }));
   };
 

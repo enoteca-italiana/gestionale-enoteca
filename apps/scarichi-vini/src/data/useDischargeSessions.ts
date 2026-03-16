@@ -28,29 +28,32 @@ export function useDischargeSessions(enabled = true) {
   const [loading, setLoading] = useState(enabled && !cachedHistory);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async (force = false) => {
-    if (!enabled) return;
-    if (!force) {
-      const cached = readHistoryCache();
-      if (cached) {
-        setHistory(cached);
-        setLoading(false);
-        return;
+  const refresh = useCallback(
+    async (force = false) => {
+      if (!enabled) return;
+      if (!force) {
+        const cached = readHistoryCache();
+        if (cached) {
+          setHistory(cached);
+          setLoading(false);
+          return;
+        }
       }
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const submittedRows = await listDischargeSessions('submitted', { limit: HISTORY_LIMIT });
-      writeHistoryCache(submittedRows);
-      setHistory(submittedRows);
-    } catch (err) {
-      console.error('[useDischargeSessions] refresh failed', err);
-      setError('Impossibile caricare le sessioni da Supabase.');
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled]);
+      setLoading(true);
+      setError(null);
+      try {
+        const submittedRows = await listDischargeSessions('submitted', { limit: HISTORY_LIMIT });
+        writeHistoryCache(submittedRows);
+        setHistory(submittedRows);
+      } catch (err) {
+        console.error('[useDischargeSessions] refresh failed', err);
+        setError('Impossibile caricare le sessioni da Supabase.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [enabled]
+  );
 
   useEffect(() => {
     if (!enabled) {
@@ -60,15 +63,18 @@ export function useDischargeSessions(enabled = true) {
     void refresh();
   }, [enabled, refresh]);
 
-  const clearHistory = useCallback(async (retention: SubmittedHistoryRetention = 'all') => {
-    if (!enabled) return;
-    await clearSubmittedHistoryByRetention(retention);
-    const submittedRows = await listDischargeSessions('submitted', { limit: HISTORY_LIMIT });
-    writeHistoryCache(submittedRows);
-    setHistory(submittedRows);
-    setLoading(false);
-    setError(null);
-  }, [enabled]);
+  const clearHistory = useCallback(
+    async (retention: SubmittedHistoryRetention = 'all') => {
+      if (!enabled) return;
+      await clearSubmittedHistoryByRetention(retention);
+      const submittedRows = await listDischargeSessions('submitted', { limit: HISTORY_LIMIT });
+      writeHistoryCache(submittedRows);
+      setHistory(submittedRows);
+      setLoading(false);
+      setError(null);
+    },
+    [enabled]
+  );
 
   return {
     history,

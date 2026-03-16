@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import {
@@ -8,7 +8,11 @@ import {
   upsertSupabaseCategory,
   upsertManagedCategory
 } from '@/data/categoryRepository';
-import { listOriginOptions, loadManagedOrigins, upsertManagedOrigin } from '@/data/originRepository';
+import {
+  listOriginOptions,
+  loadManagedOrigins,
+  upsertManagedOrigin
+} from '@/data/originRepository';
 import {
   listSupplierOptions,
   listSupabaseSuppliers,
@@ -53,30 +57,36 @@ export function WineAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [tableResetVersion, setTableResetVersion] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<Mode>('create');
   const [formState, setFormState] = useState<WineFormState>(emptyWine);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [managedCategories, setManagedCategories] = useState<string[]>(() => loadManagedCategories());
+  const [managedCategories, setManagedCategories] = useState<string[]>(() =>
+    loadManagedCategories()
+  );
   const [supabaseCategories, setSupabaseCategories] = useState<string[]>([]);
   const [managedOrigins, setManagedOrigins] = useState<string[]>(() => loadManagedOrigins());
   const [managedProducers, setManagedProducers] = useState<string[]>(() => loadManagedProducers());
   const [managedSuppliers, setManagedSuppliers] = useState<string[]>(() => loadManagedSuppliers());
   const [supabaseSuppliers, setSupabaseSuppliers] = useState<string[]>([]);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [categoryResultHandler, setCategoryResultHandler] =
-    useState<((created: string | null) => void) | null>(null);
+  const [categoryResultHandler, setCategoryResultHandler] = useState<
+    ((created: string | null) => void) | null
+  >(null);
   const [originModalOpen, setOriginModalOpen] = useState(false);
-  const [originResultHandler, setOriginResultHandler] =
-    useState<((created: string | null) => void) | null>(null);
+  const [originResultHandler, setOriginResultHandler] = useState<
+    ((created: string | null) => void) | null
+  >(null);
   const [producerModalOpen, setProducerModalOpen] = useState(false);
-  const [producerResultHandler, setProducerResultHandler] =
-    useState<((created: string | null) => void) | null>(null);
+  const [producerResultHandler, setProducerResultHandler] = useState<
+    ((created: string | null) => void) | null
+  >(null);
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
-  const [supplierResultHandler, setSupplierResultHandler] =
-    useState<((created: string | null) => void) | null>(null);
+  const [supplierResultHandler, setSupplierResultHandler] = useState<
+    ((created: string | null) => void) | null
+  >(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [bulkEditBusy, setBulkEditBusy] = useState(false);
@@ -84,7 +94,6 @@ export function WineAdminPage() {
   const [hasDischargeNote, setHasDischargeNote] = useState(false);
   const deferredTerm = useDeferredValue(filters.term);
   const bulkUpdateBatchSize = 40;
-  const toastTimeoutRef = useRef<number | null>(null);
 
   const loadWines = useCallback(async () => {
     setLoading(true);
@@ -135,21 +144,29 @@ export function WineAdminPage() {
     const onFocus = () => {
       void syncReadyState();
     };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void syncReadyState();
+      }
+    };
 
     void syncReadyState();
     const poll = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
       void syncReadyState();
-    }, 4000);
+    }, 10000);
 
     window.addEventListener(dischargeNoteChangedEvent, onFocus);
     window.addEventListener('focus', onFocus);
     window.addEventListener('pageshow', onFocus);
+    window.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       alive = false;
       window.clearInterval(poll);
       window.removeEventListener(dischargeNoteChangedEvent, onFocus);
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('pageshow', onFocus);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 
@@ -167,6 +184,7 @@ export function WineAdminPage() {
       void refreshSupplierRegistry();
       void loadWines();
       setFilters(defaultFilters);
+      setTableResetVersion((prev) => prev + 1);
     };
     window.addEventListener(archiveResetEvent, onArchiveReset);
     return () => window.removeEventListener(archiveResetEvent, onArchiveReset);
@@ -274,25 +292,6 @@ export function WineAdminPage() {
   }, [wines]);
   const hasActiveFilters = useMemo(() => hasActiveArchiveFilters(filters), [filters]);
   const canOpenBulkEdit = hasActiveFilters && !loading && filteredWines.length > 0;
-
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-    if (toastTimeoutRef.current !== null) {
-      window.clearTimeout(toastTimeoutRef.current);
-    }
-    toastTimeoutRef.current = window.setTimeout(() => {
-      setToast(null);
-      toastTimeoutRef.current = null;
-    }, 2400);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimeoutRef.current !== null) {
-        window.clearTimeout(toastTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleAddCategory = useCallback(
     (rawValue: string) => {
@@ -447,10 +446,8 @@ export function WineAdminPage() {
     try {
       if (modalMode === 'create') {
         await createWine({ ...payload, id: undefined });
-        showToast('Vino aggiunto');
       } else {
         await updateWine(payload);
-        showToast('Vino aggiornato');
       }
       await loadWines();
       closeForm();
@@ -468,7 +465,6 @@ export function WineAdminPage() {
     try {
       await deleteWine(deleteId);
       await loadWines();
-      showToast('Vino eliminato');
     } catch (err) {
       console.error('[WineAdminPage] delete error', err);
       setError('Eliminazione non riuscita.');
@@ -497,11 +493,49 @@ export function WineAdminPage() {
         notes: wine.notes
       });
       await loadWines();
-      showToast('Q.tà aggiornata');
       return true;
     } catch (err) {
       console.error('[WineAdminPage] quick qty update error', err);
       setError('Aggiornamento quantità non riuscito.');
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleInlineFieldsUpdate = async (
+    wine: Wine,
+    patch: {
+      name?: string;
+      age?: string;
+      category?: string;
+      producer?: string;
+      origin?: string;
+      supplier?: string;
+    }
+  ) => {
+    setBusy(true);
+    try {
+      await updateWine({
+        id: wine.id,
+        category: patch.category ?? wine.category ?? '',
+        name: patch.name ?? wine.name,
+        age: patch.age ?? wine.age ?? '',
+        producer: patch.producer ?? wine.producer,
+        origin: patch.origin ?? wine.origin,
+        supplier: patch.supplier ?? wine.supplier ?? '',
+        threshold: wine.threshold,
+        purchasePrice: wine.purchasePrice,
+        salePrice: wine.salePrice,
+        vintage: wine.vintage,
+        qty: wine.qty,
+        notes: wine.notes
+      });
+      await loadWines();
+      return true;
+    } catch (err) {
+      console.error('[WineAdminPage] inline fields update error', err);
+      setError('Aggiornamento inline non riuscito.');
       return false;
     } finally {
       setBusy(false);
@@ -556,11 +590,6 @@ export function WineAdminPage() {
 
         await loadWines();
         setBulkEditModalOpen(false);
-        const appliedParts = [
-          categoryToApply ? 'categoria' : null,
-          supplierToApply ? 'fornitore' : null
-        ].filter(Boolean);
-        showToast(`${appliedParts.join(' + ')} applicati a ${targetWines.length} vini filtrati`);
       } catch (err) {
         console.error('[WineAdminPage] bulk edit error', err);
         setError('Modifica massiva non riuscita.');
@@ -569,7 +598,7 @@ export function WineAdminPage() {
         setBusy(false);
       }
     },
-    [bulkUpdateBatchSize, filteredWines, handleAddCategory, handleAddSupplier, loadWines, showToast]
+    [bulkUpdateBatchSize, filteredWines, handleAddCategory, handleAddSupplier, loadWines]
   );
 
   return (
@@ -601,7 +630,10 @@ export function WineAdminPage() {
         onRequestAddProducer={handleRequestAddProducer}
         onRequestAddOrigin={handleRequestAddOrigin}
         onRequestAddSupplier={handleRequestAddSupplier}
-        onResetFilters={() => setFilters(defaultFilters)}
+        onResetFilters={() => {
+          setFilters(defaultFilters);
+          setTableResetVersion((prev) => prev + 1);
+        }}
         onOpenCreate={openCreate}
         onOpenAi={() => setAiModalOpen(true)}
         noteReady={hasDischargeNote}
@@ -616,10 +648,16 @@ export function WineAdminPage() {
 
       <AdminArchiveTable
         wines={filteredWines}
+        categories={categories}
+        producers={producers}
+        origins={origins}
+        suppliers={suppliers}
         loading={loading}
         onEdit={openEdit}
         onDelete={setDeleteId}
         onUpdateQty={handleQuickQtyUpdate}
+        onUpdateInlineFields={handleInlineFieldsUpdate}
+        resetVersion={tableResetVersion}
         bulkEditEnabled={canOpenBulkEdit}
         onOpenBulkEdit={() => setBulkEditModalOpen(true)}
       />
@@ -660,12 +698,14 @@ export function WineAdminPage() {
       <CategoryCreateModal
         open={categoryModalOpen}
         existingValues={categories}
+        forceUppercase
         onCancel={cancelAddCategory}
         onConfirm={confirmAddCategory}
       />
       <CategoryCreateModal
         open={originModalOpen}
         existingValues={origins}
+        forceUppercase
         title="Nuova provenienza"
         inputPlaceholder="Inserisci provenienza"
         similarTitle="Provenienze già presenti simili"
@@ -706,12 +746,6 @@ export function WineAdminPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />
-
-      {toast ? (
-        <div className="mt12">
-          <div className="toastInline">{toast}</div>
-        </div>
-      ) : null}
     </div>
   );
 }

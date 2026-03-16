@@ -20,6 +20,7 @@ export type LocalDbState = {
 const DB_KEY = 'scarichi.localDb.v1';
 const SUPABASE_BOOTSTRAP_FLAG = 'scarichi.inventory.supabaseBootstrap.v1';
 export const dbChangedEvent = 'scarichi:dbChanged';
+export const dbChangedChannel = 'scarichi:dbChangedChannel';
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -39,11 +40,7 @@ function seed(): LocalDbState {
 
 export function loadDb(): LocalDbState {
   const parsed = safeParse<LocalDbState>(localStorage.getItem(DB_KEY));
-  if (
-    !parsed ||
-    !Array.isArray(parsed.inventory) ||
-    !Array.isArray(parsed.history)
-  ) {
+  if (!parsed || !Array.isArray(parsed.inventory) || !Array.isArray(parsed.history)) {
     const s = seed();
     saveDb(s);
     return s;
@@ -69,6 +66,15 @@ export function resetDb() {
 
 export function notifyDbChanged(sourceId?: string) {
   window.dispatchEvent(new CustomEvent(dbChangedEvent, { detail: { sourceId } }));
+  try {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel(dbChangedChannel);
+      channel.postMessage({ sourceId, at: Date.now() });
+      channel.close();
+    }
+  } catch {
+    // Non-blocking: storage/custom event sync remains active.
+  }
 }
 
 export function newId(prefix: string) {

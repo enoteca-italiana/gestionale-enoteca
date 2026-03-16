@@ -20,13 +20,19 @@ export function extractApiKey(raw: string): string {
 
   const directMatches = normalized.match(API_KEY_PATTERN);
   if (directMatches && directMatches.length > 0) {
-    return directMatches.reduce((best, current) => (current.length > best.length ? current : best), directMatches[0]);
+    return directMatches.reduce(
+      (best, current) => (current.length > best.length ? current : best),
+      directMatches[0]
+    );
   }
 
   const compact = normalized.replace(/\s+/g, '');
   const compactMatches = compact.match(API_KEY_PATTERN);
   if (!compactMatches || compactMatches.length === 0) return '';
-  return compactMatches.reduce((best, current) => (current.length > best.length ? current : best), compactMatches[0]);
+  return compactMatches.reduce(
+    (best, current) => (current.length > best.length ? current : best),
+    compactMatches[0]
+  );
 }
 
 export function hasValidApiKey(raw: string): boolean {

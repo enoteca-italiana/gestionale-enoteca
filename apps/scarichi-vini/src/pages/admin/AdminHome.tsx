@@ -1,4 +1,10 @@
-export type AdminRootSection = 'history' | 'import' | 'threshold' | 'password' | 'pinRequest' | 'reset';
+export type AdminRootSection =
+  | 'history'
+  | 'import'
+  | 'threshold'
+  | 'password'
+  | 'pinRequest'
+  | 'reset';
 
 export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => void }) {
   return (
@@ -10,13 +16,21 @@ export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => v
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('import')}>
           Importa archivio
         </button>
-        <button className="button adminHomeAction" type="button" onClick={() => onOpen('threshold')}>
+        <button
+          className="button adminHomeAction"
+          type="button"
+          onClick={() => onOpen('threshold')}
+        >
           Imposta Soglie
         </button>
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('password')}>
           Aggiorna password
         </button>
-        <button className="button adminHomeAction" type="button" onClick={() => onOpen('pinRequest')}>
+        <button
+          className="button adminHomeAction"
+          type="button"
+          onClick={() => onOpen('pinRequest')}
+        >
           Richiesta PIN
         </button>
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('reset')}>

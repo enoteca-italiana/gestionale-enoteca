@@ -213,9 +213,7 @@ export function AdminSettings({
         setReset2(false);
         setResetPin('');
       } catch (error) {
-        setResetPinError(
-          error instanceof Error ? error.message : 'Errore durante reset archivio'
-        );
+        setResetPinError(error instanceof Error ? error.message : 'Errore durante reset archivio');
       }
     } finally {
       setResetBusy(false);
@@ -444,8 +442,8 @@ export function AdminSettings({
           <div className="modalCard adminSettingsModalCard">
             <div className="modalTitle">Conferma reset archivio</div>
             <div className="modalDescription">
-              Inserisci il PIN admin per confermare l&apos;eliminazione definitiva dell&apos;archivio vini.
-              Lo storico sessioni non verrà toccato.
+              Inserisci il PIN admin per confermare l&apos;eliminazione definitiva
+              dell&apos;archivio vini. Lo storico sessioni non verrà toccato.
             </div>
             <div className="mt12">
               <input
@@ -569,13 +567,19 @@ export function AdminSettings({
                 }}
               />
             </div>
-            {importFile ? <div className="subtle mt8">File selezionato: {importFile.name}</div> : null}
+            {importFile ? (
+              <div className="subtle mt8">File selezionato: {importFile.name}</div>
+            ) : null}
             {importError ? <div className="errorText mt10">{importError}</div> : null}
             {importOk ? <div className="okText mt10">{importOk}</div> : null}
 
             <div className="modalActions">
               <button
-                className="button buttonSecondary"
+                className={`button adminImportArchiveButton ${
+                  importFile && !importBusy
+                    ? 'adminImportArchiveButtonReady'
+                    : 'adminImportArchiveButtonIdle'
+                }`}
                 type="button"
                 disabled={!importFile || importBusy}
                 onClick={() => void prepareImport()}

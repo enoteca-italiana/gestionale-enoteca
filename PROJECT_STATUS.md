@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 22:40 CET**.
+Ultimo aggiornamento: **16/03/2026 23:18 CET**.
 
 ## Scopo di questo file
 
@@ -12,6 +12,31 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - stato attuale (feature completate / da fare)
 - punti chiave del codice
 - come riprendere il lavoro con Cascade (prompt operativi)
+
+## Ultimi aggiornamenti (16/03/2026 - wave 14, hardening finale sync/archivio)
+
+- Archivio `/admina`:
+  - reset filtri esteso anche agli stati interni tabella (ordinamenti colonne verdi + stati inline), oltre ai filtri toolbar;
+  - stato iniziale coerente al refresh (filtri default + reset stato tabella).
+- Celle tabella archivio:
+  - placeholder `—` centrato solo quando il valore è assente in `Categoria`, `Produttore`, `Provenienza`, `Fornitore`;
+  - quando presente un valore, allineamento a sinistra invariato.
+- UX messaggi:
+  - rimossi i toast spot inline in Archivio (es. `Nome aggiornato`), mantenendo solo error handling non invasivo.
+- Sync Home ↔ Archivio:
+  - sincronizzazione locale resa più robusta con `BroadcastChannel` + evento custom;
+  - Home aggiorna inventory automaticamente su `focus/pageshow/visibilitychange` (senza refresh manuale).
+- Performance/stabilità:
+  - deduplica refresh inventory concorrenti (`useLocalDb.refreshInventory`);
+  - polling nota scarico in Home sospeso quando tab non visibile.
+- Quality gate finale eseguito:
+  - `npm run format` ✅
+  - `npm run format:check` ✅
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅ (15 test)
+  - `npm run test:coverage` ✅
+  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (16/03/2026 - wave 11, policy casing persistente)
 

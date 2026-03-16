@@ -226,7 +226,11 @@ export function AdminArchiveToolbar({
         ? `${value.toFixed(2).replace('.', ',')} €`
         : '—';
 
-    const loadLogoDataUrl = async (): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+    const loadLogoDataUrl = async (): Promise<{
+      dataUrl: string;
+      width: number;
+      height: number;
+    } | null> => {
       try {
         const response = await fetch('/logo.png');
         if (!response.ok) return null;
@@ -237,12 +241,15 @@ export function AdminArchiveToolbar({
           reader.onerror = () => reject(new Error('logo read failed'));
           reader.readAsDataURL(blob);
         });
-        const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
-          img.onerror = () => reject(new Error('logo size read failed'));
-          img.src = dataUrl;
-        });
+        const dimensions = await new Promise<{ width: number; height: number }>(
+          (resolve, reject) => {
+            const img = new Image();
+            img.onload = () =>
+              resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
+            img.onerror = () => reject(new Error('logo size read failed'));
+            img.src = dataUrl;
+          }
+        );
         return { dataUrl, ...dimensions };
       } catch {
         return null;
@@ -269,7 +276,18 @@ export function AdminArchiveToolbar({
     ]);
 
     autoTable(doc, {
-      head: [['Categoria', 'Nome', 'Produttore', 'Provenienza', 'Fornitore', 'Q.tà', 'Acquisto', 'Vendita']],
+      head: [
+        [
+          'Categoria',
+          'Nome',
+          'Produttore',
+          'Provenienza',
+          'Fornitore',
+          'Q.tà',
+          'Acquisto',
+          'Vendita'
+        ]
+      ],
       body,
       startY: topY,
       margin: { top: topY, left: marginX, right: marginX, bottom: 30 },

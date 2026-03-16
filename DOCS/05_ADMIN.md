@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 22:40 CET**.
+Ultimo aggiornamento: **16/03/2026 23:18 CET**.
 
 ## Accesso
 
@@ -178,7 +178,8 @@ Funzioni principali:
   - `+ Aggiungi fornitore…`
   - nelle tendine dove presente, la voce `+ Aggiungi...` è la prima opzione visibile.
 - pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra `Esauriti` e `Aggiungi vino`
-  - resetta tutti i filtri allo stato default (`Totale` + select su `Tutti` + ricerca vuota)
+  - resetta tutti i filtri allo stato default (`Totale` + select su `Tutti` + ricerca vuota);
+  - resetta anche stati tabella (ordinamenti colonne verdi e stati inline aperti).
 - CRUD vini
 - categoria/provenienza/fornitore da liste gestite
 - policy campi testo vino (anche su import CSV):
@@ -186,6 +187,9 @@ Funzioni principali:
   - `Produttore`, `Fornitore` sempre con **iniziale maiuscola**
 - tabella con header sticky, righe alternate e separatori verticali
 - ordinamento `A-Z / Z-A` su `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+- placeholder celle vuote:
+  - `—` centrato solo quando valore assente in `Categoria`, `Produttore`, `Provenienza`, `Fornitore`;
+  - valore presente sempre allineato a sinistra.
 - modifica massiva su filtri attivi (tabella):
   - apertura con click destro;
   - applicazione su tutti i vini filtrati;
@@ -200,6 +204,8 @@ Funzioni principali:
   - export report contestuale solo PDF;
   - pulsante `Esporta PDF` mostrato nel singolo messaggio report (non fisso in header);
   - PDF con logo in alto e numerazione pagine `1/N`.
+- notifiche spot:
+  - rimossi toast inline non bloccanti in archivio (es. `Nome aggiornato`), mantenendo feedback errori.
 
 ## Nota Scarico (Archivio)
 

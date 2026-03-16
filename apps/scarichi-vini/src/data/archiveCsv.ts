@@ -234,7 +234,12 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
       if (field === 'category' && CATEGORY_PLACEHOLDERS.has(normalizeHeader(rawCell))) {
         return;
       }
-      if (field === 'threshold' || field === 'purchasePrice' || field === 'salePrice' || field === 'qty') {
+      if (
+        field === 'threshold' ||
+        field === 'purchasePrice' ||
+        field === 'salePrice' ||
+        field === 'qty'
+      ) {
         const parsedNumber = parseLooseNumber(rawCell);
         if (parsedNumber !== undefined) {
           record[field] = field === 'qty' ? Math.max(0, Math.round(parsedNumber)) : parsedNumber;
@@ -256,12 +261,16 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
 
     parsed.push({
       id: record.id?.toString(),
-      category: record.category?.toString() ? normalizeWineCategory(record.category.toString()) : undefined,
+      category: record.category?.toString()
+        ? normalizeWineCategory(record.category.toString())
+        : undefined,
       name,
       age: record.age?.toString(),
       producer,
       origin,
-      supplier: record.supplier?.toString() ? normalizeWineSupplier(record.supplier.toString()) : undefined,
+      supplier: record.supplier?.toString()
+        ? normalizeWineSupplier(record.supplier.toString())
+        : undefined,
       threshold: typeof record.threshold === 'number' ? record.threshold : undefined,
       purchasePrice: typeof record.purchasePrice === 'number' ? record.purchasePrice : undefined,
       salePrice: typeof record.salePrice === 'number' ? record.salePrice : undefined,

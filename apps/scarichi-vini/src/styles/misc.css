@@ -333,6 +333,25 @@
   overscroll-behavior: contain;
 }
 
+.adminImportArchiveButton {
+  color: #ffffff;
+}
+
+.adminImportArchiveButtonIdle {
+  background: #7c164a;
+}
+
+.adminImportArchiveButtonIdle:disabled {
+  background: #7c164a;
+  color: #ffffff;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.adminImportArchiveButtonReady {
+  background: #15803d;
+}
+
 .adminCenterSection {
   min-height: calc(100dvh - 340px);
   display: flex;
@@ -624,5 +643,4 @@
     width: 170px;
     max-width: 170px;
   }
-
 }

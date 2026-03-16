@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { loadDb, newId, resetDb } from '@/data/localDb';
+import { dbChangedEvent, loadDb, newId, notifyDbChanged, resetDb } from '@/data/localDb';
 
 describe('localDb', () => {
   beforeEach(() => {
@@ -39,5 +39,35 @@ describe('localDb', () => {
     const parsed = JSON.parse(localStorage.getItem('scarichi.localDb.v1') ?? '{}');
     expect(parsed.inventory).toEqual([]);
     expect(localStorage.getItem('scarichi.inventory.supabaseBootstrap.v1')).toBe('1');
+  });
+
+  it('emits dbChanged custom event when notifyDbChanged is called', () => {
+    const listener = vi.fn();
+    window.addEventListener(dbChangedEvent, listener as EventListener);
+    notifyDbChanged('unit-test');
+    window.removeEventListener(dbChangedEvent, listener as EventListener);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    const event = listener.mock.calls[0]?.[0] as CustomEvent<{ sourceId?: string }>;
+    expect(event.detail?.sourceId).toBe('unit-test');
+  });
+
+  it('broadcasts dbChanged through BroadcastChannel when available', () => {
+    const postMessage = vi.fn();
+    const close = vi.fn();
+    const BroadcastChannelMock = vi.fn(() => ({
+      postMessage,
+      close
+    }));
+
+    vi.stubGlobal('BroadcastChannel', BroadcastChannelMock);
+    notifyDbChanged('channel-source');
+    vi.unstubAllGlobals();
+
+    expect(BroadcastChannelMock).toHaveBeenCalledWith('scarichi:dbChangedChannel');
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ sourceId: 'channel-source' })
+    );
+    expect(close).toHaveBeenCalledTimes(1);
   });
 });

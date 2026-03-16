@@ -61,7 +61,9 @@ export function upsertManagedProducer(
     return { created: null as string | null, managedNext: managedProducers, changed: false };
   }
 
-  const existing = existingProducers.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  const existing = existingProducers.find(
+    (item) => item.toLowerCase() === normalized.toLowerCase()
+  );
   if (existing) {
     return { created: existing, managedNext: managedProducers, changed: false };
   }

@@ -114,11 +114,18 @@ export function App() {
         <Switch>
           <Route path="/admina" component={WineAdminPage} />
           <Route path="/admin" component={AdminPage} />
-          <Route path="/">{() => <HomePage onIntroVisibilityChange={onIntroVisibilityChange} />}</Route>
+          <Route path="/">
+            {() => <HomePage onIntroVisibilityChange={onIntroVisibilityChange} />}
+          </Route>
         </Switch>
       </Suspense>
       {showAppPinGate ? (
-        <div className="modalOverlay" role="dialog" aria-modal="true" aria-label="Richiesta PIN avvio app">
+        <div
+          className="modalOverlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Richiesta PIN avvio app"
+        >
           <div className="modalCard">
             <div className="modalTitle">Inserisci PIN</div>
             <div className="modalDescription">

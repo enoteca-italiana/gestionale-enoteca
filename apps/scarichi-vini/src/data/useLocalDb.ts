@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
 import type { LocalDbState } from '@/data/localDb';
-import { dbChangedEvent, loadDb, notifyDbChanged, resetDb, saveDb } from '@/data/localDb';
+import {
+  dbChangedChannel,
+  dbChangedEvent,
+  loadDb,
+  notifyDbChanged,
+  resetDb,
+  saveDb
+} from '@/data/localDb';
 import { listWines } from '@/data/wineRepository';
 
 const WRITE_COALESCE_MS = 120;
@@ -11,6 +18,7 @@ export function useLocalDb() {
   const sourceIdRef = useRef(`useLocalDb_${Math.random().toString(36).slice(2)}`);
   const pendingDbRef = useRef<LocalDbState | null>(null);
   const flushTimerRef = useRef<number | null>(null);
+  const refreshInFlightRef = useRef<Promise<Wine[]> | null>(null);
 
   const flushPending = useCallback(() => {
     if (!pendingDbRef.current) return;
@@ -38,29 +46,45 @@ export function useLocalDb() {
       onExternal();
     };
 
+    let channel: BroadcastChannel | null = null;
+    if ('BroadcastChannel' in window) {
+      channel = new BroadcastChannel(dbChangedChannel);
+      channel.onmessage = (event: MessageEvent<{ sourceId?: string }>) => {
+        const sourceId = event.data?.sourceId;
+        if (sourceId && sourceId === sourceIdRef.current) return;
+        setDb(loadDb());
+      };
+    }
+
     window.addEventListener(dbChangedEvent, onExternal);
     window.addEventListener('storage', onStorage);
     return () => {
       flushPending();
       window.removeEventListener(dbChangedEvent, onExternal);
       window.removeEventListener('storage', onStorage);
+      if (channel) {
+        channel.close();
+      }
     };
   }, [flushPending]);
 
-  const commit = useCallback((next: LocalDbState | ((prev: LocalDbState) => LocalDbState)) => {
-    setDb((prev) => {
-      const computed =
-        typeof next === 'function' ? (next as (p: LocalDbState) => LocalDbState)(prev) : next;
-      pendingDbRef.current = computed;
-      if (flushTimerRef.current !== null) {
-        window.clearTimeout(flushTimerRef.current);
-      }
-      flushTimerRef.current = window.setTimeout(() => {
-        flushPending();
-      }, WRITE_COALESCE_MS);
-      return computed;
-    });
-  }, [flushPending]);
+  const commit = useCallback(
+    (next: LocalDbState | ((prev: LocalDbState) => LocalDbState)) => {
+      setDb((prev) => {
+        const computed =
+          typeof next === 'function' ? (next as (p: LocalDbState) => LocalDbState)(prev) : next;
+        pendingDbRef.current = computed;
+        if (flushTimerRef.current !== null) {
+          window.clearTimeout(flushTimerRef.current);
+        }
+        flushTimerRef.current = window.setTimeout(() => {
+          flushPending();
+        }, WRITE_COALESCE_MS);
+        return computed;
+      });
+    },
+    [flushPending]
+  );
 
   const inventory = db.inventory;
   const history = db.history;
@@ -92,24 +116,31 @@ export function useLocalDb() {
   }, []);
 
   const refreshInventory = useCallback(async () => {
-    try {
-      const wines = await listWines();
-      setDb((prev) => {
-        const next = { ...prev, inventory: wines };
-        pendingDbRef.current = next;
-        if (flushTimerRef.current !== null) {
-          window.clearTimeout(flushTimerRef.current);
-          flushTimerRef.current = null;
-        }
-        saveDb(next);
-        notifyDbChanged(sourceIdRef.current);
-        return next;
-      });
-      return wines;
-    } catch (error) {
-      console.error('[useLocalDb] refreshInventory failed', error);
-      throw error;
-    }
+    if (refreshInFlightRef.current) return refreshInFlightRef.current;
+    const task = (async () => {
+      try {
+        const wines = await listWines();
+        setDb((prev) => {
+          const next = { ...prev, inventory: wines };
+          pendingDbRef.current = next;
+          if (flushTimerRef.current !== null) {
+            window.clearTimeout(flushTimerRef.current);
+            flushTimerRef.current = null;
+          }
+          saveDb(next);
+          notifyDbChanged(sourceIdRef.current);
+          return next;
+        });
+        return wines;
+      } catch (error) {
+        console.error('[useLocalDb] refreshInventory failed', error);
+        throw error;
+      } finally {
+        refreshInFlightRef.current = null;
+      }
+    })();
+    refreshInFlightRef.current = task;
+    return task;
   }, []);
 
   const summary = useMemo(() => {

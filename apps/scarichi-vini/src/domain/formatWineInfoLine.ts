@@ -11,7 +11,9 @@ export function formatWineInfoLine(input: {
       ? normalizeWineProducer(input.producer)
       : '';
   const origin =
-    typeof input.origin === 'string' && input.origin.trim().length > 0 ? normalizeOrigin(input.origin) : '';
+    typeof input.origin === 'string' && input.origin.trim().length > 0
+      ? normalizeOrigin(input.origin)
+      : '';
   const rawYear = input.year;
   const year =
     typeof rawYear === 'number'

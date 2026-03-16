@@ -16,7 +16,10 @@ import {
 
 function normalizeItems(itemsByWineId: Record<string, number>): SessionItem[] {
   return Object.entries(itemsByWineId)
-    .map(([wineId, qty]) => ({ wineId, qty: Math.max(1, Math.min(99, Math.round(Number(qty) || 1))) }))
+    .map(([wineId, qty]) => ({
+      wineId,
+      qty: Math.max(1, Math.min(99, Math.round(Number(qty) || 1)))
+    }))
     .filter((item) => Boolean(item.wineId));
 }
 
@@ -128,7 +131,9 @@ export function DischargeNoteDrawer({
       Object.entries(itemsByWineId)
         .map(([wineId, qty]) => ({ wine: winesById.get(wineId), wineId, qty }))
         .filter((row) => Boolean(row.wine))
-        .sort((a, b) => (a.wine?.name ?? '').localeCompare(b.wine?.name ?? '', 'it', { sensitivity: 'base' })),
+        .sort((a, b) =>
+          (a.wine?.name ?? '').localeCompare(b.wine?.name ?? '', 'it', { sensitivity: 'base' })
+        ),
     [itemsByWineId, winesById]
   );
 
@@ -272,7 +277,11 @@ export function DischargeNoteDrawer({
         ) : null}
 
         <div className="archiveNoteSectionTitle mt12">Vini aggiunti</div>
-        <div className="archiveNoteList archiveNoteListSimple" role="list" aria-label="Lista vini aggiunti">
+        <div
+          className="archiveNoteList archiveNoteListSimple"
+          role="list"
+          aria-label="Lista vini aggiunti"
+        >
           {noteRows.length === 0 ? (
             <div className="archiveNoteEmpty">Nessun vino aggiunto.</div>
           ) : (
@@ -336,9 +345,12 @@ export function DischargeNoteDrawer({
                   <div key={note.id} className="archiveNoteHistoryRow" role="listitem">
                     <div className="min0">
                       <div className="archiveNoteHistoryTitleLine">
-                        {formatDateLabel(note.noteDate)} · {note.itemsCount} vini · {note.totalBottles} bott.
+                        {formatDateLabel(note.noteDate)} · {note.itemsCount} vini ·{' '}
+                        {note.totalBottles} bott.
                       </div>
-                      <div className="archiveNoteHistoryPreview">{previewNames || 'Nomi vini non disponibili'}</div>
+                      <div className="archiveNoteHistoryPreview">
+                        {previewNames || 'Nomi vini non disponibili'}
+                      </div>
                     </div>
                     <div className="archiveNoteHistoryActions">
                       <button
@@ -370,7 +382,11 @@ export function DischargeNoteDrawer({
         </div>
 
         <div className="archiveNoteFooter">
-          <button className="button buttonSecondary archiveNoteFooterButton" type="button" onClick={clearAll}>
+          <button
+            className="button buttonSecondary archiveNoteFooterButton"
+            type="button"
+            onClick={clearAll}
+          >
             Svuota nota
           </button>
           <button

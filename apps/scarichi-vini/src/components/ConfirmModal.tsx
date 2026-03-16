@@ -28,11 +28,17 @@ export function ConfirmModal({
   if (!open) return null;
 
   return (
-    <div className={`modalOverlay${overlayClassName ? ` ${overlayClassName}` : ''}`} role="dialog" aria-modal="true">
+    <div
+      className={`modalOverlay${overlayClassName ? ` ${overlayClassName}` : ''}`}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className={`modalCard${cardClassName ? ` ${cardClassName}` : ''}`}>
         <div className={`modalTitle${titleCentered ? ' centered' : ''}`}>{title}</div>
         {description ? (
-          <div className={`modalDescription${descriptionCentered ? ' centered' : ''}`}>{description}</div>
+          <div className={`modalDescription${descriptionCentered ? ' centered' : ''}`}>
+            {description}
+          </div>
         ) : null}
         <div className="modalActions">
           <button className="button" type="button" onClick={onConfirm}>

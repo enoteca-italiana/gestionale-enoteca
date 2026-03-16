@@ -47,7 +47,11 @@ export function listOriginOptions(wines: Wine[], managedOrigins: string[]): stri
   );
 }
 
-export function upsertManagedOrigin(rawValue: string, existingOrigins: string[], managedOrigins: string[]) {
+export function upsertManagedOrigin(
+  rawValue: string,
+  existingOrigins: string[],
+  managedOrigins: string[]
+) {
   const normalized = normalizeOrigin(rawValue);
   if (!normalized) {
     return { created: null as string | null, managedNext: managedOrigins, changed: false };

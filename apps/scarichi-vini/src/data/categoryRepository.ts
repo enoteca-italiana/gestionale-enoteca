@@ -9,7 +9,9 @@ function normalizeCategoryName(value: string) {
 }
 
 function isSchemaColumnError(error: unknown): boolean {
-  const message = String((error as { message?: unknown } | null | undefined)?.message ?? '').toLowerCase();
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
   return message.includes('column') && message.includes('does not exist');
 }
 
@@ -57,13 +59,19 @@ export function listCategoryOptions(wines: Wine[], managedCategories: string[]):
   );
 }
 
-export function upsertManagedCategory(rawValue: string, existingCategories: string[], managed: string[]) {
+export function upsertManagedCategory(
+  rawValue: string,
+  existingCategories: string[],
+  managed: string[]
+) {
   const normalized = normalizeCategoryName(rawValue);
   if (!normalized) {
     return { created: null as string | null, managedNext: managed, changed: false };
   }
 
-  const existing = existingCategories.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  const existing = existingCategories.find(
+    (item) => item.toLowerCase() === normalized.toLowerCase()
+  );
   if (existing) {
     return { created: existing, managedNext: managed, changed: false };
   }
@@ -80,7 +88,10 @@ type CategoryRow = {
 export async function listSupabaseCategories(): Promise<string[]> {
   if (!supabase) return [];
 
-  const { data, error } = await supabase.from('categories').select('name').order('name', { ascending: true });
+  const { data, error } = await supabase
+    .from('categories')
+    .select('name')
+    .order('name', { ascending: true });
   if (error) {
     if (!isSchemaColumnError(error)) {
       console.error('[categoryRepository] listSupabaseCategories error', error);
@@ -95,7 +106,9 @@ export async function listSupabaseCategories(): Promise<string[]> {
     const key = normalized.toLowerCase();
     if (!seen.has(key)) seen.set(key, normalized);
   }
-  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b, 'it', { sensitivity: 'base' }));
+  return Array.from(seen.values()).sort((a, b) =>
+    a.localeCompare(b, 'it', { sensitivity: 'base' })
+  );
 }
 
 export async function upsertSupabaseCategory(rawValue: string): Promise<void> {

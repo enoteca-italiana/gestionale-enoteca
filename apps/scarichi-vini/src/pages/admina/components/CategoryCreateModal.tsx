@@ -8,6 +8,7 @@ type Props = {
   similarTitle?: string;
   duplicateMessage?: string;
   ariaLabel?: string;
+  forceUppercase?: boolean;
   onCancel: () => void;
   onConfirm: (value: string) => void;
 };
@@ -45,6 +46,7 @@ export function CategoryCreateModal({
   similarTitle = 'Valori già presenti simili',
   duplicateMessage = 'Valore già esistente: se confermi, verrà riusato quello esistente.',
   ariaLabel = 'Nuovo valore',
+  forceUppercase = false,
   onCancel,
   onConfirm
 }: Props) {
@@ -78,7 +80,12 @@ export function CategoryCreateModal({
         <input
           className="input mt10"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            const nextValue = forceUppercase
+              ? e.target.value.toLocaleUpperCase('it-IT')
+              : e.target.value;
+            setValue(nextValue);
+          }}
           placeholder={inputPlaceholder}
           autoFocus
         />
@@ -111,7 +118,7 @@ export function CategoryCreateModal({
           <button
             className="button archiveModalActionButton"
             type="button"
-            onClick={() => onConfirm(value)}
+            onClick={() => onConfirm(forceUppercase ? value.toLocaleUpperCase('it-IT') : value)}
             disabled={!canConfirm}
           >
             Conferma

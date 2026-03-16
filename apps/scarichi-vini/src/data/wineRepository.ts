@@ -152,14 +152,18 @@ function isSchemaColumnError(error: unknown): boolean {
 function isForeignKeyViolation(error: unknown): boolean {
   const code = String((error as { code?: unknown } | null | undefined)?.code ?? '');
   if (code === '23503') return true;
-  const message = String((error as { message?: unknown } | null | undefined)?.message ?? '').toLowerCase();
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
   return message.includes('foreign key') || message.includes('violates foreign key');
 }
 
 function isNotNullViolation(error: unknown): boolean {
   const code = String((error as { code?: unknown } | null | undefined)?.code ?? '');
   if (code === '23502') return true;
-  const message = String((error as { message?: unknown } | null | undefined)?.message ?? '').toLowerCase();
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
   return message.includes('not-null') || message.includes('null value in column');
 }
 
@@ -397,7 +401,10 @@ export async function replaceAllWines(inputRows: ArchiveCsvWineInput[]): Promise
     }
 
     if (normalized.length > 0) {
-      const { data, error } = await supabase.from('wines').insert(normalized.map(toRowPayload)).select('*');
+      const { data, error } = await supabase
+        .from('wines')
+        .insert(normalized.map(toRowPayload))
+        .select('*');
 
       if (error && isSchemaColumnError(error)) {
         const legacy = await supabase
@@ -440,10 +447,7 @@ export async function updateThresholdForAllWines(rawThreshold: number): Promise<
   if (current.length === 0) return 0;
 
   if (supabase) {
-    const { error } = await supabase
-      .from('wines')
-      .update({ threshold })
-      .not('id', 'is', null);
+    const { error } = await supabase.from('wines').update({ threshold }).not('id', 'is', null);
     if (error && !isSchemaColumnError(error)) {
       console.error('[wineRepository] Supabase bulk threshold update error', error);
       throw error;

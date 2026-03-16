@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { extractApiKey, hasValidApiKey, normalizeApiKeyText } from '@/pages/admina/components/aiAssistantKey';
+import {
+  extractApiKey,
+  hasValidApiKey,
+  normalizeApiKeyText
+} from '@/pages/admina/components/aiAssistantKey';
 
 describe('aiAssistantKey', () => {
   it('normalizes control and invisible chars', () => {

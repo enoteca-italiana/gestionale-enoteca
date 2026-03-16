@@ -14,8 +14,8 @@ describe('normalizeWineText', () => {
     expect(normalizeOrigin('  Languedoc  france ')).toBe('LANGUEDOC FRANCE');
   });
 
-  it('forces initial uppercase for produttore e fornitore', () => {
-    expect(normalizeWineProducer('  hUgEL  ')).toBe('Hugel');
-    expect(normalizeWineSupplier("  d'angelo  import  ")).toBe("D'Angelo Import");
+  it('forces only first letter uppercase for produttore e fornitore', () => {
+    expect(normalizeWineProducer('  hUgEL  ')).toBe('HUgEL');
+    expect(normalizeWineSupplier("  d'angelo  import  ")).toBe("D'angelo import");
   });
 });

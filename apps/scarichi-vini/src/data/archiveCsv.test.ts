@@ -14,7 +14,7 @@ describe('archiveCsv normalization', () => {
     expect(rows[0]?.name).toBe('GRENACHE AMABILE 00906');
     expect(rows[0]?.producer).toBe('Hugel');
     expect(rows[0]?.origin).toBe('LANGUEDOC');
-    expect(rows[0]?.supplier).toBe('Import Vini Europa');
+    expect(rows[0]?.supplier).toBe('Import vini europa');
   });
 
   it('requires only name and producer, applying defaults for missing origin and qty', () => {

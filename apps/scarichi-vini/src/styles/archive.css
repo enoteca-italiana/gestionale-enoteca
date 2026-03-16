@@ -845,7 +845,6 @@
   color: #9f1239;
 }
 
-
 .archiveAiSettings > select.archiveAiSettingsInput {
   width: 100%;
   min-height: 52px;
@@ -1202,6 +1201,80 @@
   font-weight: 700;
 }
 
+.archiveInlineEditBox {
+  width: 100%;
+}
+
+.archiveInlineTextButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  font-weight: inherit;
+  padding: 0;
+  cursor: text;
+}
+
+.archiveInlineYearButton {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: center;
+  font: inherit;
+  padding: 0;
+  cursor: text;
+}
+
+.archiveInlineCategoryButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.archiveInlineCategoryButtonEmpty {
+  text-align: center;
+}
+
+.archiveInlineTextInput,
+.archiveInlineYearInput {
+  width: 100%;
+  border: 1px solid #7c164a;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  padding: 4px 8px;
+  box-sizing: border-box;
+}
+
+.archiveInlineYearInput {
+  max-width: 72px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.archiveInlineCategorySelect {
+  width: 100%;
+  border: 1px solid #7c164a;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
 .archiveColCenter {
   text-align: center;
 }
@@ -1259,6 +1332,18 @@
   color: #111827;
   outline: none;
   line-height: 1;
+}
+
+.archiveInlineTextInput::-webkit-credentials-auto-fill-button,
+.archiveInlineYearInput::-webkit-credentials-auto-fill-button,
+.archiveQtyInlineInput::-webkit-credentials-auto-fill-button,
+.archiveInlineTextInput::-webkit-contacts-auto-fill-button,
+.archiveInlineYearInput::-webkit-contacts-auto-fill-button,
+.archiveQtyInlineInput::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
 }
 
 .archiveRowActions {

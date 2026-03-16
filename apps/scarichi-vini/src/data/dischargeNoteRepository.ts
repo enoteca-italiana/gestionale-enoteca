@@ -93,7 +93,10 @@ export async function getDischargeNoteState(): Promise<DischargeNoteState> {
   };
 }
 
-export async function loadDraftDischargeNote(): Promise<{ items: SessionItem[]; updatedAt: number } | null> {
+export async function loadDraftDischargeNote(): Promise<{
+  items: SessionItem[];
+  updatedAt: number;
+} | null> {
   const client = requireSupabase();
   const { data, error } = await client
     .from('discharge_notes')
@@ -179,7 +182,9 @@ export async function completeInProgressDischargeNote(): Promise<void> {
   notifyDischargeNoteChanged();
 }
 
-export async function listRecentCompletedDischargeNotes(limit = 3): Promise<DischargeNoteHistoryEntry[]> {
+export async function listRecentCompletedDischargeNotes(
+  limit = 3
+): Promise<DischargeNoteHistoryEntry[]> {
   const client = requireSupabase();
   const safeLimit = Math.max(1, Math.min(limit, 10));
   const { data, error } = await client

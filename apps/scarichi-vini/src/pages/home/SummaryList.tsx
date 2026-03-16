@@ -29,11 +29,11 @@ export function SummaryList({
   }, [wines]);
 
   const selectedItem = useMemo(
-    () => (selectedWineId ? items.find((item) => item.wineId === selectedWineId) ?? null : null),
+    () => (selectedWineId ? (items.find((item) => item.wineId === selectedWineId) ?? null) : null),
     [items, selectedWineId]
   );
   const selectedWine = useMemo(
-    () => (selectedWineId ? winesById.get(selectedWineId) ?? null : null),
+    () => (selectedWineId ? (winesById.get(selectedWineId) ?? null) : null),
     [selectedWineId, winesById]
   );
 
@@ -84,7 +84,10 @@ export function SummaryList({
           <div className="summaryToggleMain">
             <div className="summaryToggleLead" aria-hidden="true" />
             <div className="sectionTitle summaryToggleTitle">Riepilogo</div>
-            <div className={`summaryToggleArrow ${isOpen ? 'summaryToggleArrowOpen' : ''}`} aria-hidden="true">
+            <div
+              className={`summaryToggleArrow ${isOpen ? 'summaryToggleArrowOpen' : ''}`}
+              aria-hidden="true"
+            >
               <ChevronDown size={22} strokeWidth={2} />
             </div>
           </div>
@@ -130,7 +133,10 @@ export function SummaryList({
           </>
         ) : null}
       </div>
-      <div className={`summaryDockSpacer ${isOpen ? '' : 'summaryDockSpacerCollapsed'}`} aria-hidden="true" />
+      <div
+        className={`summaryDockSpacer ${isOpen ? '' : 'summaryDockSpacerCollapsed'}`}
+        aria-hidden="true"
+      />
 
       {isOpen && selectedItem && selectedWine ? (
         <div className="modalOverlay" role="dialog" aria-modal="true">
@@ -155,7 +161,11 @@ export function SummaryList({
                 -
               </button>
               <div className="resultControlValue">{selectedItem.qty}</div>
-              <button className="resultControlButton" type="button" onClick={() => onIncrement(selectedItem.wineId)}>
+              <button
+                className="resultControlButton"
+                type="button"
+                onClick={() => onIncrement(selectedItem.wineId)}
+              >
                 +
               </button>
             </div>
@@ -168,7 +178,11 @@ export function SummaryList({
               >
                 Elimina
               </button>
-              <button className="button buttonConfirmSoft" type="button" onClick={() => setSelectedWineId(null)}>
+              <button
+                className="button buttonConfirmSoft"
+                type="button"
+                onClick={() => setSelectedWineId(null)}
+              >
                 Conferma
               </button>
             </div>

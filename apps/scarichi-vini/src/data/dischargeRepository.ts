@@ -54,7 +54,9 @@ function requireSupabase() {
 }
 
 function isSchemaColumnError(error: unknown): boolean {
-  const message = String((error as { message?: unknown } | null | undefined)?.message ?? '').toLowerCase();
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
   return message.includes('column') && message.includes('does not exist');
 }
 
@@ -238,7 +240,9 @@ export async function createDischargeSession(input: {
     };
   });
 
-  const { error: itemsError } = await client.from('discharge_session_items').insert(rowsWithSnapshot);
+  const { error: itemsError } = await client
+    .from('discharge_session_items')
+    .insert(rowsWithSnapshot);
   if (itemsError && isSchemaColumnError(itemsError)) {
     const { error: legacyItemsError } = await client.from('discharge_session_items').insert(
       cleanItems.map((item) => ({
@@ -354,7 +358,9 @@ export async function detachDischargeItemsFromWines(): Promise<void> {
 }
 
 function mapSessionItemRow(row: SessionItemRow): DischargeSessionItemDetail {
-  const session = Array.isArray(row.discharge_sessions) ? row.discharge_sessions[0] : row.discharge_sessions;
+  const session = Array.isArray(row.discharge_sessions)
+    ? row.discharge_sessions[0]
+    : row.discharge_sessions;
   const wine = Array.isArray(row.wines) ? row.wines[0] : row.wines;
   const fallbackWineId = row.wine_id ?? 'vino-rimosso';
 
@@ -394,7 +400,9 @@ function mapSessionItemRow(row: SessionItemRow): DischargeSessionItemDetail {
   };
 }
 
-export async function listSubmittedDischargeItemsForAi(limit = 500): Promise<DischargeSessionItemDetail[]> {
+export async function listSubmittedDischargeItemsForAi(
+  limit = 500
+): Promise<DischargeSessionItemDetail[]> {
   const client = requireSupabase();
 
   const baseQuery = client

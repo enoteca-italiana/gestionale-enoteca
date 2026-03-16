@@ -1,6 +1,6 @@
 # Modello dati locale (localStorage)
 
-Ultimo aggiornamento: **15/03/2026 23:05 CET**.
+Ultimo aggiornamento: **16/03/2026 23:18 CET**.
 
 ## Obiettivo
 
@@ -21,7 +21,6 @@ Tipo:
 
 - `inventory`: lista `Wine`
 - `history`: legacy locale (non usato nel flusso operativo attuale)
-- `pending`: legacy locale (non usato nel flusso operativo attuale)
 
 Campi `Wine` rilevanti nello stato attuale:
 
@@ -54,28 +53,31 @@ Hook: `apps/scarichi-vini/src/data/useLocalDb.ts`
 
 - `commit()`:
   - calcola next state
-  - `saveDb()` su localStorage
+  - `saveDb()` su localStorage (coalescing scritture ravvicinate)
   - emette evento custom `scarichi:dbChanged` via `notifyDbChanged()`
+- `refreshInventory()`:
+  - deduplica refresh concorrenti (riusa promise in-flight)
+  - sincronizza inventory da repository e riallinea localStorage
 
 Motivo:
 
 - aggiornare più hook nella stessa tab senza refresh.
+- propagare update affidabili anche tra tab/browser window.
 
 Eventi:
 
 - `scarichi:dbChanged` (intra-tab)
 - `storage` (cross-tab)
+- `BroadcastChannel` (`scarichi:dbChangedChannel`) per sync cross-tab più robusto
 
 ## Seed inventario
 
-- Seed iniziale da `mockWines`.
-- Presente migrazione automatica in `loadDb()`:
-  - mantiene i record esistenti;
-  - aggiunge i vini seed mancanti;
-  - arricchisce i record con eventuali nuovi campi senza perdere dati locali.
+- Seed locale minimale:
+  - `inventory: []`
+  - `history: []`
+- In `loadDb()` è presente una migrazione one-shot (`scarichi.inventory.supabaseBootstrap.v1`) che azzera eventuale inventario locale legacy; il popolamento operativo avviene dal repository vini (Supabase/local fallback).
 
 ## Reset
 
 - reset storico: `clearHistory()`
-- reset sospesi: `clearPending()`
 - reset totale: `hardResetAll()` (rimuove key e ricarica seed)

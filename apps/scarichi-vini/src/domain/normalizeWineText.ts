@@ -9,12 +9,10 @@ export function normalizeUppercaseText(value: string) {
 }
 
 export function normalizeInitialUppercaseText(value: string) {
-  const compact = compactSpaces(value).toLocaleLowerCase(IT_LOCALE);
+  const compact = compactSpaces(value);
   if (!compact) return '';
 
-  return compact.replace(/(^|[\s'’`-])(\p{L})/gu, (_, prefix: string, letter: string) => {
-    return `${prefix}${letter.toLocaleUpperCase(IT_LOCALE)}`;
-  });
+  return compact.replace(/\p{L}/u, (letter) => letter.toLocaleUpperCase(IT_LOCALE));
 }
 
 export function normalizeWineCategory(value: string) {

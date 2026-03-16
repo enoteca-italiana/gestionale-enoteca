@@ -17,7 +17,9 @@ type ChatMessage = {
 
 const STORAGE_MODEL = 'scarichi.ai.openaiModel.v1';
 const DEFAULT_MODEL = 'gpt-4.1-mini';
-const ENV_API_KEY = extractApiKey((import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? '');
+const ENV_API_KEY = extractApiKey(
+  (import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? ''
+);
 const ENV_MODEL = (import.meta.env.VITE_OPENAI_MODEL as string | undefined)?.trim() ?? '';
 const AGENT_MODELS = [
   { value: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
@@ -26,13 +28,11 @@ const AGENT_MODELS = [
 const WELCOME_MESSAGE = 'Salve, in cosa posso esserti utile?';
 const AI_SESSIONS_CACHE_TTL_MS = 5 * 60 * 1000;
 
-let aiSessionsCache:
-  | {
-      at: number;
-      submittedSessions: DischargeSessionSummary[];
-      submittedItems: DischargeSessionItemDetail[];
-    }
-  | null = null;
+let aiSessionsCache: {
+  at: number;
+  submittedSessions: DischargeSessionSummary[];
+  submittedItems: DischargeSessionItemDetail[];
+} | null = null;
 
 function buildInventorySnapshot(wines: Wine[]) {
   const total = wines.length;
@@ -42,12 +42,15 @@ function buildInventorySnapshot(wines: Wine[]) {
   ).length;
   const qtyTotal = wines.reduce((sum, wine) => sum + Math.max(0, wine.qty), 0);
   const stockValue = wines.reduce(
-    (sum, wine) => sum + (typeof wine.purchasePrice === 'number' ? wine.purchasePrice * Math.max(0, wine.qty) : 0),
+    (sum, wine) =>
+      sum +
+      (typeof wine.purchasePrice === 'number' ? wine.purchasePrice * Math.max(0, wine.qty) : 0),
     0
   );
   const marginAvg =
     wines.length > 0
-      ? wines.reduce((sum, wine) => sum + ((wine.salePrice ?? 0) - (wine.purchasePrice ?? 0)), 0) / wines.length
+      ? wines.reduce((sum, wine) => sum + ((wine.salePrice ?? 0) - (wine.purchasePrice ?? 0)), 0) /
+        wines.length
       : 0;
 
   return {
@@ -129,8 +132,14 @@ function toAnalyticWine(wine: Wine): AnalyticWine {
   };
 }
 
-function aggregateBy(items: AnalyticWine[], field: 'category' | 'producer' | 'origin' | 'supplier') {
-  const map = new Map<string, { label: string; wines: number; qty: number; stockValue: number; marginAvg: number }>();
+function aggregateBy(
+  items: AnalyticWine[],
+  field: 'category' | 'producer' | 'origin' | 'supplier'
+) {
+  const map = new Map<
+    string,
+    { label: string; wines: number; qty: number; stockValue: number; marginAvg: number }
+  >();
 
   for (const item of items) {
     const label = (item[field] || '—').trim() || '—';
@@ -212,7 +221,12 @@ type DataQualityContext = {
       rowsCount: number;
       qtyTotal: number;
     }>;
-    dateIncoherent: Array<{ sessionId: string; wineId: string; createdAt?: number; submittedAt?: number }>;
+    dateIncoherent: Array<{
+      sessionId: string;
+      wineId: string;
+      createdAt?: number;
+      submittedAt?: number;
+    }>;
     futureDated: Array<{ sessionId: string; wineId: string; submittedAt?: number }>;
   };
   consistency: {
@@ -243,7 +257,11 @@ function buildInventoryAnalytics(wines: Wine[]): InventoryAnalytics {
 
   const outOfStock = all.filter((wine) => wine.qty <= 0);
   const inThreshold = all.filter(
-    (wine) => typeof wine.threshold === 'number' && wine.threshold > 0 && wine.qty > 0 && wine.qty <= wine.threshold
+    (wine) =>
+      typeof wine.threshold === 'number' &&
+      wine.threshold > 0 &&
+      wine.qty > 0 &&
+      wine.qty <= wine.threshold
   );
 
   return {
@@ -286,8 +304,7 @@ function buildAiContext(
     breakdowns,
     recency,
     relevantWines,
-    note:
-      'Le classifiche usano tutto l’archivio caricato in questa pagina. I relevantWines servono solo per dettaglio domanda.'
+    note: 'Le classifiche usano tutto l’archivio caricato in questa pagina. I relevantWines servono solo per dettaglio domanda.'
   };
 }
 
@@ -372,7 +389,10 @@ function buildProducerContext(
   for (const item of submittedItems) {
     const fromInventory = item.wineId ? wineById.get(item.wineId) : undefined;
     const producer = (fromInventory?.producer || item.producer || '').trim() || '—';
-    dischargedByProducer.set(producer, (dischargedByProducer.get(producer) ?? 0) + Math.max(0, item.qty));
+    dischargedByProducer.set(
+      producer,
+      (dischargedByProducer.get(producer) ?? 0) + Math.max(0, item.qty)
+    );
   }
 
   const neverByWineId = new Set(recency.neverDischarged.map((row) => row.wineId));
@@ -413,7 +433,9 @@ function buildProducerContext(
     return {
       ...row,
       qtyCurrent: Number(row.qtyCurrent.toFixed(2)),
-      underThresholdOrOutPct: Number(((row.underThresholdOrOutCount / winesCount) * 100).toFixed(2)),
+      underThresholdOrOutPct: Number(
+        ((row.underThresholdOrOutCount / winesCount) * 100).toFixed(2)
+      ),
       neverDischargedPct: Number(((row.neverDischargedCount / winesCount) * 100).toFixed(2))
     };
   });
@@ -534,7 +556,8 @@ function buildSessionOutlierContext(submittedSessions: DischargeSessionSummary[]
   const values = submittedSessions.map((session) => Math.max(0, Number(session.totalQty) || 0));
   const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
   const variance =
-    values.reduce((sum, value) => sum + (value - avg) * (value - avg), 0) / Math.max(1, values.length);
+    values.reduce((sum, value) => sum + (value - avg) * (value - avg), 0) /
+    Math.max(1, values.length);
   const stdDev = Math.sqrt(Math.max(0, variance));
   const threshold = avg + 2 * stdDev;
 
@@ -561,7 +584,10 @@ function buildSessionOutlierContext(submittedSessions: DischargeSessionSummary[]
 }
 
 function buildReorderDecisionContext(wines: Wine[], submittedItems: DischargeSessionItemDetail[]) {
-  const aggregateByWineId = new Map<string, { lastDischargeAt: number | null; dischargeEvents: number }>();
+  const aggregateByWineId = new Map<
+    string,
+    { lastDischargeAt: number | null; dischargeEvents: number }
+  >();
   for (const item of submittedItems) {
     const submittedAt = item.submittedAt ?? item.createdAt;
     const current = aggregateByWineId.get(item.wineId) ?? {
@@ -596,7 +622,8 @@ function buildReorderDecisionContext(wines: Wine[], submittedItems: DischargeSes
       dischargeEvents > 0 &&
       daysSinceLastDischarge !== null &&
       daysSinceLastDischarge <= 180;
-    const isFreeze = dischargeEvents === 0 || (daysSinceLastDischarge !== null && daysSinceLastDischarge > 365);
+    const isFreeze =
+      dischargeEvents === 0 || (daysSinceLastDischarge !== null && daysSinceLastDischarge > 365);
 
     const row: DecisionBucketRow = {
       wineId: wine.id,
@@ -714,7 +741,10 @@ function buildSessionsContext(
 }
 
 function buildConversationTranscript(messages: ChatMessage[], currentQuestion: string): string {
-  const relevant = [...messages, { id: 'current', role: 'user' as const, text: currentQuestion }].slice(-14);
+  const relevant = [
+    ...messages,
+    { id: 'current', role: 'user' as const, text: currentQuestion }
+  ].slice(-14);
   return relevant
     .map((message) => `${message.role === 'user' ? 'Utente' : 'Assistente'}: ${message.text}`)
     .join('\n');
@@ -791,7 +821,10 @@ function parseTextToRows(text: string): { rows: string[][]; isTableLike: boolean
   const tableRows: string[][] = [];
   for (const line of lines) {
     if (!line.includes('|')) continue;
-    const parts = line.split('|').map((cell) => cell.trim()).filter((cell) => cell.length > 0);
+    const parts = line
+      .split('|')
+      .map((cell) => cell.trim())
+      .filter((cell) => cell.length > 0);
     if (parts.length >= 2) tableRows.push(parts);
   }
 
@@ -815,7 +848,9 @@ function parseTextToRows(text: string): { rows: string[][]; isTableLike: boolean
 }
 
 function isExplicitReportRequest(question: string): boolean {
-  return /\b(report|riepilogo|analisi|sintesi|diagnosi|kpi|tabella|esporta|export|pdf)\b/i.test(question);
+  return /\b(report|riepilogo|analisi|sintesi|diagnosi|kpi|tabella|esporta|export|pdf)\b/i.test(
+    question
+  );
 }
 
 function readAiSessionsCache() {
@@ -879,41 +914,38 @@ export function AiAssistantModal({
   const analytics = useMemo(() => buildInventoryAnalytics(wines), [wines]);
   const effectiveApiKey = ENV_API_KEY;
 
-  const loadSessionsData = useCallback(
-    async (options?: { force?: boolean }) => {
-      const force = options?.force ?? false;
-      if (!force) {
-        const cached = readAiSessionsCache();
-        if (cached) {
-          setSubmittedSessions(cached.submittedSessions);
-          setSubmittedItems(cached.submittedItems);
-          setSessionsLoaded(true);
-          return cached;
-        }
-      }
-      try {
-        const [submitted, items] = await Promise.all([
-          listAllDischargeSessions('submitted'),
-          listAllSubmittedDischargeItemsForAi()
-        ]);
-        setSubmittedSessions(submitted);
-        setSubmittedItems(items);
+  const loadSessionsData = useCallback(async (options?: { force?: boolean }) => {
+    const force = options?.force ?? false;
+    if (!force) {
+      const cached = readAiSessionsCache();
+      if (cached) {
+        setSubmittedSessions(cached.submittedSessions);
+        setSubmittedItems(cached.submittedItems);
         setSessionsLoaded(true);
-        const payload = {
-          submittedSessions: submitted,
-          submittedItems: items
-        };
-        writeAiSessionsCache(payload);
-        return payload;
-      } catch {
-        setSubmittedSessions([]);
-        setSubmittedItems([]);
-        setSessionsLoaded(false);
-        return null;
+        return cached;
       }
-    },
-    []
-  );
+    }
+    try {
+      const [submitted, items] = await Promise.all([
+        listAllDischargeSessions('submitted'),
+        listAllSubmittedDischargeItemsForAi()
+      ]);
+      setSubmittedSessions(submitted);
+      setSubmittedItems(items);
+      setSessionsLoaded(true);
+      const payload = {
+        submittedSessions: submitted,
+        submittedItems: items
+      };
+      writeAiSessionsCache(payload);
+      return payload;
+    } catch {
+      setSubmittedSessions([]);
+      setSubmittedItems([]);
+      setSessionsLoaded(false);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -957,19 +989,30 @@ export function AiAssistantModal({
     if (!sourceText.trim()) {
       setMessages((prev) => [
         ...prev,
-        { id: `${Date.now()}_exp_pdf`, role: 'assistant', text: 'Nessuna risposta assistente da esportare.' }
+        {
+          id: `${Date.now()}_exp_pdf`,
+          role: 'assistant',
+          text: 'Nessuna risposta assistente da esportare.'
+        }
       ]);
       return;
     }
     try {
       setExporting(true);
       const parsed = parseTextToRows(sourceText);
-      const [{ jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ]);
       const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      const loadLogoDataUrl = async (): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+      const loadLogoDataUrl = async (): Promise<{
+        dataUrl: string;
+        width: number;
+        height: number;
+      } | null> => {
         try {
           const response = await fetch('/logo.png');
           if (!response.ok) return null;
@@ -980,12 +1023,15 @@ export function AiAssistantModal({
             reader.onerror = () => reject(new Error('logo read failed'));
             reader.readAsDataURL(blob);
           });
-          const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
-            img.onerror = () => reject(new Error('logo size read failed'));
-            img.src = dataUrl;
-          });
+          const dimensions = await new Promise<{ width: number; height: number }>(
+            (resolve, reject) => {
+              const img = new Image();
+              img.onload = () =>
+                resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
+              img.onerror = () => reject(new Error('logo size read failed'));
+              img.src = dataUrl;
+            }
+          );
           return { dataUrl, ...dimensions };
         } catch {
           return null;
@@ -1115,7 +1161,9 @@ export function AiAssistantModal({
         'Per outlier sessione usa il blocco sessions.outliers.',
         'Usa anche il blocco sessions per risposte su storico, andamenti temporali e vini più scaricati.'
       ].join(' ');
-      const relevantWines = pickRelevantWines(wines, question, searchTextByWineId).map(toAnalyticWine);
+      const relevantWines = pickRelevantWines(wines, question, searchTextByWineId).map(
+        toAnalyticWine
+      );
       const effectiveSessionsContext = buildSessionsContext(effectiveSessions, effectiveItems);
       const recency = buildRecencyContext(wines, effectiveItems);
       const producerContext = buildProducerContext(wines, effectiveItems, recency);
@@ -1209,11 +1257,21 @@ export function AiAssistantModal({
         <div className="archiveAiModalHeader">
           <div className="archiveAiModalTitleWrap">
             <div className="archiveAiModalTitleRow">
-              <img className="archiveAiModalTitleIcon" src="/icons%20ai.png" alt="" aria-hidden="true" />
+              <img
+                className="archiveAiModalTitleIcon"
+                src="/icons%20ai.png"
+                alt=""
+                aria-hidden="true"
+              />
               <div className="archiveAiModalTitle">Assistente AI</div>
             </div>
           </div>
-          <button className="archiveAiCloseButton" type="button" onClick={onClose} aria-label="Chiudi assistente AI">
+          <button
+            className="archiveAiCloseButton"
+            type="button"
+            onClick={onClose}
+            aria-label="Chiudi assistente AI"
+          >
             ×
           </button>
         </div>
@@ -1225,7 +1283,9 @@ export function AiAssistantModal({
                 key={message.id}
                 className={`archiveAiMessage ${message.role === 'user' ? 'archiveAiMessageUser' : 'archiveAiMessageAssistant'}`}
               >
-                <div className="archiveAiMessageRole">{message.role === 'user' ? 'Tu' : 'Assistente'}</div>
+                <div className="archiveAiMessageRole">
+                  {message.role === 'user' ? 'Tu' : 'Assistente'}
+                </div>
                 <div className="archiveAiMessageText">{message.text}</div>
                 {message.role === 'assistant' && message.pdfExportEligible ? (
                   <button
@@ -1262,7 +1322,11 @@ export function AiAssistantModal({
                 void send();
               }}
             />
-            <select className="input archiveAiInlineModelSelect" value={model} onChange={(event) => setModel(event.target.value)}>
+            <select
+              className="input archiveAiInlineModelSelect"
+              value={model}
+              onChange={(event) => setModel(event.target.value)}
+            >
               {AGENT_MODELS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

@@ -5,9 +5,7 @@ import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
 import { createAndSubmitDischargeSession } from '@/data/dischargeRepository';
-import {
-  dischargeNoteChangedEvent,
-} from '@/data/dischargeNote';
+import { dischargeNoteChangedEvent } from '@/data/dischargeNote';
 import {
   completeInProgressDischargeNote,
   getReadyDischargeNoteItems,
@@ -82,10 +80,12 @@ export function HomePage({
   const [pendingNoteQtyByWineId, setPendingNoteQtyByWineId] = useState<Record<string, number>>({});
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
-  const [readyDischargeNoteItems, setReadyDischargeNoteItems] = useState<{
-    wineId: string;
-    qty: number;
-  }[]>([]);
+  const [readyDischargeNoteItems, setReadyDischargeNoteItems] = useState<
+    {
+      wineId: string;
+      qty: number;
+    }[]
+  >([]);
   const [location, setLocation] = useLocation();
 
   const online = useOnlineStatus();
@@ -136,6 +136,26 @@ export function HomePage({
   }, [refreshInventory]);
 
   useEffect(() => {
+    const onFocus = () => {
+      void refreshInventory();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshInventory();
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('pageshow', onFocus);
+    window.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pageshow', onFocus);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [refreshInventory]);
+
+  useEffect(() => {
     if (!sessionOpen) return;
 
     const onBeforeNav = (event: Event) => {
@@ -181,21 +201,29 @@ export function HomePage({
     const onPageShow = () => {
       void syncReadyNote();
     };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void syncReadyNote();
+      }
+    };
 
     void syncReadyNote();
     const poll = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
       void syncReadyNote();
     }, 4000);
 
     window.addEventListener(dischargeNoteChangedEvent, onFocus);
     window.addEventListener('focus', onFocus);
     window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       alive = false;
       window.clearInterval(poll);
       window.removeEventListener(dischargeNoteChangedEvent, onFocus);
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [location]);
 
@@ -344,7 +372,10 @@ export function HomePage({
 
   const getSessionQty = (wineId: string) => sessionQtyByWineId.get(wineId) ?? 0;
   const showResults =
-    !sessionOpen || query.trim().length > 0 || stockFilter !== 'all' || pendingNoteWineIdSet.size > 0;
+    !sessionOpen ||
+    query.trim().length > 0 ||
+    stockFilter !== 'all' ||
+    pendingNoteWineIdSet.size > 0;
 
   if (showIntro) {
     return (
@@ -430,7 +461,9 @@ export function HomePage({
             sessionOpen={sessionOpen}
             interactive={sessionOpen}
             getSessionQty={sessionOpen ? getSessionQty : undefined}
-            getPendingNoteQty={sessionOpen ? (wineId) => pendingNoteQtyByWineId[wineId] ?? 0 : undefined}
+            getPendingNoteQty={
+              sessionOpen ? (wineId) => pendingNoteQtyByWineId[wineId] ?? 0 : undefined
+            }
             onConfirmPendingNote={sessionOpen ? confirmPendingNoteWine : undefined}
             onIncrement={sessionOpen ? (wineId) => addToSession(wineId, 1) : undefined}
             onDecrement={sessionOpen ? (wineId) => decrementItem(wineId) : undefined}
