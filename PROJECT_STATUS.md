@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **16/03/2026 23:18 CET**.
+Ultimo aggiornamento: **16/03/2026 23:46 CET**.
 
 ## Scopo di questo file
 
@@ -12,6 +12,31 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - stato attuale (feature completate / da fare)
 - punti chiave del codice
 - come riprendere il lavoro con Cascade (prompt operativi)
+
+## Ultimi aggiornamenti (16/03/2026 - wave 15, import CSV hardening + performance archivio)
+
+- Import CSV (`AdminSettings`):
+  - supporto operativo per due modalità import:
+    - `Aggiungi record ad archivio esistente`
+    - `Sostituisci intero archivio con il CSV`
+  - la scelta modalità è richiesta al click su `Importa archivio`, nel primo step di conferma (`IMPORTANTE!`, titolo rosso).
+  - protezione finale resa obbligatoria con doppio step:
+    - conferma modalità
+    - conferma con `PIN admin` prima dell'esecuzione reale import.
+- Performance archivio (`/admina`) ulteriormente ottimizzata:
+  - hydration locale immediata e sync remoto in background mantenuta;
+  - fetch paginato vini con prima pagina + pagine successive in parallelo;
+  - deduplica richieste concorrenti su `listWines()` (riuso promise in-flight);
+  - riduzione rendering iniziale tabella (batch progressivo alleggerito) e skip sort ridondante nella vista default (`Nome A-Z`).
+- Robustezza operativa:
+  - nessun marker conflitto merge rilevato nel codice (`<<<<<<<`, `=======`, `>>>>>>>`).
+- Quality gate sessione:
+  - `npm run format:check` ✅
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅ (15 test)
+  - `npm run build` ✅
+  - `npm run test:coverage` non disponibile negli script root correnti (`Missing script`).
 
 ## Ultimi aggiornamenti (16/03/2026 - wave 14, hardening finale sync/archivio)
 

@@ -96,17 +96,22 @@ export function WineAdminPage() {
   const bulkUpdateBatchSize = 40;
 
   const loadWines = useCallback(async () => {
-    setLoading(true);
     setError(null);
+    const local = loadDb().inventory;
+    const hasLocalData = local.length > 0;
+    if (hasLocalData) {
+      setWines(local);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     try {
-      const local = loadDb().inventory;
-      if (local.length > 0) {
-        setWines(local);
-      }
       setWines(await listWines());
     } catch (err) {
       console.error('[WineAdminPage] load error', err);
-      setError('Impossibile caricare i vini. Verifica connessione/Supabase.');
+      if (!hasLocalData) {
+        setError('Impossibile caricare i vini. Verifica connessione/Supabase.');
+      }
     } finally {
       setLoading(false);
     }
@@ -449,7 +454,7 @@ export function WineAdminPage() {
       } else {
         await updateWine(payload);
       }
-      await loadWines();
+      setWines(loadDb().inventory);
       closeForm();
     } catch (err) {
       console.error('[WineAdminPage] submit error', err);
@@ -464,7 +469,7 @@ export function WineAdminPage() {
     setBusy(true);
     try {
       await deleteWine(deleteId);
-      await loadWines();
+      setWines(loadDb().inventory);
     } catch (err) {
       console.error('[WineAdminPage] delete error', err);
       setError('Eliminazione non riuscita.');
@@ -492,7 +497,7 @@ export function WineAdminPage() {
         qty: nextQty,
         notes: wine.notes
       });
-      await loadWines();
+      setWines(loadDb().inventory);
       return true;
     } catch (err) {
       console.error('[WineAdminPage] quick qty update error', err);
@@ -531,7 +536,7 @@ export function WineAdminPage() {
         qty: wine.qty,
         notes: wine.notes
       });
-      await loadWines();
+      setWines(loadDb().inventory);
       return true;
     } catch (err) {
       console.error('[WineAdminPage] inline fields update error', err);
@@ -588,7 +593,7 @@ export function WineAdminPage() {
           );
         }
 
-        await loadWines();
+        setWines(loadDb().inventory);
         setBulkEditModalOpen(false);
       } catch (err) {
         console.error('[WineAdminPage] bulk edit error', err);
@@ -598,7 +603,7 @@ export function WineAdminPage() {
         setBusy(false);
       }
     },
-    [bulkUpdateBatchSize, filteredWines, handleAddCategory, handleAddSupplier, loadWines]
+    [bulkUpdateBatchSize, filteredWines, handleAddCategory, handleAddSupplier]
   );
 
   return (
@@ -676,7 +681,9 @@ export function WineAdminPage() {
         onSubmit={handleSubmit}
         onCancel={closeForm}
       />
-      <AiAssistantModal open={aiModalOpen} wines={wines} onClose={() => setAiModalOpen(false)} />
+      {aiModalOpen ? (
+        <AiAssistantModal open={aiModalOpen} wines={wines} onClose={() => setAiModalOpen(false)} />
+      ) : null}
       <BulkEditFilteredModal
         open={bulkEditModalOpen}
         busy={busy || bulkEditBusy}
@@ -689,11 +696,13 @@ export function WineAdminPage() {
           setBulkEditModalOpen(false);
         }}
       />
-      <DischargeNoteDrawer
-        open={dischargeNoteOpen}
-        wines={wines}
-        onClose={() => setDischargeNoteOpen(false)}
-      />
+      {dischargeNoteOpen ? (
+        <DischargeNoteDrawer
+          open={dischargeNoteOpen}
+          wines={wines}
+          onClose={() => setDischargeNoteOpen(false)}
+        />
+      ) : null}
 
       <CategoryCreateModal
         open={categoryModalOpen}

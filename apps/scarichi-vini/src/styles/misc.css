@@ -337,6 +337,49 @@
   color: #ffffff;
 }
 
+.adminImportModeGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.adminImportModeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #f7f7fa;
+  cursor: pointer;
+}
+
+.adminImportModeOption input {
+  margin-top: 3px;
+  accent-color: #7c164a;
+}
+
+.adminImportModeOption span {
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.adminImportModeConfirmCard .modalTitle {
+  color: #b91c1c;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.adminImportModeConfirmContent {
+  display: grid;
+  gap: 10px;
+}
+
+.adminImportModeConfirmMessage {
+  color: #1f2937;
+  font-weight: 700;
+}
+
 .adminImportArchiveButtonIdle {
   background: #7c164a;
 }

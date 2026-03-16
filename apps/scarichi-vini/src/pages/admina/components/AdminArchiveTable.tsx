@@ -33,7 +33,7 @@ const TOTAL_COLUMNS = 12;
 const BASE_ROWS = 14;
 const ROW_HEIGHT_ESTIMATE = 33;
 const TABLE_OFFSET = 340;
-const TABLE_RENDER_BATCH = 180;
+const TABLE_RENDER_BATCH = 40;
 const TABLE_SORT_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 const MONEY_FORMATTER = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
 type SortKey = 'category' | 'name' | 'producer' | 'origin' | 'supplier';
@@ -131,6 +131,11 @@ export function AdminArchiveTable({
   const [sortState, setSortState] = useState<{ key: SortKey; dir: SortDir }>(DEFAULT_SORT_STATE);
 
   const sortedWines = useMemo(() => {
+    if (sortState.key === 'name' && sortState.dir === 'az') {
+      // The repository already returns wines sorted by name asc.
+      // Skip an unnecessary full array copy/sort on the default view.
+      return wines;
+    }
     const byField = [...wines].sort((a, b) => {
       const aValue =
         sortState.key === 'category'

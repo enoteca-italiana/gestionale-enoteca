@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { getBool, setBool, storageKeys } from '@/pages/admin/storage';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { parseArchiveCsv, type ArchiveCsvWineInput } from '@/data/archiveCsv';
-import { replaceAllWines, updateThresholdForAllWines } from '@/data/wineRepository';
+import { appendWines, replaceAllWines, updateThresholdForAllWines } from '@/data/wineRepository';
 import { sha256Base64 } from '@/pages/admin/crypto';
+
+type ImportMode = 'replace' | 'append';
 
 export function AdminSettings({
   onChangePassword,
@@ -39,7 +41,11 @@ export function AdminSettings({
   const [importError, setImportError] = useState<string | null>(null);
   const [importOk, setImportOk] = useState<string | null>(null);
   const [importConfirm, setImportConfirm] = useState(false);
+  const [importPinConfirm, setImportPinConfirm] = useState(false);
+  const [importPin, setImportPin] = useState('');
+  const [importPinError, setImportPinError] = useState<string | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importMode, setImportMode] = useState<ImportMode>('replace');
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false);
   const [thresholdValue, setThresholdValue] = useState('');
   const [thresholdError, setThresholdError] = useState<string | null>(null);
@@ -71,6 +77,11 @@ export function AdminSettings({
     if (openAction === 'import') {
       setImportError(null);
       setImportOk(null);
+      setImportPin('');
+      setImportPinError(null);
+      setImportConfirm(false);
+      setImportPinConfirm(false);
+      setImportMode('replace');
       setImportModalOpen(true);
       onActionHandled?.();
       return;
@@ -131,19 +142,54 @@ export function AdminSettings({
     }
   };
 
-  const importArchive = async () => {
-    if (!importRows) return;
+  const importArchive = async (): Promise<boolean> => {
+    if (!importRows) return false;
     setImportBusy(true);
     setImportError(null);
     setImportOk(null);
     try {
-      await replaceAllWines(importRows);
-      setImportOk(`Import completato: ${importRows.length} record`);
+      if (importMode === 'append') {
+        await appendWines(importRows);
+        setImportOk(`Import completato: aggiunti ${importRows.length} record`);
+      } else {
+        await replaceAllWines(importRows);
+        setImportOk(`Import completato: ${importRows.length} record`);
+      }
       setImportRows(null);
       setImportFile(null);
       setImportConfirm(false);
+      return true;
     } catch (error) {
       setImportError(error instanceof Error ? error.message : 'Errore durante import archivio');
+      return false;
+    } finally {
+      setImportBusy(false);
+    }
+  };
+
+  const confirmImportWithPin = async () => {
+    if (importBusy) return;
+    setImportPinError(null);
+    setImportBusy(true);
+    try {
+      const storedHash = localStorage.getItem(storageKeys.adminPasswordHash);
+      if (!storedHash) {
+        setImportPinError('PIN admin non disponibile');
+        return;
+      }
+      const pinHash = await sha256Base64(importPin.trim());
+      if (pinHash !== storedHash) {
+        setImportPinError('PIN non corretto');
+        return;
+      }
+      const done = await importArchive();
+      if (!done) {
+        setImportPinConfirm(false);
+        return;
+      }
+      setImportPinConfirm(false);
+      setImportPin('');
+      setImportPinError(null);
     } finally {
       setImportBusy(false);
     }
@@ -550,7 +596,8 @@ export function AdminSettings({
           <div className="modalCard adminSettingsModalCard">
             <div className="modalTitle">Importa archivio CSV</div>
             <div className="modalDescription">
-              Il CSV sostituirà completamente l&apos;archivio attuale.
+              Seleziona il file CSV. La scelta tra aggiunta o sostituzione completa verrà richiesta
+              al click su Importa archivio.
             </div>
 
             <div className="mt12">
@@ -592,6 +639,10 @@ export function AdminSettings({
                 onClick={() => {
                   if (importBusy) return;
                   setImportModalOpen(false);
+                  setImportConfirm(false);
+                  setImportPinConfirm(false);
+                  setImportPin('');
+                  setImportPinError(null);
                 }}
               >
                 Annulla
@@ -620,24 +671,107 @@ export function AdminSettings({
 
       <ConfirmModal
         open={importConfirm}
-        cardClassName="adminSettingsModalCard"
-        title="Confermare import archivio?"
+        cardClassName="adminSettingsModalCard adminImportModeConfirmCard"
+        title="IMPORTANTE!"
         description={
-          importRows
-            ? `Verranno eliminati i record attuali e sostituiti con ${importRows.length} record dal CSV.`
-            : 'Verranno eliminati i record attuali e sostituiti con il contenuto del CSV.'
+          <div className="adminImportModeConfirmContent">
+            <div className="adminImportModeConfirmMessage">
+              Scegli come importare il file CSV
+              {importRows ? ` (${importRows.length} record)` : ''}:
+            </div>
+            <div className="adminImportModeGroup" role="radiogroup" aria-label="Modalità import">
+              <label className="adminImportModeOption">
+                <input
+                  type="radio"
+                  name="admin-import-mode-confirm"
+                  value="append"
+                  checked={importMode === 'append'}
+                  onChange={() => setImportMode('append')}
+                />
+                <span>Aggiungi record ad archivio esistente</span>
+              </label>
+              <label className="adminImportModeOption">
+                <input
+                  type="radio"
+                  name="admin-import-mode-confirm"
+                  value="replace"
+                  checked={importMode === 'replace'}
+                  onChange={() => setImportMode('replace')}
+                />
+                <span>Sostituisci intero archivio con il CSV</span>
+              </label>
+            </div>
+          </div>
         }
-        confirmLabel={importBusy ? 'Import in corso…' : 'Sì, sostituisci archivio'}
+        confirmLabel={importBusy ? 'Import in corso…' : 'Continua'}
         cancelLabel="Annulla"
         onConfirm={() => {
           if (importBusy) return;
-          void importArchive().then(() => setImportConfirm(false));
+          setImportConfirm(false);
+          setImportPin('');
+          setImportPinError(null);
+          setImportPinConfirm(true);
         }}
         onCancel={() => {
           if (importBusy) return;
           setImportConfirm(false);
         }}
       />
+
+      {importPinConfirm ? (
+        <div className="modalOverlay" role="dialog" aria-modal="true">
+          <div className="modalCard adminSettingsModalCard">
+            <div className="modalTitle">Conferma import archivio</div>
+            <div className="modalDescription">
+              Inserisci il PIN admin per confermare
+              {importMode === 'append'
+                ? " l'aggiunta del CSV all'archivio esistente."
+                : " la sostituzione completa dell'archivio con il CSV."}
+            </div>
+            <div className="mt12">
+              <input
+                className="input adminInput"
+                type="password"
+                inputMode="numeric"
+                placeholder="Inserisci PIN admin"
+                value={importPin}
+                onChange={(e) => {
+                  setImportPin(e.target.value);
+                  if (importPinError) setImportPinError(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  void confirmImportWithPin();
+                }}
+              />
+            </div>
+            {importPinError ? <div className="errorText mt10">{importPinError}</div> : null}
+            <div className="modalActions">
+              <button
+                className="button"
+                type="button"
+                disabled={importBusy || importPin.trim().length === 0}
+                onClick={() => void confirmImportWithPin()}
+              >
+                {importBusy ? 'Verifica…' : 'Conferma import'}
+              </button>
+              <button
+                className="button buttonSecondary buttonCancel"
+                type="button"
+                onClick={() => {
+                  if (importBusy) return;
+                  setImportPinConfirm(false);
+                  setImportPin('');
+                  setImportPinError(null);
+                }}
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

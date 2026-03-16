@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **16/03/2026 23:18 CET**.
+Ultimo aggiornamento: **16/03/2026 23:46 CET**.
 
 ## Accesso
 
@@ -49,9 +49,23 @@ File: `AdminSettings.tsx`
 Modali attivi:
 
 - cambio password admin
-- import archivio CSV (sostituzione totale)
+- import archivio CSV (aggiunta o sostituzione)
 - imposta soglia unica su tutti i vini
 - reset archivio con PIN
+
+### Importa archivio CSV
+
+Flusso operativo aggiornato:
+
+- step 1: selezione file CSV nel modale import;
+- step 2: conferma `IMPORTANTE!` con scelta modalità:
+  - `Aggiungi record ad archivio esistente`
+  - `Sostituisci intero archivio con il CSV`
+- step 3: conferma finale con `PIN admin` obbligatorio.
+
+Vincolo sicurezza:
+
+- l'import non parte mai senza doppia conferma + PIN.
 
 ### Imposta Soglie (nuovo)
 
