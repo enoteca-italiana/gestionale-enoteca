@@ -7,10 +7,12 @@
   width: min(99vw, 1680px);
   padding-left: 8px;
   padding-right: 8px;
-  min-height: calc(100vh - 92px);
+  min-height: 0;
+  height: calc(100dvh - 92px);
   display: flex;
   flex-direction: column;
   padding-bottom: 42px;
+  overflow: hidden;
 }
 
 .archiveLogoTop {
@@ -1151,6 +1153,8 @@
   .archiveDesktopContainer {
     width: auto;
     max-width: 720px;
+    height: auto;
+    overflow: visible;
   }
 
   .archiveTopRow {

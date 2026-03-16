@@ -24,7 +24,9 @@ type WineRow = {
   notes?: string | null;
 };
 
-const WINES_PAGE_SIZE = 2000;
+// Keep page size aligned to common Supabase API max rows (1000)
+// so pagination never stops early on capped responses.
+const WINES_PAGE_SIZE = 1000;
 const WINE_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 
 function randomThreshold(): number {
