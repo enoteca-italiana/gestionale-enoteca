@@ -592,7 +592,7 @@ export function HomePage({
   }
 
   return (
-    <div className={`container ${sessionOpen ? 'homeSessionContainer' : ''}`}>
+    <div className="container homeSessionContainer">
       <div className="homeHeader">
         <Logo variant="header" />
       </div>
