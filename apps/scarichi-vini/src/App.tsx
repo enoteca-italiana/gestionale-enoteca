@@ -1,9 +1,9 @@
 import { Route, Switch, useLocation } from 'wouter';
-import { Suspense, lazy, useCallback, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
+import { useOfflineDischargeQueueSync } from '@/app/useOfflineDischargeQueueSync';
 import { sha256Base64 } from '@/pages/admin/crypto';
 import { getBool, settingsChangedEvent, storageKeys } from '@/pages/admin/storage';
-import { useEffect } from 'react';
 
 const AdminPage = lazy(() => import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 const HomePage = lazy(() => import('@/pages/HomePage').then((m) => ({ default: m.HomePage })));
@@ -35,6 +35,8 @@ function writePinUnlockedSession(unlocked: boolean) {
 }
 
 export function App() {
+  useOfflineDischargeQueueSync();
+
   const [location] = useLocation();
   const [hideNav, setHideNav] = useState(() => location === '/');
   const [introVisible, setIntroVisible] = useState(() => location === '/');

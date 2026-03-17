@@ -1,12 +1,13 @@
 # Offline & PWA
 
-Ultimo aggiornamento: **15/03/2026 23:05 CET**.
+Ultimo aggiornamento: **17/03/2026 16:20 CET**.
 
 ## Obiettivo
 
 - L’app deve aprirsi anche senza rete (app shell cached).
 - Installazione coerente su Android, iOS e desktop (Chrome/Safari).
-- Le sessioni di scarico vengono confermate solo online (Supabase).
+- Le sessioni di scarico possono essere confermate anche offline tramite coda locale.
+- Al ritorno online la coda viene inviata automaticamente a Supabase (ordine cronologico FIFO).
 
 ## Service Worker
 
@@ -39,15 +40,32 @@ Nota asset logo:
 ## Offline queue (logica)
 
 - `navigator.onLine` → `useOnlineStatus()`
-- conferma sessione consentita solo online
-- se offline: blocco conferma + messaggio utente
+- se offline in conferma: sessione salvata in coda locale
+- se online ma rete instabile/errore recoverable: fallback automatico in coda locale
+- flush automatico coda su:
+  - startup app
+  - evento `online`
+  - `focus`
+  - `pageshow`
+  - `visibilitychange` (quando tab torna visibile)
+  - cambio coda (`scarichi:dischargeQueueChanged`)
+- invio una sessione alla volta, in ordine cronologico
+- feedback utente:
+  - alert offline
+  - toast ritorno online/sync
+  - toast errore sincronizzazione non recoverable
 
 ## Verifica manuale
 
 - DevTools → Application → Service Worker attivo.
 - Network → Offline.
 - Reload: l’app deve caricarsi.
-- In offline, il pulsante conferma sessione deve restare disabilitato/bloccato.
+- In offline, conferma sessione:
+  - la sessione deve andare in coda
+  - la UI deve confermare il salvataggio in coda
+- Tornando online:
+  - la coda deve partire automaticamente
+  - le sessioni devono risultare inviate su Supabase in ordine.
 
 ## Compatibilità installazione
 

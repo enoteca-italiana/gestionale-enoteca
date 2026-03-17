@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **17/03/2026 02:38 CET**.
+Ultimo aggiornamento: **17/03/2026 16:20 CET**.
 
 ## Ultimi aggiornamenti (17/03/2026 - wave 18, PIN hardening + UX sicurezza admin)
 
@@ -573,7 +573,8 @@ Comandi root:
   - conferma online su Supabase (`discharge_sessions` + RPC `submit_discharge_session`)
   - riconciliazione difensiva post-submit su `wines.qty` per garantire allineamento giacenze archivio/storico
   - storico/sospesi admin letti da Supabase
-  - in offline la conferma sessione è bloccata
+  - in offline la conferma sessione salva in coda locale automatica
+  - invio automatico coda al ritorno online (FIFO, una sessione alla volta)
 - Admin:
   - login password (iniziale `1909`) e cambio password
   - toggle impostazioni (conferma finale, predisposizione nome utente)
@@ -582,6 +583,7 @@ Comandi root:
   - reset totale (inventario + storico + pending)
 - Admin archivio (`/admina`):
   - CRUD vini completo
+  - caricamento: warm-start da cache locale + sincronizzazione remota forzata (evita conteggi stale tipo 1000 vs totale reale)
   - tabella desktop-first con header sticky, separatori verticali, righe alternate e filler rows fino a fondo area
   - filtri in linea + pulsante `Aggiungi vino`
   - box statistiche-filtro `Totale / Soglia / Esauriti` (rimosso vecchio filtro `Tutte le giacenze`)

@@ -111,7 +111,8 @@ export function WineAdminPage() {
       setLoading(true);
     }
     try {
-      setWines(await listWines());
+      // Keep local warm start for instant UI, but always sync authoritative remote data.
+      setWines(await listWines({ forceRemote: true }));
     } catch (err) {
       console.error('[WineAdminPage] load error', err);
       if (!hasLocalData) {

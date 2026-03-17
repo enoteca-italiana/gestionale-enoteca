@@ -1,10 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { useOnlineStatus } from '@/app/useOnlineStatus';
 import { dischargeNoteChangedEvent } from '@/data/dischargeNote';
+import type { DischargeQueueStatusDetail } from '@/data/offlineDischargeQueue';
+import {
+  dischargeQueueChangedEvent,
+  dischargeQueueStatusEvent,
+  enqueuePendingDischargeSession,
+  getPendingDischargeQueueCount,
+  isDischargeQueueRecoverableError
+} from '@/data/offlineDischargeQueue';
 import { useLocalDb } from '@/data/useLocalDb';
 import { ResultsList } from '@/pages/home/ResultsList';
 import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
@@ -95,6 +103,7 @@ export function HomePage({
   const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false);
   const [pendingNavPath, setPendingNavPath] = useState<string | null>(null);
   const [pendingNoteQtyByWineId, setPendingNoteQtyByWineId] = useState<Record<string, number>>({});
+  const [pendingQueueCount, setPendingQueueCount] = useState(() => getPendingDischargeQueueCount());
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [forceRefreshBusy, setForceRefreshBusy] = useState(false);
@@ -111,6 +120,7 @@ export function HomePage({
   const [location, setLocation] = useLocation();
 
   const online = useOnlineStatus();
+  const previousOnlineRef = useRef(online);
 
   const { inventory, setInventory, refreshInventory } = useLocalDb();
 
@@ -155,6 +165,55 @@ export function HomePage({
 
   useEffect(() => {
     void refreshInventory();
+  }, [refreshInventory]);
+
+  useEffect(() => {
+    setPendingQueueCount(getPendingDischargeQueueCount());
+    const onQueueChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ pendingCount?: unknown }>).detail;
+      const pendingCount = Number(detail?.pendingCount);
+      if (Number.isFinite(pendingCount) && pendingCount >= 0) {
+        setPendingQueueCount(Math.round(pendingCount));
+        return;
+      }
+      setPendingQueueCount(getPendingDischargeQueueCount());
+    };
+    window.addEventListener(dischargeQueueChangedEvent, onQueueChanged as EventListener);
+    return () => {
+      window.removeEventListener(dischargeQueueChangedEvent, onQueueChanged as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const previousOnline = previousOnlineRef.current;
+    if (previousOnline !== online) {
+      setToast(online ? 'Online: sincronizzazione automatica in corso' : 'Offline: sessioni salvate in coda');
+    }
+    previousOnlineRef.current = online;
+  }, [online]);
+
+  useEffect(() => {
+    const onQueueStatus = (event: Event) => {
+      const detail = (event as CustomEvent<DischargeQueueStatusDetail>).detail;
+      if (!detail) return;
+      if (detail.type === 'sync_success' && detail.processed > 0) {
+        const label =
+          detail.processed === 1
+            ? '1 sessione in coda inviata'
+            : `${detail.processed} sessioni in coda inviate`;
+        setToast(label);
+        void refreshInventory();
+        return;
+      }
+      if (detail.type === 'sync_error') {
+        setToast('Errore sincronizzazione coda');
+      }
+    };
+
+    window.addEventListener(dischargeQueueStatusEvent, onQueueStatus as EventListener);
+    return () => {
+      window.removeEventListener(dischargeQueueStatusEvent, onQueueStatus as EventListener);
+    };
   }, [refreshInventory]);
 
   useEffect(() => {
@@ -289,21 +348,35 @@ export function HomePage({
   };
 
   const submitSession = async () => {
-    if (!online) {
-      setToast('Offline: impossibile confermare sessione');
-      setConfirmOpen(false);
-      return;
-    }
-
+    const items = sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty }));
     const expectedQtyByWineId = Object.fromEntries(
       sessionList.map((item) => [item.wineId, inventoryQtyByWineId.get(item.wineId) ?? 0])
     );
+
+    const enqueueSession = (message: string) => {
+      enqueuePendingDischargeSession({ items, expectedQtyByWineId });
+      setPendingNoteQtyByWineId({});
+      setReadyDischargeNoteItems([]);
+      setConfirmOpen(false);
+      resetSession();
+      setToast(message);
+    };
+
+    if (!online) {
+      try {
+        enqueueSession('Offline: sessione salvata in coda');
+      } catch (error) {
+        console.error('[HomePage] enqueue offline session failed', error);
+        setToast('Offline: errore salvataggio coda');
+      }
+      return;
+    }
 
     try {
       const dischargeRepository = await loadDischargeRepository();
       const noteRepository = await loadDischargeNoteRepository();
       await dischargeRepository.createAndSubmitDischargeSession({
-        items: sessionList.map((item) => ({ wineId: item.wineId, qty: item.qty })),
+        items,
         expectedQtyByWineId
       });
       await noteRepository.completeInProgressDischargeNote();
@@ -312,6 +385,14 @@ export function HomePage({
       await refreshInventory();
       setToast('Sessione inviata');
     } catch (error) {
+      if (isDischargeQueueRecoverableError(error)) {
+        try {
+          enqueueSession('Rete instabile: sessione salvata in coda');
+          return;
+        } catch (enqueueError) {
+          console.error('[HomePage] enqueue recoverable session failed', enqueueError);
+        }
+      }
       console.error('[HomePage] submitSession failed', error);
       setToast('Errore invio sessione');
       return;
@@ -516,7 +597,12 @@ export function HomePage({
         <Logo variant="header" />
       </div>
 
-      {!online ? <div className="banner">Offline: conferma sessione non disponibile.</div> : null}
+      {!online ? (
+        <div className="banner">
+          Offline: {pendingQueueCount > 0 ? `${pendingQueueCount} sessioni in coda. ` : ''}
+          Le conferme verranno inviate appena torni online.
+        </div>
+      ) : null}
 
       <div className="mt12 homeSessionActionRow">
         {sessionOpen ? (
