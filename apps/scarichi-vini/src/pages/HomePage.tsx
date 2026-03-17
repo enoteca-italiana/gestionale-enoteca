@@ -109,7 +109,6 @@ export function HomePage({
   const [forceRefreshBusy, setForceRefreshBusy] = useState(false);
   const [editingStockWine, setEditingStockWine] = useState<Wine | null>(null);
   const [editingStockQty, setEditingStockQty] = useState(0);
-  const [stockConfirmOpen, setStockConfirmOpen] = useState(false);
   const [stockSaveBusy, setStockSaveBusy] = useState(false);
   const [readyDischargeNoteItems, setReadyDischargeNoteItems] = useState<
     {
@@ -521,24 +520,11 @@ export function HomePage({
     if (sessionOpen) return;
     setEditingStockWine(wine);
     setEditingStockQty(Math.max(0, Math.round(Number(wine.qty) || 0)));
-    setStockConfirmOpen(false);
   };
 
   const closeStockEditor = () => {
     if (stockSaveBusy) return;
-    setStockConfirmOpen(false);
     setEditingStockWine(null);
-  };
-
-  const stockQtyOptions = useMemo(() => {
-    const current = Math.max(0, Math.round(Number(editingStockWine?.qty) || 0));
-    const max = Math.min(999, Math.max(99, current + 200));
-    return Array.from({ length: max + 1 }, (_, idx) => idx);
-  }, [editingStockWine?.qty]);
-
-  const requestStockSave = () => {
-    if (!editingStockWine || stockSaveBusy) return;
-    setStockConfirmOpen(true);
   };
 
   const confirmStockSave = async () => {
@@ -570,7 +556,6 @@ export function HomePage({
       });
       await refreshInventory();
       setToast('Giacenza aggiornata');
-      setStockConfirmOpen(false);
       setEditingStockWine(null);
     } catch (error) {
       console.error('[HomePage] update stock qty failed', error);
@@ -708,69 +693,54 @@ export function HomePage({
 
       {editingStockWine ? (
         <div className="modalOverlay" role="dialog" aria-modal="true">
-          <div className="modalCard homeStockModalCard">
-            <div className="modalTitle centered">Giacenza</div>
-            <div className="subtle centered mt6">{editingStockWine.name}</div>
-            <label className="modalLabel mt12">
-              <select
-                className="input homeStockQtySelect"
-                value={String(editingStockQty)}
-                onChange={(event) => {
-                  const next = Math.max(0, Math.min(999, Math.round(Number(event.target.value))));
-                  setEditingStockQty(next);
-                }}
-                disabled={stockSaveBusy}
-              >
-                {stockQtyOptions.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="modalActions mt12">
+          <div className="modalCard homeStockModalCard summaryEditModal">
+            <button
+              className="summaryEditClose"
+              type="button"
+              aria-label="Chiudi"
+              onClick={closeStockEditor}
+              disabled={stockSaveBusy}
+            >
+              ×
+            </button>
+            <div className="modalTitle centered">{editingStockWine.name}</div>
+            <div className="subtle centered mt6">Giacenza: {Math.max(0, Math.round(editingStockQty))}</div>
+
+            <div className="summaryEditControls mt14">
               <button
-                className="button homeStockCancelButton"
+                className="resultControlButton resultControlButtonSecondary"
                 type="button"
-                disabled={stockSaveBusy}
-                onClick={closeStockEditor}
+                disabled={stockSaveBusy || editingStockQty <= 0}
+                onClick={() => setEditingStockQty((prev) => Math.max(0, prev - 1))}
               >
-                Annulla
+                -
               </button>
+              <div className="resultControlValue">{Math.max(0, Math.round(editingStockQty))}</div>
               <button
-                className="button"
+                className="resultControlButton"
+                type="button"
+                disabled={stockSaveBusy || editingStockQty >= 999}
+                onClick={() => setEditingStockQty((prev) => Math.min(999, prev + 1))}
+              >
+                +
+              </button>
+            </div>
+
+            <div className="summaryEditActionsSingle mt14">
+              <button
+                className="button buttonConfirmSoft"
                 type="button"
                 disabled={stockSaveBusy}
-                onClick={requestStockSave}
+                onClick={() => {
+                  void confirmStockSave();
+                }}
               >
-                Conferma
+                {stockSaveBusy ? 'Salvataggio…' : 'Conferma'}
               </button>
             </div>
           </div>
         </div>
       ) : null}
-
-      <ConfirmModal
-        open={stockConfirmOpen && editingStockWine !== null}
-        title="Confermare aggiornamento giacenza?"
-        description={
-          editingStockWine
-            ? `Vuoi aggiornare "${editingStockWine.name}" da ${Math.max(
-                0,
-                Math.round(Number(editingStockWine.qty) || 0)
-              )} a ${Math.max(0, Math.round(editingStockQty))}?`
-            : undefined
-        }
-        confirmLabel={stockSaveBusy ? 'Salvataggio...' : 'Conferma'}
-        cancelLabel="Annulla"
-        onConfirm={() => {
-          void confirmStockSave();
-        }}
-        onCancel={() => {
-          if (stockSaveBusy) return;
-          setStockConfirmOpen(false);
-        }}
-      />
 
       <SessionConfirmModal
         open={confirmOpen}

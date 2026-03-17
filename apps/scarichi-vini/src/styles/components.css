@@ -147,24 +147,36 @@
 }
 
 .homeStockModalCard {
-  width: min(calc(100vw - 28px), 520px);
+  width: min(calc(100vw - 28px), 380px);
 }
 
-.homeStockQtySelect {
-  width: 30%;
-  min-width: 130px;
-  min-height: 70px;
-  margin-inline: auto;
-  font-size: 29px;
-  font-weight: 800;
-  text-align: center;
-  text-align-last: center;
+.homeStockModalCard .modalTitle {
+  text-transform: uppercase;
 }
 
-.homeStockCancelButton {
-  background: #ffffff;
-  color: #7c164a;
-  border: 1px solid #7c164a;
+.homeStockModalCard .summaryEditControls {
+  grid-template-columns: 44px 56px 44px;
+  gap: 8px;
+}
+
+.homeStockModalCard .resultControlButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 28px;
+}
+
+.homeStockModalCard .resultControlValue {
+  width: 56px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 26px;
+}
+
+.homeStockModalCard .summaryEditActionsSingle .button {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
 }
 
 @keyframes homeForceRefreshSpin {
@@ -450,14 +462,7 @@
 
 @media (max-width: 768px) {
   .homeStockModalCard {
-    width: calc(100vw - 20px);
+    width: calc(100vw - 24px);
     padding: 14px;
-  }
-
-  .homeStockQtySelect {
-    width: 30%;
-    min-width: 120px;
-    min-height: 66px;
-    font-size: 26px;
   }
 }
