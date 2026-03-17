@@ -23,6 +23,19 @@ function saveManagedOrigins(origins: string[]) {
   window.localStorage.setItem(ORIGIN_STORAGE_KEY, JSON.stringify(origins));
 }
 
+function uniqueSortedOrigins(entries: string[]) {
+  const seen = new Map<string, string>();
+  for (const entry of entries) {
+    const normalized = normalizeOrigin(entry);
+    if (!normalized) continue;
+    const key = normalized.toLowerCase();
+    if (!seen.has(key)) seen.set(key, normalized);
+  }
+  return Array.from(seen.values()).sort((a, b) =>
+    a.localeCompare(b, 'it', { sensitivity: 'base' })
+  );
+}
+
 export function clearManagedOrigins() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ORIGIN_STORAGE_KEY);
@@ -65,4 +78,37 @@ export function upsertManagedOrigin(
   const managedNext = [...managedOrigins, normalized];
   saveManagedOrigins(managedNext);
   return { created: normalized, managedNext, changed: true };
+}
+
+export function renameManagedOrigin(rawFrom: string, rawTo: string, managedOrigins: string[]) {
+  const from = normalizeOrigin(rawFrom);
+  const to = normalizeOrigin(rawTo);
+  if (!from || !to) {
+    return { managedNext: managedOrigins, changed: false };
+  }
+
+  const nextEntries = managedOrigins.map((item) =>
+    item.toLowerCase() === from.toLowerCase() ? to : item
+  );
+  const managedNext = uniqueSortedOrigins(nextEntries);
+  const changed =
+    managedNext.length !== managedOrigins.length ||
+    managedNext.some((item, index) => item !== managedOrigins[index]);
+  if (changed) {
+    saveManagedOrigins(managedNext);
+  }
+  return { managedNext, changed };
+}
+
+export function removeManagedOrigin(rawValue: string, managedOrigins: string[]) {
+  const value = normalizeOrigin(rawValue);
+  if (!value) {
+    return { managedNext: managedOrigins, changed: false };
+  }
+  const managedNext = managedOrigins.filter((item) => item.toLowerCase() !== value.toLowerCase());
+  const changed = managedNext.length !== managedOrigins.length;
+  if (changed) {
+    saveManagedOrigins(managedNext);
+  }
+  return { managedNext, changed };
 }

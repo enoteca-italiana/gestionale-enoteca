@@ -11,12 +11,14 @@ import {
   getReadyDischargeNoteItems,
   startReadyDischargeNoteItems
 } from '@/data/dischargeNoteRepository';
+import { updateWine } from '@/data/wineRepository';
 import { useLocalDb } from '@/data/useLocalDb';
 import { ResultsList } from '@/pages/home/ResultsList';
 import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
 import { SummaryList } from '@/pages/home/SummaryList';
 import { useLocalSession } from '@/pages/home/useLocalSession';
 import { RefreshCcw } from 'lucide-react';
+import type { Wine } from '@/domain/types';
 
 type StockFilter = 'all' | 'threshold' | 'out';
 const INTRO_SEEN_SESSION_KEY = 'scarichi:intro-seen';
@@ -83,6 +85,10 @@ export function HomePage({
   const [toast, setToast] = useState<string | null>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [forceRefreshBusy, setForceRefreshBusy] = useState(false);
+  const [editingStockWine, setEditingStockWine] = useState<Wine | null>(null);
+  const [editingStockQty, setEditingStockQty] = useState(0);
+  const [stockConfirmOpen, setStockConfirmOpen] = useState(false);
+  const [stockSaveBusy, setStockSaveBusy] = useState(false);
   const [readyDischargeNoteItems, setReadyDischargeNoteItems] = useState<
     {
       wineId: string;
@@ -392,6 +398,68 @@ export function HomePage({
     }
   };
 
+  const openStockEditor = (wine: Wine) => {
+    if (sessionOpen) return;
+    setEditingStockWine(wine);
+    setEditingStockQty(Math.max(0, Math.round(Number(wine.qty) || 0)));
+    setStockConfirmOpen(false);
+  };
+
+  const closeStockEditor = () => {
+    if (stockSaveBusy) return;
+    setStockConfirmOpen(false);
+    setEditingStockWine(null);
+  };
+
+  const stockQtyOptions = useMemo(() => {
+    const current = Math.max(0, Math.round(Number(editingStockWine?.qty) || 0));
+    const max = Math.min(999, Math.max(99, current + 200));
+    return Array.from({ length: max + 1 }, (_, idx) => idx);
+  }, [editingStockWine?.qty]);
+
+  const requestStockSave = () => {
+    if (!editingStockWine || stockSaveBusy) return;
+    setStockConfirmOpen(true);
+  };
+
+  const confirmStockSave = async () => {
+    if (!editingStockWine || stockSaveBusy) return;
+    const nextQty = Math.max(0, Math.min(999, Math.round(editingStockQty)));
+    const currentQty = Math.max(0, Math.round(Number(editingStockWine.qty) || 0));
+    if (nextQty === currentQty) {
+      closeStockEditor();
+      return;
+    }
+
+    setStockSaveBusy(true);
+    try {
+      await updateWine({
+        id: editingStockWine.id,
+        category: editingStockWine.category ?? '',
+        name: editingStockWine.name,
+        age: editingStockWine.age ?? '',
+        producer: editingStockWine.producer,
+        origin: editingStockWine.origin,
+        supplier: editingStockWine.supplier ?? '',
+        threshold: editingStockWine.threshold,
+        purchasePrice: editingStockWine.purchasePrice,
+        salePrice: editingStockWine.salePrice,
+        vintage: editingStockWine.vintage ?? '',
+        qty: nextQty,
+        notes: editingStockWine.notes ?? ''
+      });
+      await refreshInventory();
+      setToast('Giacenza aggiornata');
+      setStockConfirmOpen(false);
+      setEditingStockWine(null);
+    } catch (error) {
+      console.error('[HomePage] update stock qty failed', error);
+      setToast('Errore aggiornamento giacenza');
+    } finally {
+      setStockSaveBusy(false);
+    }
+  };
+
   if (showIntro) {
     return (
       <div className="container introLayout">
@@ -491,6 +559,7 @@ export function HomePage({
             wines={visibleWines}
             sessionOpen={sessionOpen}
             interactive={sessionOpen}
+            onSelectWine={!sessionOpen ? openStockEditor : undefined}
             getSessionQty={sessionOpen ? getSessionQty : undefined}
             getPendingNoteQty={
               sessionOpen ? (wineId) => pendingNoteQtyByWineId[wineId] ?? 0 : undefined
@@ -511,6 +580,72 @@ export function HomePage({
           onDelete={deleteItem}
         />
       ) : null}
+
+      {editingStockWine ? (
+        <div className="modalOverlay" role="dialog" aria-modal="true">
+          <div className="modalCard homeStockModalCard">
+            <div className="modalTitle centered">Giacenza</div>
+            <div className="subtle centered mt6">{editingStockWine.name}</div>
+            <label className="modalLabel mt12">
+              <select
+                className="input homeStockQtySelect"
+                value={String(editingStockQty)}
+                onChange={(event) => {
+                  const next = Math.max(0, Math.min(999, Math.round(Number(event.target.value))));
+                  setEditingStockQty(next);
+                }}
+                disabled={stockSaveBusy}
+              >
+                {stockQtyOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="modalActions mt12">
+              <button
+                className="button homeStockCancelButton"
+                type="button"
+                disabled={stockSaveBusy}
+                onClick={closeStockEditor}
+              >
+                Annulla
+              </button>
+              <button
+                className="button"
+                type="button"
+                disabled={stockSaveBusy}
+                onClick={requestStockSave}
+              >
+                Conferma
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <ConfirmModal
+        open={stockConfirmOpen && editingStockWine !== null}
+        title="Confermare aggiornamento giacenza?"
+        description={
+          editingStockWine
+            ? `Vuoi aggiornare "${editingStockWine.name}" da ${Math.max(
+                0,
+                Math.round(Number(editingStockWine.qty) || 0)
+              )} a ${Math.max(0, Math.round(editingStockQty))}?`
+            : undefined
+        }
+        confirmLabel={stockSaveBusy ? 'Salvataggio...' : 'Conferma'}
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          void confirmStockSave();
+        }}
+        onCancel={() => {
+          if (stockSaveBusy) return;
+          setStockConfirmOpen(false);
+        }}
+      />
 
       <SessionConfirmModal
         open={confirmOpen}

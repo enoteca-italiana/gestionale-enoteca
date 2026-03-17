@@ -35,6 +35,19 @@ function saveManagedCategories(categories: string[]) {
   window.localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories));
 }
 
+function uniqueSortedCategories(entries: string[]) {
+  const seen = new Map<string, string>();
+  for (const entry of entries) {
+    const normalized = normalizeCategoryName(entry);
+    if (!normalized) continue;
+    const key = normalized.toLowerCase();
+    if (!seen.has(key)) seen.set(key, normalized);
+  }
+  return Array.from(seen.values()).sort((a, b) =>
+    a.localeCompare(b, 'it', { sensitivity: 'base' })
+  );
+}
+
 export function clearManagedCategories() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(CATEGORY_STORAGE_KEY);
@@ -79,6 +92,41 @@ export function upsertManagedCategory(
   const managedNext = [...managed, normalized];
   saveManagedCategories(managedNext);
   return { created: normalized, managedNext, changed: true };
+}
+
+export function renameManagedCategory(rawFrom: string, rawTo: string, managedCategories: string[]) {
+  const from = normalizeCategoryName(rawFrom);
+  const to = normalizeCategoryName(rawTo);
+  if (!from || !to) {
+    return { managedNext: managedCategories, changed: false };
+  }
+
+  const nextEntries = managedCategories.map((item) =>
+    item.toLowerCase() === from.toLowerCase() ? to : item
+  );
+  const managedNext = uniqueSortedCategories(nextEntries);
+  const changed =
+    managedNext.length !== managedCategories.length ||
+    managedNext.some((item, index) => item !== managedCategories[index]);
+  if (changed) {
+    saveManagedCategories(managedNext);
+  }
+  return { managedNext, changed };
+}
+
+export function removeManagedCategory(rawValue: string, managedCategories: string[]) {
+  const value = normalizeCategoryName(rawValue);
+  if (!value) {
+    return { managedNext: managedCategories, changed: false };
+  }
+  const managedNext = managedCategories.filter(
+    (item) => item.toLowerCase() !== value.toLowerCase()
+  );
+  const changed = managedNext.length !== managedCategories.length;
+  if (changed) {
+    saveManagedCategories(managedNext);
+  }
+  return { managedNext, changed };
 }
 
 type CategoryRow = {
@@ -137,6 +185,34 @@ export async function upsertSupabaseCategory(rawValue: string): Promise<void> {
     if (code === '23505') return;
     if (!isSchemaColumnError(insertError)) {
       console.error('[categoryRepository] insert category error', insertError);
+    }
+  }
+}
+
+export async function renameSupabaseCategory(rawFrom: string, rawTo: string): Promise<void> {
+  if (!supabase) return;
+  const from = normalizeCategoryName(rawFrom);
+  const to = normalizeCategoryName(rawTo);
+  if (!from || !to) return;
+  if (from.toLowerCase() === to.toLowerCase()) return;
+
+  await upsertSupabaseCategory(to);
+  const { error } = await supabase.from('categories').delete().eq('name', from);
+  if (error) {
+    if (!isSchemaColumnError(error)) {
+      console.error('[categoryRepository] renameSupabaseCategory error', error);
+    }
+  }
+}
+
+export async function deleteSupabaseCategory(rawValue: string): Promise<void> {
+  if (!supabase) return;
+  const normalized = normalizeCategoryName(rawValue);
+  if (!normalized) return;
+  const { error } = await supabase.from('categories').delete().eq('name', normalized);
+  if (error) {
+    if (!isSchemaColumnError(error)) {
+      console.error('[categoryRepository] deleteSupabaseCategory error', error);
     }
   }
 }

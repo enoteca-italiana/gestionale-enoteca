@@ -1,6 +1,6 @@
 # Flusso utente — Sessione di scarico
 
-Ultimo aggiornamento: **16/03/2026 15:12 CET**.
+Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 
 ## Entrata
 
@@ -12,7 +12,11 @@ Ultimo aggiornamento: **16/03/2026 15:12 CET**.
     - verde `Avvia scarico da nota (N)` (nota pronta disponibile)
   - input ricerca (abilitato solo quando sessione aperta)
 - Sessione OFF:
-  - lista consultiva visibile (solo lettura).
+  - lista consultiva visibile.
+  - click/tap su card vino apre modale `Giacenza` per aggiornare solo la quantità:
+    - selector a scroll (`0..999`);
+    - pulsanti `Annulla` / `Conferma`;
+    - conferma finale tramite secondo modale prima del salvataggio.
 - Sessione ON:
   - risultati operativi visibili dopo ricerca.
 
@@ -65,6 +69,7 @@ Vincolo:
     - insert `discharge_sessions` + `discharge_session_items`
     - submit RPC `submit_discharge_session`
   - aggiornamento inventario post-submit.
+  - in modalità consultiva Home, aggiornamento giacenza da modale sincronizza locale + Supabase.
 - Offline:
   - conferma sessione bloccata con messaggio operativo.
 

@@ -11,6 +11,7 @@ export function ResultsList({
   onConfirmPendingNote,
   onIncrement,
   onDecrement,
+  onSelectWine,
   sessionOpen,
   interactive = true
 }: {
@@ -20,6 +21,7 @@ export function ResultsList({
   onConfirmPendingNote?: (wineId: string, targetQty: number) => void;
   onIncrement?: (wineId: string) => void;
   onDecrement?: (wineId: string) => void;
+  onSelectWine?: (wine: Wine) => void;
   sessionOpen: boolean;
   interactive?: boolean;
 }) {
@@ -116,10 +118,15 @@ export function ResultsList({
       <>
         <div className="mt12 consultiveList" role="list" aria-label="Lista vini consultiva">
           {renderedWines.map((w, idx) => (
-            <div
+            <button
               key={w.id}
-              className={`consultiveRow ${idx === 0 ? 'consultiveRowFirst' : ''}`}
+              className={`consultiveRow ${
+                onSelectWine ? 'consultiveRowButton' : ''
+              } ${idx === 0 ? 'consultiveRowFirst' : ''}`}
+              type={onSelectWine ? 'button' : undefined}
               role="listitem"
+              onClick={onSelectWine ? () => onSelectWine(w) : undefined}
+              disabled={!onSelectWine}
             >
               <div className="min0">
                 <div className="consultiveTopRow">
@@ -136,7 +143,7 @@ export function ResultsList({
                   })}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
         {hasMoreRows ? (

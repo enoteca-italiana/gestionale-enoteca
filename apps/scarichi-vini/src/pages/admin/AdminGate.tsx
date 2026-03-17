@@ -3,10 +3,11 @@ import { clearWineArchive } from '@/data/wineRepository';
 import { useDischargeSessions } from '@/data/useDischargeSessions';
 import { AdminHistory } from '@/pages/admin/AdminHistory';
 import { AdminHome, type AdminRootSection } from '@/pages/admin/AdminHome';
+import { AdminRegistryManager } from '@/pages/admin/AdminRegistryManager';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { useAdminAuth } from '@/pages/admin/useAdminAuth';
 
-type AdminSection = 'home' | 'history';
+type AdminSection = 'home' | 'history' | 'registryManager';
 type SettingsAction = 'password' | 'import' | 'threshold' | 'pinRequest' | 'reset' | null;
 
 export function AdminGate() {
@@ -32,6 +33,10 @@ export function AdminGate() {
   const openRootSection = (target: AdminRootSection) => {
     if (target === 'history') {
       setSection('history');
+      return;
+    }
+    if (target === 'registryManager') {
+      setSection('registryManager');
       return;
     }
     setSettingsAction(target);
@@ -68,6 +73,8 @@ export function AdminGate() {
           />
         )
       ) : null}
+
+      {section === 'registryManager' ? <AdminRegistryManager /> : null}
 
       <AdminSettings
         hidePanel

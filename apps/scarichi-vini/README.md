@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **16/03/2026 22:40 CET**.
+Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 
 ## Quick Start
 
@@ -39,6 +39,12 @@ Comandi utili:
     - su annulla, resta nella sessione in corso.
   - fix modale scarico: `+/-` aggiornano il valore senza chiusura involontaria
   - fix iOS Safari: titolo `Riepilogo` forzato su colore nero coerente con app
+  - modalità consultiva Home:
+    - click/tap su card vino apre modale `Giacenza`;
+    - modifica solo quantità tramite selector scroll (`0..999`);
+    - doppia conferma prima del salvataggio;
+    - update sincronizzato su locale + Supabase;
+    - toast `Giacenza aggiornata` in verde (2s).
 - Admin impostazioni (`/admin`) con autenticazione locale.
   - azione `Reset archivio` con PIN:
     - cancella archivio vini e pulisce i registry/cache filtri correlati
@@ -50,6 +56,10 @@ Comandi utili:
     - reset storico selettivo nel modale PIN:
       - `Niente (cancella tutto)`, `Ultimi 7 giorni`, `Ultimi 30 giorni`, `Ultimi 3 mesi`, `Ultimi 12 mesi`
       - vengono eliminate solo le sessioni `submitted` più vecchie della finestra scelta
+  - `Gestione voci filtri` (`/admin`):
+    - apertura ottimizzata con warm start locale + sync remoto in background;
+    - cache in-memory a TTL breve per riaperture rapide;
+    - eliminazione voce: i vini collegati mantengono il record ma il campo viene svuotato (render `-`).
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)

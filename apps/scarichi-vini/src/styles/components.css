@@ -146,6 +146,27 @@
   animation: homeForceRefreshSpin 900ms linear infinite;
 }
 
+.homeStockModalCard {
+  width: min(calc(100vw - 28px), 520px);
+}
+
+.homeStockQtySelect {
+  width: 30%;
+  min-width: 130px;
+  min-height: 70px;
+  margin-inline: auto;
+  font-size: 29px;
+  font-weight: 800;
+  text-align: center;
+  text-align-last: center;
+}
+
+.homeStockCancelButton {
+  background: #ffffff;
+  color: #7c164a;
+  border: 1px solid #7c164a;
+}
+
 @keyframes homeForceRefreshSpin {
   from {
     transform: rotate(0deg);
@@ -421,4 +442,18 @@
   place-items: center;
   font-size: 22px;
   font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .homeStockModalCard {
+    width: calc(100vw - 20px);
+    padding: 14px;
+  }
+
+  .homeStockQtySelect {
+    width: 30%;
+    min-width: 120px;
+    min-height: 66px;
+    font-size: 26px;
+  }
 }

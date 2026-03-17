@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **16/03/2026 16:35 CET**.
+Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 
 ## Scopo
 
@@ -40,6 +40,10 @@ Ultimo aggiornamento: **16/03/2026 16:35 CET**.
 - Vini con quantità `0`:
   - restano visibili
   - non scaricabili
+- In Home, a sessione chiusa (lista consultiva), click/tap sulla card vino apre modale `Giacenza`:
+  - modifica solo quantità (`0..999`) con selector a scroll;
+  - conferma in due step (`Conferma` + modale di conferma finale);
+  - salvataggio allineato locale + Supabase.
 
 ## Vincoli quantità
 

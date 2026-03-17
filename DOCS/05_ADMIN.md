@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **17/03/2026 00:04 CET**.
+Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 
 ## Accesso
 
@@ -139,6 +139,24 @@ Ottimizzazioni introdotte:
 Nota UX:
 
 - durante il caricamento dello storico, viene mostrato uno stato `Caricamento…` (evitato rendering vuoto).
+
+## Gestione voci filtri (`/admin` → `Gestione voci filtri`)
+
+File principale:
+
+- `pages/admin/AdminRegistryManager.tsx`
+
+Comportamento aggiornato:
+
+- apertura pagina ottimizzata:
+  - warm start da dati locali (inventory + registry locali) senza attesa rete;
+  - sync remoto in background;
+  - cache in-memory con TTL breve per riaperture ravvicinate più fluide.
+- modifica voce:
+  - doppio step conferma (`Conferma` + modale `Confermare modifica?`).
+- eliminazione voce:
+  - warning centrato e PIN obbligatorio;
+  - i vini associati restano in archivio ma il campo viene impostato vuoto (render `-`), non `0`.
 
 ## Sessioni sospese
 

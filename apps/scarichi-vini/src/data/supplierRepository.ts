@@ -35,6 +35,19 @@ function saveManagedSuppliers(suppliers: string[]) {
   window.localStorage.setItem(SUPPLIER_STORAGE_KEY, JSON.stringify(suppliers));
 }
 
+function uniqueSortedSuppliers(entries: string[]) {
+  const seen = new Map<string, string>();
+  for (const entry of entries) {
+    const normalized = normalizeSupplier(entry);
+    if (!normalized) continue;
+    const key = normalized.toLowerCase();
+    if (!seen.has(key)) seen.set(key, normalized);
+  }
+  return Array.from(seen.values()).sort((a, b) =>
+    a.localeCompare(b, 'it', { sensitivity: 'base' })
+  );
+}
+
 export function clearManagedSuppliers() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(SUPPLIER_STORAGE_KEY);
@@ -79,6 +92,39 @@ export function upsertManagedSupplier(
   const managedNext = [...managedSuppliers, normalized];
   saveManagedSuppliers(managedNext);
   return { created: normalized, managedNext, changed: true };
+}
+
+export function renameManagedSupplier(rawFrom: string, rawTo: string, managedSuppliers: string[]) {
+  const from = normalizeSupplier(rawFrom);
+  const to = normalizeSupplier(rawTo);
+  if (!from || !to) {
+    return { managedNext: managedSuppliers, changed: false };
+  }
+
+  const nextEntries = managedSuppliers.map((item) =>
+    item.toLowerCase() === from.toLowerCase() ? to : item
+  );
+  const managedNext = uniqueSortedSuppliers(nextEntries);
+  const changed =
+    managedNext.length !== managedSuppliers.length ||
+    managedNext.some((item, index) => item !== managedSuppliers[index]);
+  if (changed) {
+    saveManagedSuppliers(managedNext);
+  }
+  return { managedNext, changed };
+}
+
+export function removeManagedSupplier(rawValue: string, managedSuppliers: string[]) {
+  const value = normalizeSupplier(rawValue);
+  if (!value) {
+    return { managedNext: managedSuppliers, changed: false };
+  }
+  const managedNext = managedSuppliers.filter((item) => item.toLowerCase() !== value.toLowerCase());
+  const changed = managedNext.length !== managedSuppliers.length;
+  if (changed) {
+    saveManagedSuppliers(managedNext);
+  }
+  return { managedNext, changed };
 }
 
 type SupplierRow = {
@@ -137,6 +183,34 @@ export async function upsertSupabaseSupplier(rawValue: string): Promise<void> {
     if (code === '23505') return;
     if (!isSchemaColumnError(insertError)) {
       console.error('[supplierRepository] insert supplier error', insertError);
+    }
+  }
+}
+
+export async function renameSupabaseSupplier(rawFrom: string, rawTo: string): Promise<void> {
+  if (!supabase) return;
+  const from = normalizeSupplier(rawFrom);
+  const to = normalizeSupplier(rawTo);
+  if (!from || !to) return;
+  if (from.toLowerCase() === to.toLowerCase()) return;
+
+  await upsertSupabaseSupplier(to);
+  const { error } = await supabase.from('suppliers').delete().eq('name', from);
+  if (error) {
+    if (!isSchemaColumnError(error)) {
+      console.error('[supplierRepository] renameSupabaseSupplier error', error);
+    }
+  }
+}
+
+export async function deleteSupabaseSupplier(rawValue: string): Promise<void> {
+  if (!supabase) return;
+  const normalized = normalizeSupplier(rawValue);
+  if (!normalized) return;
+  const { error } = await supabase.from('suppliers').delete().eq('name', normalized);
+  if (error) {
+    if (!isSchemaColumnError(error)) {
+      console.error('[supplierRepository] deleteSupabaseSupplier error', error);
     }
   }
 }

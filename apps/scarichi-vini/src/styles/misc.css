@@ -99,6 +99,10 @@
   font-size: 14px;
 }
 
+.toastSuccess {
+  background: rgba(22, 101, 52, 0.95);
+}
+
 .toastInline {
   display: inline-flex;
   align-items: center;
@@ -399,7 +403,348 @@
   min-height: calc(100dvh - 340px);
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+}
+
+.adminRegistrySection {
+  width: min(calc(100vw - 32px), 936px);
+  margin-top: 12px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.adminRegistrySectionHub {
+  min-height: calc(100dvh - 340px - env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.adminRegistrySectionDetail {
+  height: calc(100dvh - 140px - env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.adminRegistryTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.adminRegistryHubGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: min(84%, 420px);
+  margin-inline: auto;
+}
+
+.adminRegistryHubButton {
+  appearance: none;
+  border: 1px solid #8f2a5b;
+  border-radius: 16px;
+  background: var(--brand);
+  color: #ffffff;
+  min-height: 64px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font: inherit;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.06);
+}
+
+.adminRegistryHubButton:focus-visible {
+  outline: 2px solid #b57a9a;
+  outline-offset: 2px;
+}
+
+.adminRegistryHubLabel {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.adminRegistryHubCount {
+  min-width: 42px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  padding-inline: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.adminRegistryDetailCard {
+  background: #f8f4ea;
+  border-color: #e6dcc8;
+  padding: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.adminRegistryDetailBar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminRegistryBackButton {
+  background: #ffffff;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+.adminRegistryCreateBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.adminRegistrySearchInput {
+  min-height: 46px;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+.adminRegistryTableWrap {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.adminRegistryTableHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 240px;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #4b5563;
+  border-bottom: 1px solid #cfd5dd;
+  background: #edf3ea;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.adminRegistryTableHead > div {
+  padding: 10px;
+  border-right: 1px solid #d4d9e1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminRegistryTableHead > div:last-child {
+  border-right: 0;
+}
+
+.adminRegistryVoiceHeader .archiveSortableHeaderCell {
+  width: 100%;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.adminRegistryTableBody {
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.adminRegistryTableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 240px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border-top: 1px solid #d4d9e1;
+}
+
+.adminRegistryTableRow:first-child {
+  border-top: 0;
+}
+
+.adminRegistryTableRow:nth-child(odd) {
+  background: #ffffff;
+}
+
+.adminRegistryTableRow:nth-child(even) {
+  background: #f6f7f9;
+}
+
+.adminRegistryCellValue {
+  min-width: 0;
+  padding: 10px;
+  border-right: 1px solid #d4d9e1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminRegistryValue {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
+
+.adminRegistryCellUsage {
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+  text-align: center;
+  padding: 10px;
+  border-right: 1px solid #d4d9e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminRegistryCellActions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  padding: 8px;
+  text-align: center;
+}
+
+.adminRegistryEmpty {
+  padding: 22px 10px;
+}
+
+.adminRegistryLoadMoreSentinel {
+  height: 1px;
+  width: 100%;
+}
+
+.adminRegistryActionButton {
+  appearance: none;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 12px;
+  min-height: 36px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.adminRegistryActionButtonSave {
+  border-color: #15803d;
+  color: #15803d;
+}
+
+.adminRegistryActionButtonDanger {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.adminRegistryInlineInput {
+  min-height: 36px;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.adminRegistryEditModalContent {
+  display: grid;
+}
+
+.adminRegistryEditModalCard .modalTitle {
+  text-align: center;
+}
+
+.adminRegistryDeleteWarningCard .modalTitle {
+  color: #b91c1c;
+  font-weight: 900;
+  text-align: center;
+}
+
+.adminRegistryDeleteWarningText {
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.adminRegistryDeleteWarningBody {
+  font-weight: 400;
+}
+
+.adminRegistryDeletePinCard {
+  max-width: 540px;
+}
+
+/* Legacy classes kept for backward compatibility in case of stale chunks */
+.adminRegistryList {
+  display: grid;
+  gap: 8px;
+  max-height: min(40dvh, 360px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.adminRegistryRow {
+  border: 1px solid #e6dcc8;
+  border-radius: 12px;
+  background: #fffdf8;
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.adminRegistryRowMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.adminRegistryUsage {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.adminRegistryRowActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .adminHistoryModalCard {
@@ -622,6 +967,24 @@
 }
 
 @media (max-width: 768px) {
+  .adminRegistrySection {
+    width: calc(100vw - 16px);
+    margin-top: 8px;
+  }
+
+  .adminRegistrySectionHub {
+    min-height: calc(100dvh - 292px - env(safe-area-inset-bottom));
+  }
+
+  .adminRegistrySectionDetail {
+    height: calc(100dvh - 132px - env(safe-area-inset-bottom));
+  }
+
+  .adminRegistryDetailCard {
+    min-height: 0;
+    padding: 10px;
+  }
+
   .adminSettingsSection {
     padding: 12px;
   }
@@ -666,6 +1029,57 @@
 
   .adminCenterSection {
     min-height: calc(100dvh - 300px);
+  }
+
+  .adminRegistryHubButton {
+    min-height: 60px;
+    padding: 12px;
+  }
+
+  .adminRegistryHubLabel {
+    font-size: 16px;
+  }
+
+  .adminRegistryHubCount {
+    min-width: 40px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .adminRegistryCreateBar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adminRegistryTableHead {
+    grid-template-columns: minmax(0, 1fr) 92px minmax(130px, 1fr);
+    font-size: 12px;
+  }
+
+  .adminRegistryTableHead > div {
+    padding: 9px 8px;
+  }
+
+  .adminRegistryTableRow {
+    grid-template-columns: minmax(0, 1fr) 92px minmax(130px, 1fr);
+  }
+
+  .adminRegistryValue {
+    font-size: 14px;
+  }
+
+  .adminRegistryCellUsage {
+    font-size: 13px;
+  }
+
+  .adminRegistryActionButton {
+    min-height: 36px;
+    padding: 7px 8px;
+    font-size: 14px;
+  }
+
+  .adminRegistryInlineInput {
+    min-height: 38px;
+    font-size: 14px;
   }
 
   .adminHistoryDateRangeWrap {

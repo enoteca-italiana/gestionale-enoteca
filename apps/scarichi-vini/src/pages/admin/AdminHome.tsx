@@ -1,5 +1,6 @@
 export type AdminRootSection =
   | 'history'
+  | 'registryManager'
   | 'import'
   | 'threshold'
   | 'password'
@@ -9,9 +10,17 @@ export type AdminRootSection =
 export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => void }) {
   return (
     <div className="adminCenterSection">
+      <div className="title centered mt6">Impostazioni</div>
       <div className="list mt12">
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('history')}>
           Sessioni storico
+        </button>
+        <button
+          className="button adminHomeAction"
+          type="button"
+          onClick={() => onOpen('registryManager')}
+        >
+          Gestione voci filtri
         </button>
         <button
           className="button adminHomeAction"

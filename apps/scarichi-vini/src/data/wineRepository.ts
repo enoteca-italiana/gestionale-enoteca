@@ -34,6 +34,8 @@ type WineRow = {
   notes?: string | null;
 };
 
+export type WineRegistryField = 'category' | 'producer' | 'origin' | 'supplier';
+
 // Keep page size aligned to common Supabase API max rows (1000)
 // so pagination never stops early on capped responses.
 const WINES_PAGE_SIZE = 1000;
@@ -192,6 +194,31 @@ function normalizeWineTextFields(wines: Wine[]): Wine[] {
     origin: normalizeOrigin(wine.origin),
     supplier: wine.supplier ? normalizeWineSupplier(wine.supplier) : undefined
   }));
+}
+
+function normalizeRegistryValue(field: WineRegistryField, rawValue: string): string {
+  if (field === 'category') return normalizeWineCategory(rawValue);
+  if (field === 'producer') return normalizeWineProducer(rawValue);
+  if (field === 'origin') return normalizeOrigin(rawValue);
+  return normalizeWineSupplier(rawValue);
+}
+
+function readWineFieldValue(wine: Wine, field: WineRegistryField): string {
+  if (field === 'category') return wine.category ?? '';
+  if (field === 'producer') return wine.producer ?? '';
+  if (field === 'origin') return wine.origin ?? '';
+  return wine.supplier ?? '';
+}
+
+function writeWineFieldValue(wine: Wine, field: WineRegistryField, value: string): Wine {
+  if (field === 'category') return { ...wine, category: value || undefined };
+  if (field === 'producer') return { ...wine, producer: value };
+  if (field === 'origin') return { ...wine, origin: value };
+  return { ...wine, supplier: value || undefined };
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[%_\\]/g, '\\$&');
 }
 
 function getLocalInventory(): Wine[] {
@@ -644,4 +671,42 @@ export async function clearWineArchive(): Promise<number> {
   persistLocalInventory([]);
   window.dispatchEvent(new CustomEvent(archiveResetEvent));
   return deletedCount;
+}
+
+export async function renameWineRegistryValue(
+  field: WineRegistryField,
+  rawFrom: string,
+  rawTo: string
+): Promise<number> {
+  const from = normalizeRegistryValue(field, rawFrom);
+  const to = normalizeRegistryValue(field, rawTo);
+  if (!from) return 0;
+  if (from.toLowerCase() === to.toLowerCase()) return 0;
+
+  if (supabase) {
+    const pattern = escapeLikePattern(from);
+    const { error } = await supabase
+      .from('wines')
+      .update({ [field]: to })
+      .ilike(field, pattern);
+    if (error) {
+      console.error('[wineRepository] renameWineRegistryValue error', error);
+      throw error;
+    }
+  }
+
+  const current = getLocalInventory();
+  let changed = 0;
+  const next = current.map((wine) => {
+    const currentValue = normalizeRegistryValue(field, readWineFieldValue(wine, field));
+    if (!currentValue) return wine;
+    if (currentValue.toLowerCase() !== from.toLowerCase()) return wine;
+    changed += 1;
+    return writeWineFieldValue(wine, field, to);
+  });
+
+  if (changed > 0) {
+    persistLocalInventory(sortWines(next));
+  }
+  return changed;
 }

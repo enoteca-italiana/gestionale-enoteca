@@ -1,6 +1,6 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **17/03/2026 00:04 CET**.
+Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 
 ## Scopo di questo file
 
@@ -12,6 +12,35 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - stato attuale (feature completate / da fare)
 - punti chiave del codice
 - come riprendere il lavoro con Cascade (prompt operativi)
+
+## Ultimi aggiornamenti (17/03/2026 - wave 17, home giacenza + registry manager performance)
+
+- Home (`/`), solo modalità consultiva (sessione chiusa):
+  - click/tap su card vino apre modale `Giacenza`;
+  - selector a scroll per modificare esclusivamente `qty` (`0..999`);
+  - conferma in due step (`Conferma` + modale conferma finale);
+  - salvataggio su locale + Supabase con refresh inventory;
+  - stile modale ottimizzato mobile:
+    - `Annulla` bianco con bordo viola;
+    - box valore giacenza ridotto in larghezza e ingrandito;
+    - toast `Giacenza aggiornata` verde con durata 2s.
+- `Gestione voci filtri` (`/admin`):
+  - ottimizzato caricamento iniziale:
+    - warm start da inventory/registry locali;
+    - sync remoto in background;
+    - cache in-memory TTL 60s per riaperture rapide.
+  - delete voce aggiornato:
+    - warning centrato;
+    - testo allineato alle nuove regole;
+    - i vini associati mantengono il record ma il campo viene impostato vuoto (`-` in UI), non `0`.
+- Quality gate sessione:
+  - `npm run format:check` ✅
+  - `npm run lint -w @enoteca/scarichi-vini` ✅
+  - `npm run typecheck -w @enoteca/scarichi-vini` ✅
+  - `npm run test -w @enoteca/scarichi-vini -- --run` ✅ (15 test)
+  - `npm run build -w @enoteca/scarichi-vini` ✅
+- Hygiene:
+  - nessun marker conflitto merge rilevato.
 
 ## Ultimi aggiornamenti (16/03/2026 - wave 15, import CSV hardening + performance archivio)
 

@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **15/03/2026 23:05 CET**.
+Ultimo aggiornamento: **17/03/2026 01:42 CET**.
 
 ## Introduzione
 
@@ -32,6 +32,12 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
   - chat unica (nessuna vista impostazioni separata nel modale);
   - import chiave da file `.txt` e validazione/sanitizzazione automatica formato `sk-...`;
   - nessuna scrittura automatica su Supabase (solo consultazione/analisi).
+- Home consultiva:
+  - click su card vino apre modale `Giacenza`;
+  - modifica quantità con doppia conferma;
+  - sincronizzazione locale + Supabase al salvataggio.
+- Gestione voci filtri (`/admin`):
+  - caricamento ottimizzato con warm start locale e cache breve su riapertura.
 
 ---
 
