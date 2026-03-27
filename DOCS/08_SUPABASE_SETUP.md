@@ -1,18 +1,51 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **16/03/2026 16:35 CET**.
+Ultimo aggiornamento: **25/03/2026 12:55 CET**.
 
 ## Stato attuale
 
 Setup Supabase eseguito con successo su progetto `ndrgcfyoiyychjukhrno`.
+
+## Security hardening (25/03/2026)
+
+Risoluzione completa alert Security Advisor su ambiente production:
+
+- stato finale advisor: `0 errors`, `0 warnings`, `0 info`.
+- alert critico risolto: `RLS Disabled in Public` su:
+  - `public.suppliers`
+  - `public.categories`
+  - `public.categories_backup_20260313`
+  - `public.origins`
+
+Decisioni applicate in base al codice runtime reale:
+
+- `public.categories`, `public.suppliers`:
+  - usate dal frontend con chiave anon per flussi registry admin;
+  - RLS abilitata;
+  - grants/policy ridotti a minimo necessario per `anon`:
+    - `SELECT`, `INSERT`, `DELETE`
+  - negati `UPDATE`, `TRUNCATE`, `REFERENCES`, `TRIGGER` e ogni accesso `authenticated` non necessario.
+- `public.origins`:
+  - non interrogata runtime via Supabase dal frontend corrente;
+  - mantenuta chiusa al pubblico con RLS abilitata.
+- `public.categories_backup_20260313`:
+  - trattata come tabella backup non runtime;
+  - mantenuta chiusa al pubblico con RLS abilitata.
+
+Hardening aggiuntivo eseguito:
+
+- risolti warning `Function Search Path Mutable` impostando `search_path` esplicito sulle funzioni segnalate;
+- estensione `pg_trgm` spostata da `public` a schema `extensions`;
+- policy `RLS Policy Always True` sostituite con policy esplicite a ruolo (`auth.role() = 'anon'`) sulle tabelle applicative coinvolte;
+- per tabelle volutamente chiuse (`origins`, `categories_backup_20260313`) aggiunte deny-policy esplicite per eliminare l'info `RLS Enabled No Policy`.
 
 Conferme principali:
 
 - tabella `public.wines` creata e allineata al codice frontend.
 - vincoli business attivi (`qty >= 0`, `threshold null or 1..99`, prezzi non negativi).
 - trigger attivo per normalizzazione/calcoli (`warehouse`, `margin`, `updated_at`).
-- RLS attivo con policy CRUD per `anon` e `authenticated`.
-- privilegi tabella corretti: solo `SELECT`, `INSERT`, `UPDATE`, `DELETE`.
+- RLS attivo sulle tabelle applicative con policy allineate ai percorsi runtime reali.
+- privilegi tabella/policy allineati con principio di minimo privilegio (least privilege).
 - indici principali presenti (`name`, `category`, `producer`, `origin`, `qty`).
 - seed caricato: `20` vini.
 - routine RPC presente: `submit_discharge_session`.

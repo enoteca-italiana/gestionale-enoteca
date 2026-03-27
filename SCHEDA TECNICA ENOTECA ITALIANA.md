@@ -786,7 +786,7 @@ Questa scheda rappresenta la base tecnica e funzionale su cui costruire il proge
 
 ### Versionamento & GitHub
 
-- Repository GitHub inizializzato: [`https://github.com/dero975/enoteca`](https://github.com/dero975/enoteca).
+- Repository GitHub inizializzato: [`https://github.com/enoteca-italiana/gestionale`](https://github.com/enoteca-italiana/gestionale).
 - Script helper `./scripts/commit_github.sh` per automatizzare `git add/commit/push` su `main` (richiede licenza Xcode accettata e credenziali GitHub configurate: `sudo xcodebuild -license`, `git config`, `gh auth login` o keychain).
 - Documentata la procedura rapida in `PROJECT_STATUS.md` e `DOCS/07_OPERATIONS_BACKUP.md` (sezione GitHub).
 

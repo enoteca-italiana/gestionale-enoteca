@@ -1,6 +1,26 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **17/03/2026 16:20 CET**.
+Ultimo aggiornamento: **25/03/2026 12:55 CET**.
+
+## Ultimi aggiornamenti (25/03/2026 - wave 19, hardening Security Advisor Supabase)
+
+- Security Advisor (production) completamente allineato:
+  - `0 errors`
+  - `0 warnings`
+  - `0 info`
+- Risolto alert critico `RLS Disabled in Public` su:
+  - `public.suppliers`
+  - `public.categories`
+  - `public.categories_backup_20260313`
+  - `public.origins`
+- Fix RLS/grants applicato in modalità non generica e aderente al runtime reale app:
+  - `categories` + `suppliers` mantenute operative per frontend anon con privilegi minimi (`SELECT`, `INSERT`, `DELETE`);
+  - `origins` + `categories_backup_20260313` mantenute chiuse al pubblico.
+- Hardening sicurezza completato:
+  - warning `Function Search Path Mutable` eliminati con `search_path` esplicito sulle funzioni segnalate;
+  - warning `Extension in Public` risolto spostando `pg_trgm` nello schema `extensions`;
+  - warning `RLS Policy Always True` risolti sostituendo policy permissive con policy esplicite a ruolo;
+  - info `RLS Enabled No Policy` azzerati con deny-policy esplicite sulle tabelle volutamente chiuse.
 
 ## Ultimi aggiornamenti (17/03/2026 - wave 18, PIN hardening + UX sicurezza admin)
 
@@ -844,7 +864,7 @@ Workflow previsto quando chiedi "**commit github**":
 2. Configura una volta il remote se manca:
 
    ```bash
-   git remote add origin https://github.com/dero975/enoteca.git
+   git remote add origin https://github.com/enoteca-italiana/gestionale.git
    ```
 
 3. Imposta le tue credenziali Git (user name/email) e autenticati verso GitHub usando `gh auth login`, il macOS Keychain o `git credential-store` (non salvare token nel repo).

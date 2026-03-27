@@ -15,7 +15,7 @@ fi
 cd "${REPO_ROOT}"
 
 if ! git remote get-url origin >/dev/null 2>&1; then
-  echo "[commit_github] Remote 'origin' is not configured. Run:\n  git remote add origin https://github.com/dero975/enoteca.git" >&2
+  echo "[commit_github] Remote 'origin' is not configured. Run:\n  git remote add origin https://github.com/enoteca-italiana/gestionale.git" >&2
   exit 1
 fi
 

@@ -23,7 +23,7 @@ Porte usate in progetto:
 
 ## GitHub
 
-- Remote principale: `origin` → `https://dero975@github.com/dero975/enoteca.git`
+- Remote principale: `origin` → `https://github.com/enoteca-italiana/gestionale.git`
 - Branch default: `main`
 - Script helper: `./scripts/commit_github.sh`
   - usa `git add -A`, `git commit`, `git push origin main`
