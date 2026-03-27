@@ -3,6 +3,16 @@ import { Archive, House, Settings } from 'lucide-react';
 
 const FORCE_HOME_ONCE_SESSION_KEY = 'scarichi:force-home-once';
 const BEFORE_NAV_EVENT = 'scarichi:beforeNav';
+const SETTINGS_PATH = '/impostazioni';
+
+function isSettingsPath(pathname: string) {
+  return (
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/') ||
+    pathname === SETTINGS_PATH ||
+    pathname.startsWith(`${SETTINGS_PATH}/`)
+  );
+}
 
 function canNavigateTo(href: string) {
   const evt = new CustomEvent(BEFORE_NAV_EVENT, {
@@ -16,7 +26,7 @@ export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden
   if (hidden) return null;
   const isHome = currentPath === '/';
   const isArchive = currentPath.startsWith('/admina');
-  const isSettings = currentPath.startsWith('/admin') && !isArchive;
+  const isSettings = isSettingsPath(currentPath) && !isArchive;
 
   return (
     <nav className="navbar">
@@ -54,11 +64,11 @@ export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden
           <span>Archivio</span>
         </Link>
         <Link
-          href="/admin"
+          href={SETTINGS_PATH}
           className={`navNavItem ${isSettings ? 'navNavItemActive' : ''}`}
           aria-label="Impostazioni"
           onClick={(event) => {
-            if (!canNavigateTo('/admin')) {
+            if (!canNavigateTo(SETTINGS_PATH)) {
               event.preventDefault();
               return;
             }

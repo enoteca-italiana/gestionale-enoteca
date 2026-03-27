@@ -14,6 +14,15 @@ const WineAdminPage = lazy(() =>
 const APP_PIN_UNLOCKED_SESSION_KEY = 'scarichi.app.pinUnlocked.v1';
 const DEFAULT_ADMIN_PIN = '1909';
 
+function isSettingsPath(pathname: string) {
+  return (
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/') ||
+    pathname === '/impostazioni' ||
+    pathname.startsWith('/impostazioni/')
+  );
+}
+
 function readPinUnlockedSession() {
   try {
     return window.sessionStorage.getItem(APP_PIN_UNLOCKED_SESSION_KEY) === '1';
@@ -115,7 +124,7 @@ export function App() {
       setSettingsPinError(null);
       return;
     }
-    if (!location.startsWith('/admin') || location.startsWith('/admina')) {
+    if (!isSettingsPath(location)) {
       setSettingsPinUnlocked(false);
       setSettingsPin('');
       setSettingsPinError(null);
@@ -172,7 +181,7 @@ export function App() {
   };
 
   const showAppPinGate = appPinRequiredOnStart && !appPinUnlocked && !introVisible;
-  const isSettingsRoute = location.startsWith('/admin') && !location.startsWith('/admina');
+  const isSettingsRoute = isSettingsPath(location);
   const showSettingsPinGate =
     isSettingsRoute &&
     appPinRequiredForSettings &&
@@ -185,6 +194,7 @@ export function App() {
       <Suspense fallback={<div className="container">Caricamento…</div>}>
         <Switch>
           <Route path="/admina" component={WineAdminPage} />
+          <Route path="/impostazioni" component={AdminPage} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/">
             {() => <HomePage onIntroVisibilityChange={onIntroVisibilityChange} />}
