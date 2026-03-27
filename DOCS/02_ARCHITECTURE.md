@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **16/03/2026 16:35 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Workspace
 
@@ -16,7 +16,8 @@ Ultimo aggiornamento: **16/03/2026 16:35 CET**.
 ## Routing
 
 - `/` → `HomePage`
-- `/admin` → `AdminPage`
+- `/impostazioni` → `AdminPage`
+- `/admin` → `AdminPage` (alias legacy supportato)
 - `/admina` → `WineAdminPage` (archivio vini, desktop-first)
 
 ## Moduli chiave
@@ -119,10 +120,11 @@ Standard UI dati vino:
 
 - `src/app/useAppSettings.ts`
 - `src/app/useOnlineStatus.ts`
+- `src/app/routes.ts` (costanti route + helper condivisi `isSettingsPath`/`isArchivePath`)
 
 ## Invarianti (da rispettare)
 
-- File funzionali lunghi: **max ~300–350 righe**.
+- File funzionali lunghi: target **~300–350 righe** per nuovi moduli; i file legacy oltre soglia si modularizzano solo con patch a rischio basso.
 - Logica modulare:
   - hook per stato/azioni
   - componenti UI per rendering

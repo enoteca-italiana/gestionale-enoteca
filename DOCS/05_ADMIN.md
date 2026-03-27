@@ -1,10 +1,11 @@
 # Admin
 
-Ultimo aggiornamento: **17/03/2026 02:38 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Accesso
 
-- Route: `/admin`
+- Route principale: `/impostazioni`
+- Alias legacy supportato: `/admin`
 - Password:
   - default `1909` (hashata e salvata localmente)
   - modificabile in Admin
@@ -41,7 +42,7 @@ La Bottom Nav operativa mostra:
 
 - `Home` (`/`)
 - `Archivio` (`/admina`)
-- `Impostazioni` (`/admin`)
+- `Impostazioni` (`/impostazioni`, con compatibilità `/admin`)
 
 ## Impostazioni operative (modali)
 
@@ -76,7 +77,7 @@ Comportamento:
   - `ON` attiva subito il gate PIN in runtime;
   - `OFF` disattiva subito il gate.
 - PIN impostazioni:
-  - `ON` richiede PIN per accesso a `/admin`;
+  - `ON` richiede PIN per accesso a `/impostazioni` (valido anche per alias `/admin`);
   - lo sblocco non resta persistente tra accessi (nuova richiesta PIN a ogni rientro in Impostazioni).
 
 ### Cambio password admin

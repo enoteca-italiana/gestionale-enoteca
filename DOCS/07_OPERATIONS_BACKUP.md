@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **17/03/2026 02:38 CET**.
+Ultimo aggiornamento: **27/03/2026 14:05 CET**.
 
 ## Dev server
 
@@ -21,6 +21,26 @@ Porte usate in progetto:
 
 - `npm run build` (alla root) oppure `npm run build -w @enoteca/scarichi-vini`
 
+## Deploy Cloudflare Pages (production)
+
+- Progetto: `gestionale`
+- Repository: `enoteca-italiana/gestionale`
+- Branch: `main`
+- Root directory: root monorepo
+- Build command: `npm run build`
+- Build output directory: `apps/scarichi-vini/dist`
+
+Variabili ambiente obbligatorie (Production):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `OPENAI_API_KEY` (Secret)
+
+Variabili opzionali:
+
+- `OPENAI_MODEL`
+- `VITE_OPENAI_MODEL`
+
 ## GitHub
 
 - Remote principale: `origin` → `https://github.com/enoteca-italiana/gestionale.git`
@@ -31,7 +51,58 @@ Porte usate in progetto:
 - Prerequisiti prima del push:
   1. accettare licenza Xcode una volta (`sudo xcodebuild -license`)
   2. configurare `git config --global user.name/user.email`
-  3. autenticarsi verso GitHub (`gh auth login`, keychain, credential-store)
+  3. autenticarsi verso GitHub con un account che abbia accesso write al repo `enoteca-italiana/gestionale`
+
+### Autorizzazione nuovo PC (runbook rapido)
+
+1. Verifica root progetto:
+
+   ```bash
+   git rev-parse --show-toplevel
+   ```
+
+2. Imposta/controlla remote:
+
+   ```bash
+   git remote set-url origin https://github.com/enoteca-italiana/gestionale.git
+   git remote -v
+   ```
+
+3. Logout eventuale account vecchio e login account corretto:
+
+   ```bash
+   gh auth logout -h github.com -u <vecchio-account>
+   gh auth login -h github.com --with-token
+   ```
+
+4. Token PAT (classic) minimo richiesto:
+  - `repo`
+  - `read:org`
+  - `workflow`
+
+5. Se l'organizzazione usa SSO, autorizza il token su `enoteca-italiana` (`Configure SSO`).
+
+6. Forza helper credenziali Git via `gh` (evita collisioni con keychain vecchi):
+
+   ```bash
+   git config --global credential.helper "!/opt/homebrew/bin/gh auth git-credential"
+   git config --local credential.helper ''
+   git config --local --add credential.helper "!/opt/homebrew/bin/gh auth git-credential"
+   ```
+
+7. Verifica autorizzazioni prima del push:
+
+   ```bash
+   gh auth status -h github.com
+   gh repo view enoteca-italiana/gestionale --json nameWithOwner,viewerPermission,isPrivate
+   git ls-remote --heads origin
+   ```
+
+8. Esegui push con script:
+
+   ```bash
+   ./scripts/commit_github.sh "messaggio commit"
+   ```
 
 ### Flusso rapido “commit github”
 
@@ -45,12 +116,36 @@ Porte usate in progetto:
 3. Se l’autenticazione è ok, fa push su `origin main`.
 4. In caso di errori (remote mancante, credenziali non configurate) lo script blocca il push con messaggio chiaro.
 
+### Errori noti e fix immediato
+
+- `missing required scope 'read:org'`:
+  - rigenerare PAT aggiungendo scope `read:org`.
+- `refusing to allow a Personal Access Token ... workflow`:
+  - rigenerare PAT aggiungendo scope `workflow`.
+- `Repository not found`:
+  - verificare URL remote;
+  - verificare accesso account al repo privato;
+  - verificare autorizzazione SSO token su org.
+- `could not read Username for 'https://github.com'`:
+  - reimpostare `credential.helper` su `gh auth git-credential` (vedi runbook).
+- `Invalid username or token`:
+  - PAT scaduto/revocato/non autorizzato SSO.
+
 ### Stato autenticazione e push (13/03/2026)
 
 - `gh auth login -h github.com -p https -w` usato con successo (device flow sicuro).
 - push su `main` confermato.
 - `gh` installato anche su questo PC; autenticazione attiva su account `dero975`.
-- policy attiva: repository snello per deploy Render.
+- policy attiva: repository snello per deploy Cloudflare Pages.
+- Stato aggiornato (27/03/2026):
+  - repository target operativo: `enoteca-italiana/gestionale`;
+  - push confermato su `main` con account `enoteca-italiana` e PAT scope `repo + read:org + workflow`.
+
+### Regola sicurezza token (obbligatoria)
+
+- Non committare mai token in file/progetto.
+- Non lasciare token vecchi attivi: revocarli dopo uso o rotarli periodicamente.
+- Se un token è stato condiviso in chat, revocarlo subito e generarne uno nuovo.
 
 ### Regole anti-file pesanti (tracking Git)
 

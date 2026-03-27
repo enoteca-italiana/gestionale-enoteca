@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **17/03/2026 01:41 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Scopo
 
@@ -16,7 +16,7 @@ Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 - Navbar in basso con sole voci:
   - `Home`
   - `Archivio`
-- Area impostazioni admin disponibile su route dedicata `/admin` (protetta da password).
+- Area impostazioni admin disponibile su route dedicata `/impostazioni` (compatibile anche su `/admin`, protetta da password).
 
 ## Modello operativo: sessione di scarico
 

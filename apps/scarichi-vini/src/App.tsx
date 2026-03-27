@@ -1,6 +1,7 @@
 import { Route, Switch, useLocation } from 'wouter';
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
+import { APP_ROUTES, isSettingsPath } from '@/app/routes';
 import { useOfflineDischargeQueueSync } from '@/app/useOfflineDischargeQueueSync';
 import { sha256Base64 } from '@/pages/admin/crypto';
 import { getBool, settingsChangedEvent, storageKeys } from '@/pages/admin/storage';
@@ -13,15 +14,6 @@ const WineAdminPage = lazy(() =>
 
 const APP_PIN_UNLOCKED_SESSION_KEY = 'scarichi.app.pinUnlocked.v1';
 const DEFAULT_ADMIN_PIN = '1909';
-
-function isSettingsPath(pathname: string) {
-  return (
-    pathname === '/admin' ||
-    pathname.startsWith('/admin/') ||
-    pathname === '/impostazioni' ||
-    pathname.startsWith('/impostazioni/')
-  );
-}
 
 function readPinUnlockedSession() {
   try {
@@ -193,10 +185,10 @@ export function App() {
     <>
       <Suspense fallback={<div className="container">Caricamento…</div>}>
         <Switch>
-          <Route path="/admina" component={WineAdminPage} />
-          <Route path="/impostazioni" component={AdminPage} />
-          <Route path="/admin" component={AdminPage} />
-          <Route path="/">
+          <Route path={APP_ROUTES.ARCHIVE} component={WineAdminPage} />
+          <Route path={APP_ROUTES.SETTINGS} component={AdminPage} />
+          <Route path={APP_ROUTES.SETTINGS_LEGACY} component={AdminPage} />
+          <Route path={APP_ROUTES.HOME}>
             {() => <HomePage onIntroVisibilityChange={onIntroVisibilityChange} />}
           </Route>
         </Switch>

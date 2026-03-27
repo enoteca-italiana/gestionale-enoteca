@@ -1,18 +1,9 @@
 import { Link } from 'wouter';
 import { Archive, House, Settings } from 'lucide-react';
+import { APP_ROUTES, isArchivePath, isSettingsPath } from '@/app/routes';
 
 const FORCE_HOME_ONCE_SESSION_KEY = 'scarichi:force-home-once';
 const BEFORE_NAV_EVENT = 'scarichi:beforeNav';
-const SETTINGS_PATH = '/impostazioni';
-
-function isSettingsPath(pathname: string) {
-  return (
-    pathname === '/admin' ||
-    pathname.startsWith('/admin/') ||
-    pathname === SETTINGS_PATH ||
-    pathname.startsWith(`${SETTINGS_PATH}/`)
-  );
-}
 
 function canNavigateTo(href: string) {
   const evt = new CustomEvent(BEFORE_NAV_EVENT, {
@@ -24,19 +15,19 @@ function canNavigateTo(href: string) {
 
 export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden?: boolean }) {
   if (hidden) return null;
-  const isHome = currentPath === '/';
-  const isArchive = currentPath.startsWith('/admina');
+  const isHome = currentPath === APP_ROUTES.HOME;
+  const isArchive = isArchivePath(currentPath);
   const isSettings = isSettingsPath(currentPath) && !isArchive;
 
   return (
     <nav className="navbar">
       <div className="navbarInner">
         <Link
-          href="/"
+          href={APP_ROUTES.HOME}
           className={`navNavItem ${isHome ? 'navNavItemActive' : ''}`}
           aria-label="Home"
           onClick={(event) => {
-            if (!canNavigateTo('/')) {
+            if (!canNavigateTo(APP_ROUTES.HOME)) {
               event.preventDefault();
               return;
             }
@@ -51,11 +42,11 @@ export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden
           <span>Home</span>
         </Link>
         <Link
-          href="/admina"
+          href={APP_ROUTES.ARCHIVE}
           className={`navNavItem navNavItemArchive ${isArchive ? 'navNavItemActive' : ''}`}
           aria-label="Archivio"
           onClick={(event) => {
-            if (!canNavigateTo('/admina')) {
+            if (!canNavigateTo(APP_ROUTES.ARCHIVE)) {
               event.preventDefault();
             }
           }}
@@ -64,11 +55,11 @@ export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden
           <span>Archivio</span>
         </Link>
         <Link
-          href={SETTINGS_PATH}
+          href={APP_ROUTES.SETTINGS}
           className={`navNavItem ${isSettings ? 'navNavItemActive' : ''}`}
           aria-label="Impostazioni"
           onClick={(event) => {
-            if (!canNavigateTo(SETTINGS_PATH)) {
+            if (!canNavigateTo(APP_ROUTES.SETTINGS)) {
               event.preventDefault();
               return;
             }

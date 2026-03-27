@@ -38,6 +38,7 @@ Percorso consigliato:
 - secret server-side `OPENAI_API_KEY` (Cloudflare Pages Functions).
 - modello default server-side opzionale: `OPENAI_MODEL`.
 - modello UI opzionale: `VITE_OPENAI_MODEL`.
+- `VITE_OPENAI_API_KEY` non deve essere usata (chiave non esposta nel frontend).
 
 Esempio:
 

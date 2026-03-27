@@ -1,6 +1,29 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **25/03/2026 12:55 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+
+## Ultimi aggiornamenti (27/03/2026 - wave 20, hardening Cloudflare + hygiene enterprise)
+
+- Routing impostazioni allineato e retrocompatibile:
+  - route primaria impostazioni: `/impostazioni`;
+  - alias legacy mantenuto: `/admin`;
+  - archivio invariato: `/admina`.
+- Hardening codice (senza cambi logica business/UX):
+  - introdotto modulo condiviso `src/app/routes.ts` per costanti route e helper path;
+  - rimossa duplicazione logica route tra `App.tsx` e `BottomNav.tsx`;
+  - tipizzazione env allineata in `vite-env.d.ts` (`VITE_OPENAI_MODEL`).
+- Pulizia obsoleti:
+  - rimossi file legacy non più usati per parsing chiave OpenAI lato client:
+    - `src/pages/admina/components/aiAssistantKey.ts`
+    - `src/pages/admina/components/aiAssistantKey.test.ts`
+- Cloudflare production verificato:
+  - deep-link SPA operativi (`/`, `/impostazioni`, `/admin`, `/admina`);
+  - function AI operativa via `POST /api/ai` con secret server-side.
+- Quality gate sessione:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (25/03/2026 - wave 19, hardening Security Advisor Supabase)
 
@@ -635,10 +658,10 @@ Comandi root:
   - Assistente AI archivio:
     - apertura da pulsante AI in toolbar
     - modale conversazionale con analisi dati archivio
-    - vista `Impostazioni` dedicata con soli campi `API key` + `Tipo agent`
-    - import chiave da file `.txt` nelle impostazioni
+    - nessuna vista impostazioni dedicata nel modale
+    - chiamata AI sicura via `/api/ai` (Cloudflare Function server-side)
     - chat allineata in colonna verticale (stile chat classica)
-    - sanitizzazione robusta della chiave (`sk-...`) prima della chiamata API
+    - chiave OpenAI gestita solo lato server (`OPENAI_API_KEY`)
     - nessuna scrittura dati su DB (solo analisi)
 - PWA:
   - service worker + caching app shell/assets
@@ -658,7 +681,7 @@ Comandi root:
 - Sincronizzazione Google Sheets:
   - hook di integrazione predisposti lato codice
   - da completare/alimentare con credenziali e pipeline definitiva
-- Deploy Render
+- Deploy Cloudflare Pages
 
 ### Ultimi aggiornamenti UI/asset (13/03/2026)
 
@@ -731,7 +754,7 @@ Comandi root:
   - contesto AI esteso con dati archivio completi + contesto sessioni storico/sospese;
   - modalità operativa web+app attiva lato chiamata AI con vincoli anti-divulgazione nel system prompt.
 - Configurazione API key:
-  - supporto variabile ambiente `VITE_OPENAI_API_KEY` (consigliato);
+  - supporto variabile ambiente server-side `OPENAI_API_KEY` (obbligatoria in Cloudflare);
   - supporto fallback modello con `VITE_OPENAI_MODEL`.
 - Toolbar archivio:
   - fix chirurgico altezze pulsanti: allineamento uniforme basato su variabile CSS condivisa;
@@ -767,7 +790,7 @@ Comandi root:
 - Sessione (sessione ON): i vini compaiono solo quando fai ricerca.
 - Controllo quantità scarico per vino: stepper `- / +` con quantità ben visibile.
 - Bottom nav operativa: `Home` + `Archivio`.
-- `Impostazioni` resta su `/admin`, non come CTA ridondante in `/admina`.
+- `Impostazioni` su route principale `/impostazioni` (compat legacy `/admin`), non come CTA ridondante in `/admina`.
 
 ---
 
@@ -867,7 +890,11 @@ Workflow previsto quando chiedi "**commit github**":
    git remote add origin https://github.com/enoteca-italiana/gestionale.git
    ```
 
-3. Imposta le tue credenziali Git (user name/email) e autenticati verso GitHub usando `gh auth login`, il macOS Keychain o `git credential-store` (non salvare token nel repo).
+3. Imposta le tue credenziali Git (user name/email) e autenticati verso GitHub.
+   Token PAT (classic) minimo richiesto per questo repo privato:
+   - `repo`
+   - `read:org`
+   - `workflow`
 
 4. Da root del progetto esegui lo script helper (viene invocato anche dall'agente quando scrivi “commit github”):
 
@@ -882,7 +909,55 @@ Workflow previsto quando chiedi "**commit github**":
 
 Se l'autenticazione GitHub non è configurata o la porta è bloccata, il push fallirà: sistemare le credenziali e rilanciare.
 
-### Regola repository leggero (Render)
+### Nuovo PC: procedura standard per Codex (autorizzazione + push)
+
+Quando su un nuovo PC viene richiesto “commit github”, seguire sempre questo ordine:
+
+1. Verifica root repo:
+
+   ```bash
+   git rev-parse --show-toplevel
+   ```
+
+2. Allinea remote:
+
+   ```bash
+   git remote set-url origin https://github.com/enoteca-italiana/gestionale.git
+   git remote -v
+   ```
+
+3. Login GitHub corretto (org/repo access):
+
+   ```bash
+   gh auth logout -h github.com -u <vecchio-account>
+   gh auth login -h github.com --with-token
+   ```
+
+4. Se necessario, autorizza SSO del token su org `enoteca-italiana`.
+
+5. Forza helper credenziali Git via `gh`:
+
+   ```bash
+   git config --global credential.helper "!/opt/homebrew/bin/gh auth git-credential"
+   git config --local credential.helper ''
+   git config --local --add credential.helper "!/opt/homebrew/bin/gh auth git-credential"
+   ```
+
+6. Verifica accesso:
+
+   ```bash
+   gh auth status -h github.com
+   gh repo view enoteca-italiana/gestionale --json nameWithOwner,viewerPermission,isPrivate
+   git ls-remote --heads origin
+   ```
+
+7. Push:
+
+   ```bash
+   ./scripts/commit_github.sh "messaggio commit"
+   ```
+
+### Regola repository leggero (Cloudflare Pages)
 
 - Non versionare artefatti temporanei o backup compressi.
 - In `main` devono restare solo sorgenti e file necessari al deploy.

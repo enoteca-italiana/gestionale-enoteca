@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **17/03/2026 02:38 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Introduzione
 
@@ -8,7 +8,7 @@ Questa applicazione serve a gestire in modo rapido, semplice e affidabile gli **
 
 L’obiettivo principale è avere un sistema **veloce, stabile, touch-friendly e sempre aggiornato**, capace di funzionare anche **offline** e di sincronizzarsi automaticamente quando torna la connessione. Il foglio Google resta parte integrante del progetto, ma il cuore operativo dell’applicazione sarà **Supabase**, così da garantire maggiore affidabilità, gestione offline, sincronizzazione ordinata e una base tecnica realmente scalabile.
 
-L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub**, backend dati su **Supabase** e deploy su **Render**. Il progetto dovrà nascere già con una struttura **modulare, scalabile e pulita**, così da permettere future estensioni senza rifare l’architettura.
+L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su **GitHub**, backend dati su **Supabase** e deploy operativo su **Cloudflare Pages**. Il progetto deve mantenere struttura **modulare, scalabile e pulita**, così da permettere future estensioni senza rifare l’architettura.
 
 ### Stato tecnico attuale (aggiornato)
 
@@ -30,7 +30,7 @@ L’app sarà sviluppata su **Replit**, con repository sincronizzato su **GitHub
 - assistente AI archivio (`/admina`) con modale dedicato:
   - chat analitica su dati correnti archivio;
   - chat unica (nessuna vista impostazioni separata nel modale);
-  - import chiave da file `.txt` e validazione/sanitizzazione automatica formato `sk-...`;
+  - chiamata AI sicura via backend server-side (Cloudflare Function), nessuna chiave nel frontend;
   - nessuna scrittura automatica su Supabase (solo consultazione/analisi).
 - Home consultiva:
   - click su card vino apre modale `Giacenza`;
@@ -68,7 +68,7 @@ I carichi e gli aggiornamenti inventariali saranno effettuati **manualmente sul 
 - **Replit** per sviluppo
 - **GitHub** per versionamento
 - **Supabase** come database operativo centrale
-- **Render** per deploy
+- **Cloudflare Pages** per deploy
 - **Google Sheets** come sorgente esterna sincronizzata e strumento gestionale manuale
 
 ### Principio architetturale centrale
@@ -790,14 +790,17 @@ Questa scheda rappresenta la base tecnica e funzionale su cui costruire il proge
 - Script helper `./scripts/commit_github.sh` per automatizzare `git add/commit/push` su `main` (richiede licenza Xcode accettata e credenziali GitHub configurate: `sudo xcodebuild -license`, `git config`, `gh auth login` o keychain).
 - Documentata la procedura rapida in `PROJECT_STATUS.md` e `DOCS/07_OPERATIONS_BACKUP.md` (sezione GitHub).
 
-### Deploy (Render)
+### Deploy (Cloudflare Pages)
 
-- Setup base Web Service definito (Node runtime, branch `main`, regione consigliata: Frankfurt EU Central).
-- Comandi da configurare su Render:
-  - **Build**: `npm install && npm run build`
-  - **Start**: `npm run preview -- --host 0.0.0.0 --port $PORT`
-- `Root Directory` vuota (usa la root del monorepo).
-- Prossimo step dichiarato: configurare environment variables su Render quando pronte (Supabase, ecc.).
+- Setup operativo attivo su Cloudflare Pages (repo `enoteca-italiana/gestionale`, branch `main`).
+- Configurazione build:
+  - **Build command**: `npm run build`
+  - **Build output**: `apps/scarichi-vini/dist`
+  - **Root Directory**: root del monorepo
+- Variabili ambiente obbligatorie produzione:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+  - `OPENAI_API_KEY` (secret server-side per Function `/api/ai`)
 
 ### UX / UI — area Sessione (touch-first)
 
@@ -810,7 +813,7 @@ Questa scheda rappresenta la base tecnica e funzionale su cui costruire il proge
 
 ### Note operative
 
-- DOCS e PROJECT_STATUS sincronizzati con le novità (GitHub, workflow push, Render setup).
+- DOCS e PROJECT_STATUS sincronizzati con le novità (GitHub, workflow push, Cloudflare setup).
 - Dev server locale attivo su `npm run dev` (porta 5173) e preview IDE disponibile.
 - Vulnerabilità npm note (vite/esbuild/serialize-javascript): valutare upgrade controllato in fase successiva.
 
@@ -893,7 +896,7 @@ Quick steps:
 
 ### Regola repository leggero (nuova logica)
 
-- Per deploy Render, su GitHub `main` devono restare solo file utili al runtime.
+- Per deploy Cloudflare Pages, su GitHub `main` devono restare solo file utili al runtime.
 - Esclusi dal tracking:
   - `backup/*.tar.gz`, `backup/*.zip`
   - `apps/scarichi-vini/dev-dist/`

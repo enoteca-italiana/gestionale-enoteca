@@ -2,7 +2,7 @@
 
 Questa cartella contiene la documentazione operativa allineata allo stato reale del progetto.
 
-Ultimo aggiornamento: **17/03/2026 01:41 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Documenti
 
@@ -15,7 +15,7 @@ Ultimo aggiornamento: **17/03/2026 01:41 CET**.
 - `04_USER_FLOW_SESSION.md`
   - flusso sessione scarico lato Home (submit su Supabase).
 - `05_ADMIN.md`
-  - differenza tra `/admin` (impostazioni) e `/admina` (archivio vini).
+  - differenza tra `/impostazioni` (impostazioni, con alias legacy `/admin`) e `/admina` (archivio vini).
 - `06_OFFLINE_PWA.md`
   - comportamento offline e installazione PWA Android/iOS/desktop.
 - `07_OPERATIONS_BACKUP.md`

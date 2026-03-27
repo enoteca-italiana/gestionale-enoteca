@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **17/03/2026 01:41 CET**.
+Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 
 ## Quick Start
 
@@ -45,7 +45,7 @@ Comandi utili:
     - doppia conferma prima del salvataggio;
     - update sincronizzato su locale + Supabase;
     - toast `Giacenza aggiornata` in verde (2s).
-- Admin impostazioni (`/admin`) con autenticazione locale.
+- Admin impostazioni (`/impostazioni`, compat legacy `/admin`) con autenticazione locale.
   - azione `Reset archivio` con PIN:
     - cancella archivio vini e pulisce i registry/cache filtri correlati
     - storico sessioni preservato (indipendente dall'archivio vini)
@@ -109,7 +109,7 @@ Comandi utili:
     - `Produttore`, `Fornitore` sempre con **iniziale maiuscola**
   - export archivio: Excel/PDF con icone dockate in alto a destra (solo icone)
   - performance avanzata (dataset grandi):
-    - route lazy-loaded (`/`, `/admin`, `/admina`) per startup più rapido
+    - route lazy-loaded (`/`, `/impostazioni`, `/admin`, `/admina`) per startup più rapido
     - rendering progressivo liste (`Carica altri vini` / `Carica altre righe`)
     - filtri con `useDeferredValue` (Home + Archivio)
     - coalescing scritture local DB (batch ravvicinati) per ridurre jank durante update quantità
@@ -164,6 +164,7 @@ Comandi utili:
   - secret server-side obbligatorio: `OPENAI_API_KEY`
   - default model server-side opzionale: `OPENAI_MODEL`
   - model pre-selezionato in UI opzionale: `VITE_OPENAI_MODEL`
+  - `VITE_OPENAI_API_KEY` non è più usata (chiave sempre server-side).
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
 - Nota Scarico usa Supabase in modalità **strict** (niente fallback locale):
   - tabelle: `public.discharge_notes`, `public.discharge_note_items`
@@ -172,9 +173,9 @@ Comandi utili:
 - Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 - Script SQL policy casing campi vino: `scripts/sql/supabase_text_casing_policy.sql`.
 - Cloudflare Pages SPA routing:
-  - file `public/_redirects` incluso per deep-link client-side (`/admin`, `/admina`) + bypass `/api/*`.
+  - file `public/_redirects` incluso per deep-link client-side (`/impostazioni`, `/admin`, `/admina`) + bypass `/api/*`.
 
-## Regole Deploy (Render)
+## Regole Deploy (Cloudflare Pages)
 
 - Repository mantenuto leggero: esclusi dal tracking i file pesanti/temporanei.
 - Non versionare:
