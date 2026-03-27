@@ -704,7 +704,9 @@ export function HomePage({
               ×
             </button>
             <div className="modalTitle centered">{editingStockWine.name}</div>
-            <div className="subtle centered mt6">Giacenza: {Math.max(0, Math.round(editingStockQty))}</div>
+            <div className="subtle centered mt6 homeStockQtyLabel">
+              GIACENZA ATTUALE: {Math.max(0, Math.round(Number(editingStockWine.qty) || 0))}
+            </div>
 
             <div className="summaryEditControls mt14">
               <button
@@ -735,7 +737,7 @@ export function HomePage({
                   void confirmStockSave();
                 }}
               >
-                {stockSaveBusy ? 'Salvataggio…' : 'Conferma'}
+                {stockSaveBusy ? 'Salvataggio…' : 'Conferma Nuova Giacenza'}
               </button>
             </div>
           </div>

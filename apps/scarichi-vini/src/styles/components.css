@@ -152,6 +152,13 @@
 
 .homeStockModalCard .modalTitle {
   text-transform: uppercase;
+  font-weight: 500;
+}
+
+.subtle.homeStockQtyLabel {
+  color: #b42318;
+  -webkit-text-fill-color: #b42318;
+  font-weight: 800;
 }
 
 .homeStockModalCard .summaryEditControls {
@@ -164,6 +171,20 @@
   height: 44px;
   border-radius: 12px;
   font-size: 28px;
+}
+
+.homeStockModalCard .resultControlButtonSecondary {
+  background: #ffffff;
+  border: 1px solid #111827;
+  color: #111827;
+}
+
+.homeStockModalCard .resultControlButtonSecondary:disabled {
+  opacity: 1;
+  background: #ffffff;
+  border: 1px solid #111827;
+  color: #111827;
+  -webkit-text-fill-color: #111827;
 }
 
 .homeStockModalCard .resultControlValue {
