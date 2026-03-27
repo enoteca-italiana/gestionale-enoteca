@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
-import { extractApiKey } from '@/pages/admina/components/aiAssistantKey';
 import {
   listAllDischargeSessions,
   listAllSubmittedDischargeItemsForAi,
@@ -17,10 +16,8 @@ type ChatMessage = {
 
 const STORAGE_MODEL = 'scarichi.ai.openaiModel.v1';
 const DEFAULT_MODEL = 'gpt-4.1-mini';
-const ENV_API_KEY = extractApiKey(
-  (import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? ''
-);
 const ENV_MODEL = (import.meta.env.VITE_OPENAI_MODEL as string | undefined)?.trim() ?? '';
+const AI_API_ENDPOINT = '/api/ai';
 const AGENT_MODELS = [
   { value: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
   { value: 'gpt-4.1', label: 'GPT-4.1' }
@@ -912,7 +909,6 @@ export function AiAssistantModal({
     return map;
   }, [wines]);
   const analytics = useMemo(() => buildInventoryAnalytics(wines), [wines]);
-  const effectiveApiKey = ENV_API_KEY;
 
   const loadSessionsData = useCallback(async (options?: { force?: boolean }) => {
     const force = options?.force ?? false;
@@ -1099,18 +1095,6 @@ export function AiAssistantModal({
     const question = prompt.trim();
     if (!question || busy) return;
     const reportRequested = isExplicitReportRequest(question);
-    if (!effectiveApiKey) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}_cfg`,
-          role: 'assistant',
-          text: 'API key non configurata. Imposta VITE_OPENAI_API_KEY nelle variabili ambiente.'
-        }
-      ]);
-      return;
-    }
-    const safeApiKey = extractApiKey(effectiveApiKey);
 
     const nextUserMessage: ChatMessage = {
       id: `${Date.now()}_u`,
@@ -1195,11 +1179,10 @@ export function AiAssistantModal({
         `Domanda attuale:\n${question}`
       ].join('\n\n');
 
-      const response = await fetch('https://api.openai.com/v1/responses', {
+      const response = await fetch(AI_API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${safeApiKey}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: model || DEFAULT_MODEL,

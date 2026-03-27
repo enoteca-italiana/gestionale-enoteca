@@ -160,7 +160,10 @@ Comandi utili:
 ## Variabili ambiente
 
 - Crea `.env` da `.env.example`.
-- AI: impostare `VITE_OPENAI_API_KEY` (consigliato) e opzionalmente `VITE_OPENAI_MODEL`.
+- AI (sicuro su Cloudflare Pages Functions):
+  - secret server-side obbligatorio: `OPENAI_API_KEY`
+  - default model server-side opzionale: `OPENAI_MODEL`
+  - model pre-selezionato in UI opzionale: `VITE_OPENAI_MODEL`
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
 - Nota Scarico usa Supabase in modalità **strict** (niente fallback locale):
   - tabelle: `public.discharge_notes`, `public.discharge_note_items`
@@ -168,6 +171,8 @@ Comandi utili:
 - Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
 - Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 - Script SQL policy casing campi vino: `scripts/sql/supabase_text_casing_policy.sql`.
+- Cloudflare Pages SPA routing:
+  - file `public/_redirects` incluso per deep-link client-side (`/admin`, `/admina`) + bypass `/api/*`.
 
 ## Regole Deploy (Render)
 

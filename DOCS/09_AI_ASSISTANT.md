@@ -35,13 +35,15 @@ Nota: non esiste più una vista impostazioni separata nel modale, né pulsante `
 
 Percorso consigliato:
 
-- variabile ambiente `VITE_OPENAI_API_KEY` in `.env.local`.
-- modello default opzionale: `VITE_OPENAI_MODEL`.
+- secret server-side `OPENAI_API_KEY` (Cloudflare Pages Functions).
+- modello default server-side opzionale: `OPENAI_MODEL`.
+- modello UI opzionale: `VITE_OPENAI_MODEL`.
 
 Esempio:
 
 ```env
-VITE_OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4.1-mini
 VITE_OPENAI_MODEL=gpt-4.1-mini
 ```
 
@@ -64,11 +66,15 @@ VITE_OPENAI_MODEL=gpt-4.1-mini
      - `over6m`
      - `over12m`
      - `oldestOrNever`.
-3. Chiamata `POST /v1/responses` con:
+3. Chiamata `POST /api/ai` (Cloudflare Function) con:
+   - secret OpenAI gestito lato server, non esposto nel client;
+   - validazione payload/model lato backend;
+   - proxy verso `POST /v1/responses`.
+4. Lato Function, invio a OpenAI `POST /v1/responses` con:
    - `instructions` con vincoli di sicurezza;
    - input unico con contesto JSON + cronologia conversazione + domanda corrente;
    - tool web abilitato (`web+app`).
-4. Risposta renderizzata in chat.
+5. Risposta renderizzata in chat.
 
 ## Copertura dati (enterprise)
 
@@ -105,8 +111,9 @@ Blocchi contesto aggiunti:
 ## Sicurezza
 
 - Nessuna scrittura su Supabase dalla chat AI.
+- Nessuna API key OpenAI nel bundle frontend.
 - Prompt di sistema con vincoli anti-divulgazione dati interni nelle ricerche web.
-- Nessuna chiave hardcoded nel codice.
+- Secret OpenAI gestito solo in environment server-side.
 
 ## Verifica rapida
 
