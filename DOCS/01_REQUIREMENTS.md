@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Scopo
 
@@ -61,13 +61,19 @@ Ultimo aggiornamento: **27/03/2026 15:52 CET**.
 - Password modificabile.
 - Archivio vini su route `/admina` (CRUD tabellare desktop-first).
 - Toolbar filtri archivio su una sola riga desktop con box compatto statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino` (filtro `Tutte le giacenze` rimosso).
+- Ordine toolbar archivio: `Aggiungi vino` in prima posizione a sinistra, poi `Cerca...`, poi filtri e comandi.
 - In archivio, q.tà `0` resta evidenziata in rosso acceso.
 - In archivio, campo `ANNO` vuoto quando il valore non è presente.
 - In archivio, le note sono consultabili da icona in colonna `Azioni` (non più come colonna dedicata).
-- Categoria e provenienza selezionabili da liste gestite (no input libero), con opzione `+ Aggiungi ...` e suggerimenti anti-duplicato.
+- Categoria, produttore e provenienza selezionabili da liste gestite (no input libero), con opzione `+ Aggiungi ...` sempre visibile in cima ai selector (toolbar + inline tabella).
+- I filtri archivio sono complementari tra loro:
+  - `Cerca...`, `Categoria`, `Produttore`, `Provenienza` restringono reciprocamente i risultati/opzioni disponibili.
+- Pulsante reset filtri:
+  - quando sono presenti filtri attivi cambia colore e lampeggia;
+  - dopo reset torna allo stato normale.
 - Policy testo campi vino (obbligatoria, anche da CSV):
   - `Categoria`, `Nome`, `Provenienza` sempre in **MAIUSCOLO**.
-  - `Produttore`, `Fornitore` sempre con **iniziale maiuscola**.
+- `Produttore` sempre con **iniziale maiuscola**.
 - Settings (toggle):
   - associazione nome utente (predisposizione / future)
 - Storico Admin:

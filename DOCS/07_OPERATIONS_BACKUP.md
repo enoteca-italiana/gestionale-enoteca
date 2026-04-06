@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **27/03/2026 14:05 CET**.
+Ultimo aggiornamento: **07/04/2026 00:26 CEST**.
 
 ## Dev server
 
@@ -76,9 +76,10 @@ Variabili opzionali:
    ```
 
 4. Token PAT (classic) minimo richiesto:
-  - `repo`
-  - `read:org`
-  - `workflow`
+
+- `repo`
+- `read:org`
+- `workflow`
 
 5. Se l'organizzazione usa SSO, autorizza il token su `enoteca-italiana` (`Configure SSO`).
 
@@ -174,6 +175,8 @@ Naming richiesto dall’utente:
 - ultimo backup creato: `backup_17 Martedi_00.06.tar.gz`
 - ultimo backup creato: `backup_17 Martedi_01.42.tar.gz`
 - ultimo backup creato: `backup_17 Martedi_02.38.tar.gz`
+- ultimo backup creato: `backup_06 Lunedi_23.55.tar.gz`
+- ultimo backup creato: `backup_07 Martedi_00.26.tar.gz`
 
 Script:
 
@@ -218,6 +221,7 @@ Quando l’utente dice **“esegui un nuovo backup”**:
 - Pagina nuova: `/admina` → gestione CRUD vini su Supabase (interfaccia web admin).
 - UI tabellare desktop-first con header sticky, righe alternate e filler rows fino al fondo area.
 - Toolbar filtri su singola riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`) e bottone `Aggiungi vino` (filtro `Tutte le giacenze` rimosso).
+- Ordine toolbar: `Aggiungi vino` in prima posizione a sinistra, poi `Cerca...`, poi filtri/comandi.
 - Colori stato archivio: `Totale` verde, `Soglia` ambra, `Esauriti` rosso.
 - Stato selezionato dei filtri a colori invertiti (testo bianco).
 - Ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`.

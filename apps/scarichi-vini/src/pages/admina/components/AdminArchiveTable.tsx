@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import type { Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, FileText, Pencil, Trash2 } from 'lucide-react';
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  ChevronDown,
+  FileText,
+  Pencil,
+  Trash2
+} from 'lucide-react';
 
 type Props = {
   wines: Wine[];
   categories: string[];
   producers: string[];
   origins: string[];
-  suppliers: string[];
   loading: boolean;
   onEdit: (wine: Wine) => void;
   onDelete: (wineId: string) => void;
@@ -21,24 +27,26 @@ type Props = {
       category?: string;
       producer?: string;
       origin?: string;
-      supplier?: string;
     }
   ) => Promise<boolean>;
+  onRequestAddCategory: (onResult: (created: string | null) => void) => void;
+  onRequestAddProducer: (onResult: (created: string | null) => void) => void;
+  onRequestAddOrigin: (onResult: (created: string | null) => void) => void;
   resetVersion: number;
   bulkEditEnabled: boolean;
   onOpenBulkEdit: () => void;
 };
 
-const TOTAL_COLUMNS = 12;
+const TOTAL_COLUMNS = 11;
 const BASE_ROWS = 14;
 const ROW_HEIGHT_ESTIMATE = 33;
 const TABLE_OFFSET = 340;
 const TABLE_RENDER_BATCH = 40;
 const TABLE_SORT_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 const MONEY_FORMATTER = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
-type SortKey = 'category' | 'name' | 'producer' | 'origin' | 'supplier';
+type SortKey = 'category' | 'name' | 'producer' | 'origin';
 type SortDir = 'az' | 'za';
-type InlineSelectField = 'category' | 'producer' | 'origin' | 'supplier';
+type InlineSelectField = 'category' | 'producer' | 'origin';
 const DEFAULT_SORT_STATE: { key: SortKey; dir: SortDir } = { key: 'name', dir: 'az' };
 
 function formatMoney(value?: number) {
@@ -72,17 +80,127 @@ function computeMargin(wine: Wine) {
   return Number((wine.salePrice - wine.purchasePrice).toFixed(2));
 }
 
+type InlineStickyAddSelectProps = {
+  value: string;
+  options: string[];
+  addLabel: string;
+  onChange: (nextValue: string) => void;
+  onAdd: () => void;
+  onCancel: () => void;
+  ariaLabel: string;
+  disabled?: boolean;
+};
+
+function InlineStickyAddSelect({
+  value,
+  options,
+  addLabel,
+  onChange,
+  onAdd,
+  onCancel,
+  ariaLabel,
+  disabled
+}: InlineStickyAddSelectProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (rootRef.current?.contains(target)) return;
+      setOpen(false);
+      onCancel();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+      onCancel();
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onCancel, open]);
+
+  return (
+    <div className="archiveInlineSelectRoot" ref={rootRef}>
+      <button
+        className="archiveInlineCategorySelect archiveInlineSelectButton"
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open ? 'true' : 'false'}
+        onClick={() => setOpen((prev) => !prev)}
+        disabled={disabled}
+      >
+        <span className="archiveInlineSelectText">{value || '—'}</span>
+        <ChevronDown size={14} strokeWidth={2} />
+      </button>
+      {open ? (
+        <div className="archiveInlineSelectMenu" role="listbox" aria-label={ariaLabel}>
+          <button
+            className="archiveInlineSelectAdd"
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onAdd();
+            }}
+            disabled={disabled}
+          >
+            {addLabel}
+          </button>
+          <div className="archiveInlineSelectOptions">
+            <button
+              className={`archiveInlineSelectOption ${value === '' ? 'archiveInlineSelectOptionActive' : ''}`}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onChange('');
+              }}
+              disabled={disabled}
+            >
+              —
+            </button>
+            {options.map((option) => (
+              <button
+                key={option}
+                className={`archiveInlineSelectOption ${
+                  value === option ? 'archiveInlineSelectOptionActive' : ''
+                }`}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onChange(option);
+                }}
+                disabled={disabled}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function AdminArchiveTable({
   wines,
   categories,
   producers,
   origins,
-  suppliers,
   loading,
   onEdit,
   onDelete,
   onUpdateQty,
   onUpdateInlineFields,
+  onRequestAddCategory,
+  onRequestAddProducer,
+  onRequestAddOrigin,
   resetVersion,
   bulkEditEnabled,
   onOpenBulkEdit
@@ -95,7 +213,6 @@ export function AdminArchiveTable({
   const ageInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const producerInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const originInlineBoxRef = useRef<HTMLDivElement | null>(null);
-  const supplierInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRowRef = useRef<HTMLTableRowElement | null>(null);
   const autoLoadLockRef = useRef(false);
   const [targetRows, setTargetRows] = useState(BASE_ROWS);
@@ -112,8 +229,6 @@ export function AdminArchiveTable({
   const [editingProducerValue, setEditingProducerValue] = useState<string>('');
   const [editingOriginWineId, setEditingOriginWineId] = useState<string | null>(null);
   const [editingOriginValue, setEditingOriginValue] = useState<string>('');
-  const [editingSupplierWineId, setEditingSupplierWineId] = useState<string | null>(null);
-  const [editingSupplierValue, setEditingSupplierValue] = useState<string>('');
   const [savingQtyWineId, setSavingQtyWineId] = useState<string | null>(null);
   const [savingInlineWineId, setSavingInlineWineId] = useState<string | null>(null);
   const [visibleRows, setVisibleRows] = useState(TABLE_RENDER_BATCH);
@@ -144,9 +259,7 @@ export function AdminArchiveTable({
             ? (a.producer ?? '')
             : sortState.key === 'origin'
               ? (a.origin ?? '')
-              : sortState.key === 'supplier'
-                ? (a.supplier ?? '')
-                : (a.name ?? '');
+              : (a.name ?? '');
       const bValue =
         sortState.key === 'category'
           ? (b.category ?? '')
@@ -154,9 +267,7 @@ export function AdminArchiveTable({
             ? (b.producer ?? '')
             : sortState.key === 'origin'
               ? (b.origin ?? '')
-              : sortState.key === 'supplier'
-                ? (b.supplier ?? '')
-                : (b.name ?? '');
+              : (b.name ?? '');
       return TABLE_SORT_COLLATOR.compare(aValue, bValue);
     });
     return sortState.dir === 'az' ? byField : byField.reverse();
@@ -240,8 +351,6 @@ export function AdminArchiveTable({
     setEditingProducerValue('');
     setEditingOriginWineId(null);
     setEditingOriginValue('');
-    setEditingSupplierWineId(null);
-    setEditingSupplierValue('');
     startTransition(() => {
       setVisibleRows(TABLE_RENDER_BATCH);
     });
@@ -261,7 +370,6 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelQtyEdit = useCallback(() => {
@@ -279,7 +387,6 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelNameEdit = useCallback(() => {
@@ -297,7 +404,6 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelAgeEdit = useCallback(() => {
@@ -315,7 +421,6 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelCategoryEdit = useCallback(() => {
@@ -333,7 +438,6 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingAgeWineId(null);
     setEditingOriginWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelProducerEdit = useCallback(() => {
@@ -351,31 +455,12 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
-    setEditingSupplierWineId(null);
   };
 
   const cancelOriginEdit = useCallback(() => {
     if (savingQtyWineId || savingInlineWineId) return;
     setEditingOriginWineId(null);
     setEditingOriginValue('');
-  }, [savingInlineWineId, savingQtyWineId]);
-
-  const beginSupplierEdit = (wine: Wine) => {
-    if (savingQtyWineId || savingInlineWineId) return;
-    setEditingSupplierWineId(wine.id);
-    setEditingSupplierValue(wine.supplier ?? '');
-    setEditingQtyWineId(null);
-    setEditingCategoryWineId(null);
-    setEditingNameWineId(null);
-    setEditingAgeWineId(null);
-    setEditingProducerWineId(null);
-    setEditingOriginWineId(null);
-  };
-
-  const cancelSupplierEdit = useCallback(() => {
-    if (savingQtyWineId || savingInlineWineId) return;
-    setEditingSupplierWineId(null);
-    setEditingSupplierValue('');
   }, [savingInlineWineId, savingQtyWineId]);
 
   useEffect(() => {
@@ -385,8 +470,7 @@ export function AdminArchiveTable({
       !editingNameWineId &&
       !editingAgeWineId &&
       !editingProducerWineId &&
-      !editingOriginWineId &&
-      !editingSupplierWineId
+      !editingOriginWineId
     )
       return;
     if (qtyConfirmModal || inlineSelectConfirmModal) return;
@@ -400,7 +484,6 @@ export function AdminArchiveTable({
       if (ageInlineBoxRef.current?.contains(target)) return;
       if (producerInlineBoxRef.current?.contains(target)) return;
       if (originInlineBoxRef.current?.contains(target)) return;
-      if (supplierInlineBoxRef.current?.contains(target)) return;
       swallowNextClickRef.current = true;
       cancelQtyEdit();
       cancelCategoryEdit();
@@ -408,7 +491,6 @@ export function AdminArchiveTable({
       cancelAgeEdit();
       cancelProducerEdit();
       cancelOriginEdit();
-      cancelSupplierEdit();
     };
     const handleClickCapture = (event: MouseEvent) => {
       if (!swallowNextClickRef.current) return;
@@ -433,14 +515,12 @@ export function AdminArchiveTable({
     cancelOriginEdit,
     cancelProducerEdit,
     cancelQtyEdit,
-    cancelSupplierEdit,
     editingCategoryWineId,
     editingAgeWineId,
     editingOriginWineId,
     editingNameWineId,
     editingProducerWineId,
     editingQtyWineId,
-    editingSupplierWineId,
     inlineSelectConfirmModal,
     qtyConfirmModal
   ]);
@@ -553,22 +633,6 @@ export function AdminArchiveTable({
     }
   };
 
-  const saveSupplierEdit = async (wine: Wine, nextSupplier: string) => {
-    const normalizedNext = nextSupplier.trim();
-    const current = (wine.supplier ?? '').trim();
-    if (normalizedNext === current) {
-      cancelSupplierEdit();
-      return;
-    }
-    setSavingInlineWineId(wine.id);
-    const updated = await onUpdateInlineFields(wine, { supplier: normalizedNext });
-    setSavingInlineWineId(null);
-    if (updated) {
-      setEditingSupplierWineId(null);
-      setEditingSupplierValue('');
-    }
-  };
-
   const requestInlineSelectEditConfirm = (
     wine: Wine,
     field: InlineSelectField,
@@ -593,10 +657,8 @@ export function AdminArchiveTable({
       setEditingCategoryValue(inlineSelectConfirmModal.currentValue);
     } else if (inlineSelectConfirmModal.field === 'producer') {
       setEditingProducerValue(inlineSelectConfirmModal.currentValue);
-    } else if (inlineSelectConfirmModal.field === 'origin') {
-      setEditingOriginValue(inlineSelectConfirmModal.currentValue);
     } else {
-      setEditingSupplierValue(inlineSelectConfirmModal.currentValue);
+      setEditingOriginValue(inlineSelectConfirmModal.currentValue);
     }
     setInlineSelectConfirmModal(null);
   };
@@ -613,11 +675,7 @@ export function AdminArchiveTable({
       await saveProducerEdit(modal.wine, modal.nextValue);
       return;
     }
-    if (modal.field === 'origin') {
-      await saveOriginEdit(modal.wine, modal.nextValue);
-      return;
-    }
-    await saveSupplierEdit(modal.wine, modal.nextValue);
+    await saveOriginEdit(modal.wine, modal.nextValue);
   };
 
   return (
@@ -722,28 +780,6 @@ export function AdminArchiveTable({
                   </button>
                 </div>
               </th>
-              <th>
-                <div className="archiveSortableHeaderCell">
-                  <span>FORNITORE</span>
-                  <button
-                    className="archiveSortButton"
-                    type="button"
-                    onClick={() => toggleSort('supplier')}
-                    aria-label={getSortAriaLabel('supplier')}
-                    title={
-                      sortState.key === 'supplier' && sortState.dir === 'za'
-                        ? 'Ordine Z-A'
-                        : 'Ordine A-Z'
-                    }
-                  >
-                    {sortState.key === 'supplier' && sortState.dir === 'za' ? (
-                      <ArrowDownWideNarrow size={14} strokeWidth={1.8} />
-                    ) : (
-                      <ArrowUpNarrowWide size={14} strokeWidth={1.8} />
-                    )}
-                  </button>
-                </div>
-              </th>
               <th>Acquisto</th>
               <th>Vendita</th>
               <th>Q.tà</th>
@@ -789,11 +825,11 @@ export function AdminArchiveTable({
                     <td>
                       {editingCategoryWineId === wine.id ? (
                         <div className="archiveInlineEditBox" ref={categoryInlineBoxRef}>
-                          <select
-                            className="archiveInlineCategorySelect"
+                          <InlineStickyAddSelect
                             value={editingCategoryValue}
-                            onChange={(e) => {
-                              const next = e.target.value;
+                            options={categories}
+                            addLabel="+ Aggiungi categoria..."
+                            onChange={(next) => {
                               setEditingCategoryValue(next);
                               requestInlineSelectEditConfirm(
                                 wine,
@@ -802,25 +838,24 @@ export function AdminArchiveTable({
                                 next
                               );
                             }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                cancelCategoryEdit();
-                              }
+                            onAdd={() => {
+                              onRequestAddCategory((created) => {
+                                if (!created) return;
+                                setEditingCategoryValue(created);
+                                requestInlineSelectEditConfirm(
+                                  wine,
+                                  'category',
+                                  wine.category ?? '',
+                                  created
+                                );
+                              });
                             }}
-                            aria-label={`Modifica categoria ${wine.name}`}
+                            onCancel={cancelCategoryEdit}
+                            ariaLabel={`Modifica categoria ${wine.name}`}
                             disabled={
                               savingInlineWineId === wine.id || inlineSelectConfirmModal !== null
                             }
-                            autoFocus
-                          >
-                            <option value="">—</option>
-                            {categories.map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
+                          />
                         </div>
                       ) : (
                         <button
@@ -939,11 +974,11 @@ export function AdminArchiveTable({
                     <td>
                       {editingProducerWineId === wine.id ? (
                         <div className="archiveInlineEditBox" ref={producerInlineBoxRef}>
-                          <select
-                            className="archiveInlineCategorySelect"
+                          <InlineStickyAddSelect
                             value={editingProducerValue}
-                            onChange={(e) => {
-                              const next = e.target.value;
+                            options={producers}
+                            addLabel="+ Aggiungi produttore..."
+                            onChange={(next) => {
                               setEditingProducerValue(next);
                               requestInlineSelectEditConfirm(
                                 wine,
@@ -952,25 +987,24 @@ export function AdminArchiveTable({
                                 next
                               );
                             }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                cancelProducerEdit();
-                              }
+                            onAdd={() => {
+                              onRequestAddProducer((created) => {
+                                if (!created) return;
+                                setEditingProducerValue(created);
+                                requestInlineSelectEditConfirm(
+                                  wine,
+                                  'producer',
+                                  wine.producer ?? '',
+                                  created
+                                );
+                              });
                             }}
-                            aria-label={`Modifica produttore ${wine.name}`}
+                            onCancel={cancelProducerEdit}
+                            ariaLabel={`Modifica produttore ${wine.name}`}
                             disabled={
                               savingInlineWineId === wine.id || inlineSelectConfirmModal !== null
                             }
-                            autoFocus
-                          >
-                            <option value="">—</option>
-                            {producers.map((producer) => (
-                              <option key={producer} value={producer}>
-                                {producer}
-                              </option>
-                            ))}
-                          </select>
+                          />
                         </div>
                       ) : (
                         <button
@@ -988,11 +1022,11 @@ export function AdminArchiveTable({
                     <td>
                       {editingOriginWineId === wine.id ? (
                         <div className="archiveInlineEditBox" ref={originInlineBoxRef}>
-                          <select
-                            className="archiveInlineCategorySelect"
+                          <InlineStickyAddSelect
                             value={editingOriginValue}
-                            onChange={(e) => {
-                              const next = e.target.value;
+                            options={origins}
+                            addLabel="+ Aggiungi provenienza..."
+                            onChange={(next) => {
                               setEditingOriginValue(next);
                               requestInlineSelectEditConfirm(
                                 wine,
@@ -1001,25 +1035,24 @@ export function AdminArchiveTable({
                                 next
                               );
                             }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                cancelOriginEdit();
-                              }
+                            onAdd={() => {
+                              onRequestAddOrigin((created) => {
+                                if (!created) return;
+                                setEditingOriginValue(created);
+                                requestInlineSelectEditConfirm(
+                                  wine,
+                                  'origin',
+                                  wine.origin ?? '',
+                                  created
+                                );
+                              });
                             }}
-                            aria-label={`Modifica provenienza ${wine.name}`}
+                            onCancel={cancelOriginEdit}
+                            ariaLabel={`Modifica provenienza ${wine.name}`}
                             disabled={
                               savingInlineWineId === wine.id || inlineSelectConfirmModal !== null
                             }
-                            autoFocus
-                          >
-                            <option value="">—</option>
-                            {origins.map((origin) => (
-                              <option key={origin} value={origin}>
-                                {origin}
-                              </option>
-                            ))}
-                          </select>
+                          />
                         </div>
                       ) : (
                         <button
@@ -1031,55 +1064,6 @@ export function AdminArchiveTable({
                           aria-label={`Modifica provenienza di ${wine.name}`}
                         >
                           {formatText(wine.origin)}
-                        </button>
-                      )}
-                    </td>
-                    <td>
-                      {editingSupplierWineId === wine.id ? (
-                        <div className="archiveInlineEditBox" ref={supplierInlineBoxRef}>
-                          <select
-                            className="archiveInlineCategorySelect"
-                            value={editingSupplierValue}
-                            onChange={(e) => {
-                              const next = e.target.value;
-                              setEditingSupplierValue(next);
-                              requestInlineSelectEditConfirm(
-                                wine,
-                                'supplier',
-                                wine.supplier ?? '',
-                                next
-                              );
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                cancelSupplierEdit();
-                              }
-                            }}
-                            aria-label={`Modifica fornitore ${wine.name}`}
-                            disabled={
-                              savingInlineWineId === wine.id || inlineSelectConfirmModal !== null
-                            }
-                            autoFocus
-                          >
-                            <option value="">—</option>
-                            {suppliers.map((supplier) => (
-                              <option key={supplier} value={supplier}>
-                                {supplier}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ) : (
-                        <button
-                          className={`archiveInlineCategoryButton ${
-                            hasTextValue(wine.supplier) ? '' : 'archiveInlineCategoryButtonEmpty'
-                          }`}
-                          type="button"
-                          onClick={() => beginSupplierEdit(wine)}
-                          aria-label={`Modifica fornitore di ${wine.name}`}
-                        >
-                          {formatText(wine.supplier)}
                         </button>
                       )}
                     </td>
@@ -1249,9 +1233,7 @@ export function AdminArchiveTable({
                   ? 'categoria'
                   : inlineSelectConfirmModal.field === 'producer'
                     ? 'produttore'
-                    : inlineSelectConfirmModal.field === 'origin'
-                      ? 'provenienza'
-                      : 'fornitore'
+                    : 'provenienza'
               } di "${inlineSelectConfirmModal.wine.name}" da "${
                 inlineSelectConfirmModal.currentValue || '—'
               }" a "${inlineSelectConfirmModal.nextValue || '—'}"?`

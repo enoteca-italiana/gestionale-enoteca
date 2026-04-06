@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Introduzione
 
@@ -24,6 +24,15 @@ L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su
   - PDF nativo con logo Enoteca Italiana su ogni pagina;
   - naming uniforme data italiana (`archivio_vini_13 Marzo 2026.*`).
   - export Excel/PDF disponibili come icone dockate in alto a destra in toolbar archivio.
+- archivio admin (toolbar filtri):
+  - funzione `Nota Scarico` rimossa dal runtime;
+  - dominio `Fornitore` rimosso dal runtime applicativo;
+  - pulsante `Aggiungi vino` in prima posizione a sinistra, prima del campo `Cerca...`;
+  - filtri `Cerca...`, `Categoria`, `Produttore`, `Provenienza` complementari;
+  - voce `+ Aggiungi ...` fissa in cima nei selector filtri (toolbar + inline tabella);
+  - pulsante reset filtri con stato attivo lampeggiante quando presenti filtri applicati.
+- modale vino archivio:
+  - campi prezzo (`Acquisto`, `Vendita`) con supporto affidabile a decimali/centesimi in input manuale.
 - impostazioni admin con import archivio CSV:
   - validazione tracciato colonne;
   - sostituzione totale record archivio in un’unica operazione.

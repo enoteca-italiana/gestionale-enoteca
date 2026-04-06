@@ -7,8 +7,6 @@ const LIST_RENDER_BATCH = 180;
 export function ResultsList({
   wines,
   getSessionQty,
-  getPendingNoteQty,
-  onConfirmPendingNote,
   onIncrement,
   onDecrement,
   onSelectWine,
@@ -17,8 +15,6 @@ export function ResultsList({
 }: {
   wines: Wine[];
   getSessionQty?: (wineId: string) => number;
-  getPendingNoteQty?: (wineId: string) => number;
-  onConfirmPendingNote?: (wineId: string, targetQty: number) => void;
   onIncrement?: (wineId: string) => void;
   onDecrement?: (wineId: string) => void;
   onSelectWine?: (wine: Wine) => void;
@@ -28,7 +24,6 @@ export function ResultsList({
   const showActions = interactive && sessionOpen;
   const [selectedWineId, setSelectedWineId] = useState<string | null>(null);
   const [selectedWineSnapshot, setSelectedWineSnapshot] = useState<Wine | null>(null);
-  const [selectedDraftQty, setSelectedDraftQty] = useState(0);
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
   const [visibleCount, setVisibleCount] = useState(LIST_RENDER_BATCH);
   const confirmCloseTimer = useRef<number | null>(null);
@@ -50,9 +45,6 @@ export function ResultsList({
     return null;
   }, [selectedWineId, selectedWineSnapshot, winesById]);
   const selectedQty = selectedWineId && getSessionQty ? getSessionQty(selectedWineId) : 0;
-  const selectedPendingNoteQty =
-    selectedWineId && getPendingNoteQty ? getPendingNoteQty(selectedWineId) : 0;
-  const selectedHasPendingNote = selectedPendingNoteQty > 0 && selectedQty <= 0;
 
   useEffect(() => {
     if (!selectedWineId) return;
@@ -60,19 +52,6 @@ export function ResultsList({
     if (!latest) return;
     setSelectedWineSnapshot(latest);
   }, [selectedWineId, winesById]);
-
-  useEffect(() => {
-    if (!selectedWineId) return;
-    const wine = winesById.get(selectedWineId);
-    if (!wine) return;
-    if (selectedHasPendingNote) {
-      const maxQty = Math.max(0, Math.round(wine.qty)) + selectedQty;
-      const suggested = Math.max(0, Math.round(selectedPendingNoteQty));
-      setSelectedDraftQty(Math.max(0, Math.min(maxQty, suggested)));
-      return;
-    }
-    setSelectedDraftQty(selectedQty);
-  }, [selectedHasPendingNote, selectedPendingNoteQty, selectedQty, selectedWineId, winesById]);
 
   useEffect(() => {
     setVisibleCount(LIST_RENDER_BATCH);
@@ -110,7 +89,6 @@ export function ResultsList({
     setShowConfirmMessage(false);
     setSelectedWineId(null);
     setSelectedWineSnapshot(null);
-    setSelectedDraftQty(0);
   };
 
   if (!interactive) {
@@ -173,14 +151,6 @@ export function ResultsList({
               if (!showActions) return;
               setSelectedWineId(w.id);
               setSelectedWineSnapshot(w);
-              const currentQty = getSessionQty ? getSessionQty(w.id) : 0;
-              const pendingQty = getPendingNoteQty ? getPendingNoteQty(w.id) : 0;
-              if (currentQty <= 0 && pendingQty > 0) {
-                const maxQty = Math.max(0, Math.round(w.qty));
-                setSelectedDraftQty(Math.max(0, Math.min(maxQty, Math.round(pendingQty))));
-              } else {
-                setSelectedDraftQty(currentQty);
-              }
             }}
             disabled={!showActions}
             role="listitem"
@@ -227,36 +197,23 @@ export function ResultsList({
               ×
             </button>
             <div className="modalTitle centered">{selectedWine.name}</div>
-            <div className="subtle centered mt6">
-              Scarico: {selectedHasPendingNote ? selectedDraftQty : selectedQty}
-            </div>
+            <div className="subtle centered mt6">Scarico: {selectedQty}</div>
 
             <div className="summaryEditControls mt14">
               <button
                 className="resultControlButton resultControlButtonSecondary"
                 type="button"
                 onClick={() => {
-                  if (selectedHasPendingNote) {
-                    setSelectedDraftQty((prev) => Math.max(0, prev - 1));
-                    return;
-                  }
                   onDecrement?.(selectedWine.id);
                 }}
               >
                 -
               </button>
-              <div className="resultControlValue">
-                {selectedHasPendingNote ? selectedDraftQty : selectedQty}
-              </div>
+              <div className="resultControlValue">{selectedQty}</div>
               <button
                 className="resultControlButton"
                 type="button"
                 onClick={() => {
-                  if (selectedHasPendingNote) {
-                    const maxQty = Math.max(0, Math.round(selectedWine.qty)) + selectedQty;
-                    setSelectedDraftQty((prev) => Math.min(maxQty, prev + 1));
-                    return;
-                  }
                   onIncrement?.(selectedWine.id);
                 }}
               >
@@ -270,9 +227,6 @@ export function ResultsList({
                 type="button"
                 onClick={() => {
                   if (showConfirmMessage) return;
-                  if (selectedHasPendingNote) {
-                    onConfirmPendingNote?.(selectedWine.id, selectedDraftQty);
-                  }
                   setShowConfirmMessage(true);
                   confirmCloseTimer.current = window.setTimeout(() => {
                     setShowConfirmMessage(false);

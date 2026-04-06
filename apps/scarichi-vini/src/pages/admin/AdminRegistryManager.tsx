@@ -29,23 +29,8 @@ import {
   renameManagedProducer,
   upsertManagedProducer
 } from '@/data/producerRepository';
-import {
-  deleteSupabaseSupplier,
-  listSupplierOptions,
-  listSupabaseSuppliers,
-  loadManagedSuppliers,
-  removeManagedSupplier,
-  renameManagedSupplier,
-  renameSupabaseSupplier,
-  upsertManagedSupplier,
-  upsertSupabaseSupplier
-} from '@/data/supplierRepository';
 import { normalizeOrigin } from '@/domain/normalizeOrigin';
-import {
-  normalizeWineCategory,
-  normalizeWineProducer,
-  normalizeWineSupplier
-} from '@/domain/normalizeWineText';
+import { normalizeWineCategory, normalizeWineProducer } from '@/domain/normalizeWineText';
 import { listWines, renameWineRegistryValue, type WineRegistryField } from '@/data/wineRepository';
 import type { Wine } from '@/domain/types';
 
@@ -79,49 +64,42 @@ type RegistryManagerCacheSnapshot = {
   managedCategories: string[];
   managedOrigins: string[];
   managedProducers: string[];
-  managedSuppliers: string[];
   supabaseCategories: string[];
-  supabaseSuppliers: string[];
   updatedAt: number;
 };
 
 const LIST_RENDER_BATCH = 180;
 
-const REGISTRY_KINDS: RegistryKind[] = ['category', 'producer', 'origin', 'supplier'];
+const REGISTRY_KINDS: RegistryKind[] = ['category', 'producer', 'origin'];
 
 const INITIAL_QUERY_BY_KIND: Record<RegistryKind, string> = {
   category: '',
   producer: '',
-  origin: '',
-  supplier: ''
+  origin: ''
 };
 
 const INITIAL_VISIBLE_BY_KIND: Record<RegistryKind, number> = {
   category: LIST_RENDER_BATCH,
   producer: LIST_RENDER_BATCH,
-  origin: LIST_RENDER_BATCH,
-  supplier: LIST_RENDER_BATCH
+  origin: LIST_RENDER_BATCH
 };
 
 const INITIAL_SORT_BY_KIND: Record<RegistryKind, RegistrySortDir> = {
   category: 'az',
   producer: 'az',
-  origin: 'az',
-  supplier: 'az'
+  origin: 'az'
 };
 
 const KIND_LABEL: Record<RegistryKind, string> = {
   category: 'Categorie',
   producer: 'Produttori',
-  origin: 'Provenienze',
-  supplier: 'Fornitori'
+  origin: 'Provenienze'
 };
 
 const KIND_PLACEHOLDER: Record<RegistryKind, string> = {
   category: 'Nuova categoria',
   producer: 'Nuovo produttore',
-  origin: 'Nuova provenienza',
-  supplier: 'Nuovo fornitore'
+  origin: 'Nuova provenienza'
 };
 
 const DELETED_REGISTRY_VALUE = '';
@@ -131,15 +109,13 @@ let registryManagerCache: RegistryManagerCacheSnapshot | null = null;
 function normalizeByKind(kind: RegistryKind, value: string): string {
   if (kind === 'category') return normalizeWineCategory(value);
   if (kind === 'producer') return normalizeWineProducer(value);
-  if (kind === 'origin') return normalizeOrigin(value);
-  return normalizeWineSupplier(value);
+  return normalizeOrigin(value);
 }
 
 function readFieldByKind(wine: Wine, kind: RegistryKind): string {
   if (kind === 'category') return wine.category ?? '';
   if (kind === 'producer') return wine.producer ?? '';
-  if (kind === 'origin') return wine.origin ?? '';
-  return wine.supplier ?? '';
+  return wine.origin ?? '';
 }
 
 export function AdminRegistryManager() {
@@ -147,9 +123,7 @@ export function AdminRegistryManager() {
   const [managedCategories, setManagedCategories] = useState<string[]>([]);
   const [managedOrigins, setManagedOrigins] = useState<string[]>([]);
   const [managedProducers, setManagedProducers] = useState<string[]>([]);
-  const [managedSuppliers, setManagedSuppliers] = useState<string[]>([]);
   const [supabaseCategories, setSupabaseCategories] = useState<string[]>([]);
-  const [supabaseSuppliers, setSupabaseSuppliers] = useState<string[]>([]);
   const [activeKind, setActiveKind] = useState<RegistryKind | null>(null);
   const [queryByKind, setQueryByKind] =
     useState<Record<RegistryKind, string>>(INITIAL_QUERY_BY_KIND);
@@ -176,17 +150,14 @@ export function AdminRegistryManager() {
     setManagedCategories(snapshot.managedCategories);
     setManagedOrigins(snapshot.managedOrigins);
     setManagedProducers(snapshot.managedProducers);
-    setManagedSuppliers(snapshot.managedSuppliers);
     setSupabaseCategories(snapshot.supabaseCategories);
-    setSupabaseSuppliers(snapshot.supabaseSuppliers);
   }, []);
 
   const loadManagedRegistries = useCallback(() => {
     return {
       managedCategories: loadManagedCategories(),
       managedOrigins: loadManagedOrigins(),
-      managedProducers: loadManagedProducers(),
-      managedSuppliers: loadManagedSuppliers()
+      managedProducers: loadManagedProducers()
     };
   }, []);
 
@@ -195,17 +166,11 @@ export function AdminRegistryManager() {
     setManagedCategories(nextManaged.managedCategories);
     setManagedOrigins(nextManaged.managedOrigins);
     setManagedProducers(nextManaged.managedProducers);
-    setManagedSuppliers(nextManaged.managedSuppliers);
-    const [nextSupabaseCategories, nextSupabaseSuppliers] = await Promise.all([
-      listSupabaseCategories(),
-      listSupabaseSuppliers()
-    ]);
+    const nextSupabaseCategories = await listSupabaseCategories();
     setSupabaseCategories(nextSupabaseCategories);
-    setSupabaseSuppliers(nextSupabaseSuppliers);
     return {
       ...nextManaged,
-      supabaseCategories: nextSupabaseCategories,
-      supabaseSuppliers: nextSupabaseSuppliers
+      supabaseCategories: nextSupabaseCategories
     };
   }, [loadManagedRegistries]);
 
@@ -218,8 +183,7 @@ export function AdminRegistryManager() {
       localInventory.length > 0 ||
       localManaged.managedCategories.length > 0 ||
       localManaged.managedOrigins.length > 0 ||
-      localManaged.managedProducers.length > 0 ||
-      localManaged.managedSuppliers.length > 0;
+      localManaged.managedProducers.length > 0;
 
     const hasFreshCache =
       registryManagerCache !== null &&
@@ -234,7 +198,6 @@ export function AdminRegistryManager() {
       setManagedCategories(localManaged.managedCategories);
       setManagedOrigins(localManaged.managedOrigins);
       setManagedProducers(localManaged.managedProducers);
-      setManagedSuppliers(localManaged.managedSuppliers);
       if (hasWarmLocalData) {
         setLoading(false);
       }
@@ -248,9 +211,7 @@ export function AdminRegistryManager() {
         managedCategories: remoteRegistries.managedCategories,
         managedOrigins: remoteRegistries.managedOrigins,
         managedProducers: remoteRegistries.managedProducers,
-        managedSuppliers: remoteRegistries.managedSuppliers,
         supabaseCategories: remoteRegistries.supabaseCategories,
-        supabaseSuppliers: remoteRegistries.supabaseSuppliers,
         updatedAt: Date.now()
       };
     } catch (err) {
@@ -273,9 +234,7 @@ export function AdminRegistryManager() {
       managedCategories.length === 0 &&
       managedOrigins.length === 0 &&
       managedProducers.length === 0 &&
-      managedSuppliers.length === 0 &&
-      supabaseCategories.length === 0 &&
-      supabaseSuppliers.length === 0
+      supabaseCategories.length === 0
     ) {
       return;
     }
@@ -284,9 +243,7 @@ export function AdminRegistryManager() {
       managedCategories,
       managedOrigins,
       managedProducers,
-      managedSuppliers,
       supabaseCategories,
-      supabaseSuppliers,
       updatedAt: Date.now()
     };
   }, [
@@ -294,9 +251,7 @@ export function AdminRegistryManager() {
     managedCategories,
     managedOrigins,
     managedProducers,
-    managedSuppliers,
-    supabaseCategories,
-    supabaseSuppliers
+    supabaseCategories
   ]);
 
   const categories = useMemo(
@@ -308,28 +263,22 @@ export function AdminRegistryManager() {
     [managedProducers, wines]
   );
   const origins = useMemo(() => listOriginOptions(wines, managedOrigins), [managedOrigins, wines]);
-  const suppliers = useMemo(
-    () => listSupplierOptions(wines, [...managedSuppliers, ...supabaseSuppliers]),
-    [managedSuppliers, supabaseSuppliers, wines]
-  );
 
   const optionsByKind = useMemo(
     () =>
       ({
         category: categories,
         producer: producers,
-        origin: origins,
-        supplier: suppliers
+        origin: origins
       }) satisfies Record<RegistryKind, string[]>,
-    [categories, origins, producers, suppliers]
+    [categories, origins, producers]
   );
 
   const usageByKind = useMemo(() => {
     const output: Record<RegistryKind, Map<string, number>> = {
       category: new Map(),
       producer: new Map(),
-      origin: new Map(),
-      supplier: new Map()
+      origin: new Map()
     };
     for (const wine of wines) {
       for (const kind of REGISTRY_KINDS) {
@@ -455,11 +404,8 @@ export function AdminRegistryManager() {
         await upsertSupabaseCategory(normalized);
       } else if (kind === 'producer') {
         upsertManagedProducer(normalized, optionsByKind.producer, loadManagedProducers());
-      } else if (kind === 'origin') {
-        upsertManagedOrigin(normalized, optionsByKind.origin, loadManagedOrigins());
       } else {
-        upsertManagedSupplier(normalized, optionsByKind.supplier, loadManagedSuppliers());
-        await upsertSupabaseSupplier(normalized);
+        upsertManagedOrigin(normalized, optionsByKind.origin, loadManagedOrigins());
       }
       await refreshRegistries();
       setCreating(null);
@@ -498,11 +444,8 @@ export function AdminRegistryManager() {
         await renameSupabaseCategory(normalizedOriginal, normalizedDraft);
       } else if (editing.kind === 'producer') {
         renameManagedProducer(normalizedOriginal, normalizedDraft, loadManagedProducers());
-      } else if (editing.kind === 'origin') {
-        renameManagedOrigin(normalizedOriginal, normalizedDraft, loadManagedOrigins());
       } else {
-        renameManagedSupplier(normalizedOriginal, normalizedDraft, loadManagedSuppliers());
-        await renameSupabaseSupplier(normalizedOriginal, normalizedDraft);
+        renameManagedOrigin(normalizedOriginal, normalizedDraft, loadManagedOrigins());
       }
 
       await refreshRegistries();
@@ -561,11 +504,8 @@ export function AdminRegistryManager() {
         await deleteSupabaseCategory(deleteTarget.value);
       } else if (deleteTarget.kind === 'producer') {
         removeManagedProducer(deleteTarget.value, loadManagedProducers());
-      } else if (deleteTarget.kind === 'origin') {
-        removeManagedOrigin(deleteTarget.value, loadManagedOrigins());
       } else {
-        removeManagedSupplier(deleteTarget.value, loadManagedSuppliers());
-        await deleteSupabaseSupplier(deleteTarget.value);
+        removeManagedOrigin(deleteTarget.value, loadManagedOrigins());
       }
 
       await refreshRegistries();

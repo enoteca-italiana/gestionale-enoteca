@@ -3,8 +3,7 @@ import { normalizeOrigin } from '@/domain/normalizeOrigin';
 import {
   normalizeWineCategory,
   normalizeWineName,
-  normalizeWineProducer,
-  normalizeWineSupplier
+  normalizeWineProducer
 } from '@/domain/normalizeWineText';
 
 describe('normalizeWineText', () => {
@@ -14,8 +13,7 @@ describe('normalizeWineText', () => {
     expect(normalizeOrigin('  Languedoc  france ')).toBe('LANGUEDOC FRANCE');
   });
 
-  it('forces only first letter uppercase for produttore e fornitore', () => {
+  it('forces only first letter uppercase for produttore', () => {
     expect(normalizeWineProducer('  hUgEL  ')).toBe('HUgEL');
-    expect(normalizeWineSupplier("  d'angelo  import  ")).toBe("D'angelo import");
   });
 });

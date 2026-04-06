@@ -8,8 +8,7 @@ type Props = {
   busy: boolean;
   filteredCount: number;
   categories: string[];
-  suppliers: string[];
-  onConfirm: (payload: { category?: string; supplier?: string }) => Promise<void>;
+  onConfirm: (payload: { category?: string }) => Promise<void>;
   onCancel: () => void;
 };
 
@@ -18,13 +17,11 @@ export function BulkEditFilteredModal({
   busy,
   filteredCount,
   categories,
-  suppliers,
   onConfirm,
   onCancel
 }: Props) {
   const [targetAllFiltered, setTargetAllFiltered] = useState(true);
   const [categoryValue, setCategoryValue] = useState('');
-  const [supplierValue, setSupplierValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
@@ -35,7 +32,6 @@ export function BulkEditFilteredModal({
     if (!open) return;
     setTargetAllFiltered(true);
     setCategoryValue('');
-    setSupplierValue('');
     setError(null);
     setConfirmOpen(false);
     setPinOpen(false);
@@ -46,8 +42,8 @@ export function BulkEditFilteredModal({
   const canSubmit = useMemo(() => {
     if (!targetAllFiltered) return false;
     if (filteredCount <= 0) return false;
-    return categoryValue.trim().length > 0 || supplierValue.trim().length > 0;
-  }, [categoryValue, filteredCount, supplierValue, targetAllFiltered]);
+    return categoryValue.trim().length > 0;
+  }, [categoryValue, filteredCount, targetAllFiltered]);
 
   if (!open) return null;
 
@@ -55,8 +51,7 @@ export function BulkEditFilteredModal({
     if (!canSubmit || busy) return false;
     try {
       await onConfirm({
-        category: categoryValue.trim() || undefined,
-        supplier: supplierValue.trim() || undefined
+        category: categoryValue.trim() || undefined
       });
       return true;
     } catch (err) {
@@ -122,27 +117,6 @@ export function BulkEditFilteredModal({
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="mt12">
-          <label className="modalLabel">
-            Fornitore da applicare
-            <select
-              className="input adminInput mt4"
-              value={supplierValue}
-              onChange={(event) => {
-                setSupplierValue(event.target.value);
-                if (error) setError(null);
-              }}
-            >
-              <option value="">Non modificare fornitore</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
                 </option>
               ))}
             </select>

@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Accesso
 
@@ -222,13 +222,13 @@ In `AdminSettings.tsx`:
 - seconda conferma con PIN admin;
 - cancella solo l'archivio vini (`public.wines`);
 - storico sessioni non modificato.
-- pulisce anche registry/cache filtri locali (`categories`, `origins`, `suppliers`, `producers`) per evitare residui post-reset.
+- pulisce anche registry/cache filtri locali (`categories`, `origins`, `producers`) per evitare residui post-reset.
 
 Note tecniche:
 
 - il reset archivio richiede schema Supabase allineato per indipendenza storico/archivio;
 - `discharge_session_items.wine_id` deve essere nullable con FK `ON DELETE SET NULL`;
-- i dettagli storico usano anche snapshot campi vino (`wine_name`, `wine_age`, `wine_producer`, `wine_origin`, `wine_category`, `wine_supplier`) per restare leggibili anche dopo rimozione archivio.
+- i dettagli storico usano anche snapshot campi vino (`wine_name`, `wine_age`, `wine_producer`, `wine_origin`, `wine_category`) per restare leggibili anche dopo rimozione archivio.
 
 ## Archivio vini (`/admina`)
 
@@ -245,31 +245,36 @@ Funzioni principali:
 
 - ricerca e filtri (testo, categoria, soglia/esauriti)
 - filtri su singola riga desktop con box statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
+- ordine toolbar: `Aggiungi vino` in prima posizione a sinistra, poi campo `Cerca...`, poi filtri/comandi.
 - filtri con creazione rapida valori:
   - `+ Aggiungi categoria…`
   - `+ Aggiungi produttore…`
   - `+ Aggiungi provenienza…`
-  - `+ Aggiungi fornitore…`
-  - nelle tendine dove presente, la voce `+ Aggiungi...` è la prima opzione visibile.
+  - nei selector (toolbar + inline tabella), la voce `+ Aggiungi...` resta fissa in cima mentre la lista scorre.
   - dopo creazione valore da una tendina filtro, il filtro resta su default `Tutte/Tutti` (`all`).
-- pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra `Esauriti` e `Aggiungi vino`
+- pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra box statistiche e pulsante AI
   - resetta tutti i filtri allo stato default (`Totale` + select su `Tutti` + ricerca vuota);
   - resetta anche stati tabella (ordinamenti colonne verdi e stati inline aperti).
+  - con filtri attivi cambia colore e lampeggia; dopo reset torna normale.
+- filtri complementari:
+  - `Cerca...`, `Categoria`, `Produttore`, `Provenienza` si restringono reciprocamente.
 - CRUD vini
-- categoria/provenienza/fornitore da liste gestite
+- categoria/produttore/provenienza da liste gestite
 - policy campi testo vino (anche su import CSV):
   - `Categoria`, `Nome`, `Provenienza` sempre in **MAIUSCOLO**
-  - `Produttore`, `Fornitore` sempre con **iniziale maiuscola**
+  - `Produttore` sempre con **iniziale maiuscola**
 - tabella con header sticky, righe alternate e separatori verticali
-- ordinamento `A-Z / Z-A` su `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+- ordinamento `A-Z / Z-A` su `Categoria`, `Nome`, `Produttore`, `Provenienza`
 - placeholder celle vuote:
-  - `—` centrato solo quando valore assente in `Categoria`, `Produttore`, `Provenienza`, `Fornitore`;
+  - `—` centrato solo quando valore assente in `Categoria`, `Produttore`, `Provenienza`;
   - valore presente sempre allineato a sinistra.
 - modifica massiva su filtri attivi (tabella):
   - apertura con click destro;
   - applicazione su tutti i vini filtrati;
-  - campi supportati: `Categoria`, `Fornitore` (anche insieme);
+  - campi supportati: `Categoria`;
   - conferma protetta con doppio step (`Conferma` + `PIN admin`).
+- modale aggiungi/modifica vino:
+  - campi `Acquisto`/`Vendita` gestiscono correttamente decimali e centesimi in digitazione (`virgola`/`punto`), con parsing numerico al salvataggio.
 - performance su dataset grandi:
   - route `/admina` lazy-loaded
   - tabella con rendering progressivo righe (`Carica altre righe`)
@@ -281,46 +286,6 @@ Funzioni principali:
   - PDF con logo in alto e numerazione pagine `1/N`.
 - notifiche spot:
   - rimossi toast inline non bloccanti in archivio (es. `Nome aggiornato`), mantenendo feedback errori.
-
-## Nota Scarico (Archivio)
-
-File principali:
-
-- `pages/admina/components/DischargeNoteDrawer.tsx`
-- `data/dischargeNoteRepository.ts`
-
-Comportamento operativo:
-
-- pulsante `Nota` in toolbar archivio:
-  - è il primo controllo nella riga filtri;
-  - diventa verde (testo bianco) quando esiste nota con contenuto in stato `draft` o `ready`;
-- drawer laterale sx rapido:
-  - titolo `Nota Scarico` + data (`16 Marzo 2026`);
-  - input ricerca unificato `Cerca vino...`;
-  - ricerca per `nome`, `produttore`, `fornitore`, `provenienza`;
-  - vini già presenti nella nota non vengono riproposti nel box risultati;
-  - lista nota con selector quantità `1..99` e pulsante cestino;
-  - azioni in footer: `Svuota nota`, `Conferma nota scarico`;
-  - sezione in basso `Ultime note inviate` (max 3) con azioni:
-    - `Reinvia` (rimette la nota pronta per Home);
-    - `Elimina` (rimozione dallo storico).
-
-Stati nota:
-
-- `draft`: bozza in archivio;
-- `ready`: nota confermata, pronta per Home;
-- `in_progress`: nota caricata in Home e ancora non conclusa;
-- `completed`: nota chiusa dopo submit sessione Home.
-
-Vincoli:
-
-- conferma nota con modale dedicato;
-- dopo conferma nota, il drawer si resetta e resta subito pronto a una nuova bozza.
-
-Persistenza:
-
-- modalità strict Supabase (nessun fallback locale nota):
-  - RPC usate: `save_discharge_note_draft`, `confirm_discharge_note_draft`, `start_ready_discharge_note`, `complete_in_progress_discharge_note`, `get_discharge_note_state`.
 
 Regole business:
 

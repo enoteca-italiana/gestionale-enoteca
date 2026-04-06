@@ -6,14 +6,12 @@ import { detachDischargeItemsFromWines } from '@/data/dischargeRepository';
 import { syncWineUpsert, syncWineDelete } from '@/integrations/googleSheetsSync';
 import { clearManagedCategories, clearSupabaseCategories } from '@/data/categoryRepository';
 import { clearManagedOrigins } from '@/data/originRepository';
-import { clearManagedSuppliers, clearSupabaseSuppliers } from '@/data/supplierRepository';
 import { clearManagedProducers } from '@/data/producerRepository';
 import { normalizeOrigin } from '@/domain/normalizeOrigin';
 import {
   normalizeWineCategory,
   normalizeWineName,
-  normalizeWineProducer,
-  normalizeWineSupplier
+  normalizeWineProducer
 } from '@/domain/normalizeWineText';
 
 type WineRow = {
@@ -23,7 +21,6 @@ type WineRow = {
   age?: string | null;
   producer: string;
   origin: string;
-  supplier?: string | null;
   threshold?: number | null;
   purchase_price?: number | null;
   sale_price?: number | null;
@@ -34,13 +31,13 @@ type WineRow = {
   notes?: string | null;
 };
 
-export type WineRegistryField = 'category' | 'producer' | 'origin' | 'supplier';
+export type WineRegistryField = 'category' | 'producer' | 'origin';
 
 // Keep page size aligned to common Supabase API max rows (1000)
 // so pagination never stops early on capped responses.
 const WINES_PAGE_SIZE = 1000;
 const WINE_SELECT_COLUMNS =
-  'id,category,name,age,producer,origin,supplier,threshold,purchase_price,sale_price,vintage,qty,warehouse,margin,notes';
+  'id,category,name,age,producer,origin,threshold,purchase_price,sale_price,vintage,qty,warehouse,margin,notes';
 const WINE_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 let listWinesInFlight: Promise<Wine[]> | null = null;
 let listWinesCache: Wine[] | null = null;
@@ -95,7 +92,6 @@ function toWine(row: WineRow): Wine {
     age: row.age ?? undefined,
     producer: normalizeWineProducer(row.producer),
     origin: normalizeOrigin(row.origin),
-    supplier: row.supplier ? normalizeWineSupplier(row.supplier) : undefined,
     threshold: normalizeThreshold(row.threshold),
     purchasePrice: purchase,
     salePrice: sale,
@@ -124,7 +120,6 @@ function toRowPayload(wine: Wine) {
     age: wine.age ?? null,
     producer: normalizeWineProducer(wine.producer),
     origin: normalizeOrigin(wine.origin),
-    supplier: wine.supplier ? normalizeWineSupplier(wine.supplier) : null,
     threshold: normalizeThreshold(wine.threshold) ?? null,
     purchase_price: wine.purchasePrice ?? null,
     sale_price: wine.salePrice ?? null,
@@ -192,30 +187,26 @@ function normalizeWineTextFields(wines: Wine[]): Wine[] {
     category: wine.category ? normalizeWineCategory(wine.category) : undefined,
     name: normalizeWineName(wine.name),
     producer: normalizeWineProducer(wine.producer),
-    origin: normalizeOrigin(wine.origin),
-    supplier: wine.supplier ? normalizeWineSupplier(wine.supplier) : undefined
+    origin: normalizeOrigin(wine.origin)
   }));
 }
 
 function normalizeRegistryValue(field: WineRegistryField, rawValue: string): string {
   if (field === 'category') return normalizeWineCategory(rawValue);
   if (field === 'producer') return normalizeWineProducer(rawValue);
-  if (field === 'origin') return normalizeOrigin(rawValue);
-  return normalizeWineSupplier(rawValue);
+  return normalizeOrigin(rawValue);
 }
 
 function readWineFieldValue(wine: Wine, field: WineRegistryField): string {
   if (field === 'category') return wine.category ?? '';
   if (field === 'producer') return wine.producer ?? '';
-  if (field === 'origin') return wine.origin ?? '';
-  return wine.supplier ?? '';
+  return wine.origin ?? '';
 }
 
 function writeWineFieldValue(wine: Wine, field: WineRegistryField, value: string): Wine {
   if (field === 'category') return { ...wine, category: value || undefined };
   if (field === 'producer') return { ...wine, producer: value };
-  if (field === 'origin') return { ...wine, origin: value };
-  return { ...wine, supplier: value || undefined };
+  return { ...wine, origin: value };
 }
 
 function escapeLikePattern(value: string): string {
@@ -234,7 +225,6 @@ function sameWine(a: Wine, b: Wine): boolean {
     a.age === b.age &&
     a.producer === b.producer &&
     a.origin === b.origin &&
-    a.supplier === b.supplier &&
     a.threshold === b.threshold &&
     a.purchasePrice === b.purchasePrice &&
     a.salePrice === b.salePrice &&
@@ -398,7 +388,6 @@ export type WineInput = {
   age?: string;
   producer: string;
   origin: string;
-  supplier?: string;
   threshold?: number;
   purchasePrice?: number;
   salePrice?: number;
@@ -425,7 +414,6 @@ function normalizeInput(input: WineInput): Wine {
     age: input.age?.trim() || undefined,
     producer: normalizeWineProducer(input.producer),
     origin: normalizeOrigin(input.origin),
-    supplier: input.supplier?.trim() ? normalizeWineSupplier(input.supplier) : undefined,
     threshold,
     purchasePrice: hasPurchase ? purchasePrice : undefined,
     salePrice: hasSale ? salePrice : undefined,
@@ -549,7 +537,6 @@ export async function replaceAllWines(inputRows: ArchiveCsvWineInput[]): Promise
       age: row.age,
       producer: row.producer,
       origin: row.origin,
-      supplier: row.supplier ?? '',
       threshold: row.threshold,
       purchasePrice: row.purchasePrice,
       salePrice: row.salePrice,
@@ -594,7 +581,6 @@ export async function appendWines(inputRows: ArchiveCsvWineInput[]): Promise<Win
       age: row.age,
       producer: row.producer,
       origin: row.origin,
-      supplier: row.supplier ?? '',
       threshold: row.threshold,
       purchasePrice: row.purchasePrice,
       salePrice: row.salePrice,
@@ -689,10 +675,9 @@ export async function clearWineArchive(): Promise<number> {
   clearManagedCategories();
   clearManagedOrigins();
   clearManagedProducers();
-  clearManagedSuppliers();
 
   if (supabase) {
-    await Promise.all([clearSupabaseCategories(), clearSupabaseSuppliers()]);
+    await clearSupabaseCategories();
   }
 
   persistAndCacheInventory([]);

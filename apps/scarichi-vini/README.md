@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Quick Start
 
@@ -61,14 +61,16 @@ Comandi utili:
     - cache in-memory a TTL breve per riaperture rapide;
     - eliminazione voce: i vini collegati mantengono il record ma il campo viene svuotato (render `-`).
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
-  - colonne estese (categoria, nome, anno, produttore, provenienza, fornitore, prezzi, q.tà, azioni)
+  - colonne estese (categoria, nome, anno, produttore, provenienza, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)
-  - pulsante reset filtri tondo (tra `Esauriti` e `Aggiungi vino`), stesso diametro del pulsante AI:
+  - pulsante `Aggiungi vino` in prima posizione a sinistra, prima del box `Cerca...`
+  - pulsante reset filtri tondo (tra box statistiche e pulsante AI), stesso diametro del pulsante AI:
     - reset completo filtri a default (`Totale` + tutti i select su `Tutti` + ricerca vuota)
     - stile: sfondo bianco, bordo grigio leggero, icona frecce viola
   - il box statistiche sostituisce il vecchio filtro `Tutte le giacenze`
-  - filtri archivio (`Categoria`, `Produttore`, `Provenienza`, `Fornitore`) con shortcut `+ Aggiungi ...` direttamente nelle tendine
-    - la voce `+ Aggiungi ...` è la prima opzione visibile dove presente
+  - filtri archivio (`Cerca...`, `Categoria`, `Produttore`, `Provenienza`) complementari tra loro
+  - filtri archivio (`Categoria`, `Produttore`, `Provenienza`) con shortcut `+ Aggiungi ...` direttamente nelle tendine
+    - la voce `+ Aggiungi ...` è sempre fissa in cima (toolbar + inline tabella), anche durante lo scroll opzioni
   - pulsanti statistiche con stato selezionato a colori invertiti (testo bianco)
   - `Soglia` in tono giallo/ambra, `Esauriti` in tono rosso
   - q.tà `0` evidenziata in rosso acceso
@@ -79,34 +81,30 @@ Comandi utili:
   - note consultabili da icona dedicata in `Azioni`
   - categoria selezionabile solo da lista gestita, con `+ Aggiungi categoria…` e suggerimenti anti-duplicato
   - provenienza selezionabile solo da lista gestita, con `+ Aggiungi provenienza…` e suggerimenti anti-duplicato
-  - fornitore selezionabile solo da lista gestita, con `+ Aggiungi fornitore…` e suggerimenti anti-duplicato
   - allineamento registry da Supabase:
     - categorie lette da `public.categories`
-    - fornitori letti da `public.suppliers`
   - colonna `Q.tà` con edit inline:
     - click sul valore per entrare in edit
     - input solo numerico da tastiera (senza selector)
     - conferma via modale su tasto `Invio`
-  - ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`, `Fornitore`
+  - ordinamento `A-Z / Z-A` su colonne `Categoria`, `Nome`, `Produttore`, `Provenienza`
   - modifica massiva su risultati filtrati:
     - apertura da click destro tabella (solo con filtri attivi e risultati presenti)
-    - campi supportati: `Categoria`, `Fornitore` (applicabili anche insieme)
+    - campi supportati: `Categoria`
     - sicurezza: `Conferma` + `PIN admin` prima dell'applicazione
-  - Nota Scarico (desktop, drawer laterale sinistro):
-    - pulsante `Nota` in toolbar (verde quando esiste una nota con vini in `draft/ready/in_progress`);
-    - bozza nota con ricerca vino (`Cerca vino...`) e lista vini aggiunti con q.tà (`1..99`) + cestino;
-    - `Conferma nota scarico` con modale di conferma;
-    - dopo conferma bozza, la Home mostra CTA verde `Avvia scarico da nota`;
-    - avvio da Home: nota passa a `in_progress`;
-    - submit sessione Home completato: nota chiusa (`completed`);
-    - se nota `in_progress`, in Archivio appare avviso `Nota scarico precedente ancora da concludere in Home`.
+  - funzionalità `Nota Scarico` rimossa dal runtime Archivio/Home per semplificare il flusso operativo.
   - calcoli automatici:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
   - standard rendering info sotto al nome vino: `Produttore • Anno(se presente) • Provenienza`
   - policy campi testuali vino (input, CSV, visualizzazione, export):
     - `Categoria`, `Nome`, `Provenienza` sempre in **MAIUSCOLO**
-    - `Produttore`, `Fornitore` sempre con **iniziale maiuscola**
+    - `Produttore` sempre con **iniziale maiuscola**
+  - modale aggiungi/modifica vino:
+    - `Acquisto`/`Vendita` supportano decimali e centesimi in digitazione (`virgola`/`punto`) con parsing numerico al salvataggio
+  - pulsante reset filtri:
+    - con filtri attivi cambia colore e lampeggia;
+    - dopo reset torna allo stato normale
   - export archivio: Excel/PDF con icone dockate in alto a destra (solo icone)
   - performance avanzata (dataset grandi):
     - route lazy-loaded (`/`, `/impostazioni`, `/admin`, `/admina`) per startup più rapido
@@ -166,9 +164,6 @@ Comandi utili:
   - model pre-selezionato in UI opzionale: `VITE_OPENAI_MODEL`
   - `VITE_OPENAI_API_KEY` non è più usata (chiave sempre server-side).
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
-- Nota Scarico usa Supabase in modalità **strict** (niente fallback locale):
-  - tabelle: `public.discharge_notes`, `public.discharge_note_items`
-  - RPC: `save_discharge_note_draft`, `confirm_discharge_note_draft`, `start_ready_discharge_note`, `complete_in_progress_discharge_note`, `get_discharge_note_state`
 - Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
 - Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 - Script SQL policy casing campi vino: `scripts/sql/supabase_text_casing_policy.sql`.

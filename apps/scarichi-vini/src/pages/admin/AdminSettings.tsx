@@ -315,9 +315,7 @@ export function AdminSettings({
           <div className="modalCard adminSettingsModalCard">
             <div className="modalTitle centered">Richiesta PIN</div>
             <div className="adminPinToggleBlock">
-              <div className="modalDescription centered">
-                Richiesta PIN all&apos;avvio App.
-              </div>
+              <div className="modalDescription centered">Richiesta PIN all&apos;avvio App.</div>
               <div className="adminPinSegmented" role="group" aria-label="Richiesta PIN avvio app">
                 <button
                   className={`adminPinSegment adminPinSegmentOn ${appPinRequiredOnStart ? 'isActive' : ''}`}
@@ -344,9 +342,7 @@ export function AdminSettings({
               </div>
             </div>
             <div className="adminPinToggleBlock">
-              <div className="modalDescription centered">
-                Richiesta PIN pagina IMPOSTAZIONI.
-              </div>
+              <div className="modalDescription centered">Richiesta PIN pagina IMPOSTAZIONI.</div>
               <div
                 className="adminPinSegmented"
                 role="group"

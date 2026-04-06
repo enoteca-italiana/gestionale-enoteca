@@ -1,6 +1,47 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **27/03/2026 15:52 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+
+## Ultimi aggiornamenti (07/04/2026 - wave 22, hardening archivio filtri + rimozione fornitore)
+
+- Rimozione completa dominio `Fornitore` dal runtime:
+  - eliminata logica `supplier` da tipi, repository, parsing CSV, filtri, UI archivio, bulk edit e AI analytics;
+  - eliminato file obsoleto `apps/scarichi-vini/src/data/supplierRepository.ts`;
+  - allineata gestione registry su soli domini `Categoria`, `Produttore`, `Provenienza`.
+- Archivio `/admina`:
+  - filtri top convertiti a selector custom con voce `+ Aggiungi ...` sempre fissa in cima;
+  - stessa logica sticky applicata ai selector inline tabella (`Categoria`, `Produttore`, `Provenienza`);
+  - filtri resi complementari:
+    - `Cerca...`, `Categoria`, `Produttore`, `Provenienza` si restringono reciprocamente;
+  - placeholder ricerca aggiornato da `Cerca vino...` a `Cerca...`;
+  - reset filtri con stato attivo: colore evidenziato + lampeggio rapido quando sono presenti filtri applicati.
+- Modale aggiunta/modifica vino:
+  - `Acquisto`/`Vendita` supportano decimali e centesimi in digitazione (`virgola`/`punto`) con parsing numerico al salvataggio.
+- Quality gate completo post-interventi:
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
+  - app verificata attiva su `5001` durante le modifiche.
+
+## Ultimi aggiornamenti (06/04/2026 - wave 21, rimozione Nota + stabilizzazione enterprise)
+
+- Funzione `Nota Scarico` rimossa dal runtime frontend:
+  - eliminati componenti/repository/eventi dedicati (`DischargeNoteDrawer`, `dischargeNoteRepository`, `dischargeNote`);
+  - rimossi collegamenti in Archivio, Home e flush coda offline.
+- Toolbar archivio riallineata:
+  - rimosso pulsante `Nota`;
+  - spazio extra attribuito a `Cerca vino...`;
+  - `Aggiungi vino` spostato in prima posizione a sinistra prima della ricerca.
+- Pulizia e coerenza codice:
+  - rimosso CSS obsoleto collegato al drawer `Nota`;
+  - allineati riferimenti documentali runtime/Supabase al nuovo stato senza `Nota`.
+- Quality gate sessione (post-interventi):
+  - `npm run format:check` ✅
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (27/03/2026 - wave 20, hardening Cloudflare + hygiene enterprise)
 

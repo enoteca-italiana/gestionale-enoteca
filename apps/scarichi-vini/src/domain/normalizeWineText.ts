@@ -26,7 +26,3 @@ export function normalizeWineName(value: string) {
 export function normalizeWineProducer(value: string) {
   return normalizeInitialUppercaseText(value);
 }
-
-export function normalizeWineSupplier(value: string) {
-  return normalizeInitialUppercaseText(value);
-}

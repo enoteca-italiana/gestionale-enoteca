@@ -7,7 +7,6 @@ export type Wine = {
   age?: string;
   producer: string;
   origin: string;
-  supplier?: string;
   threshold?: number;
   purchasePrice?: number;
   salePrice?: number;

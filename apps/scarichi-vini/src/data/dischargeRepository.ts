@@ -3,8 +3,7 @@ import { normalizeOrigin } from '@/domain/normalizeOrigin';
 import {
   normalizeWineCategory,
   normalizeWineName,
-  normalizeWineProducer,
-  normalizeWineSupplier
+  normalizeWineProducer
 } from '@/domain/normalizeWineText';
 
 export type DischargeStatus = 'pending' | 'submitted' | 'cancelled';
@@ -34,14 +33,13 @@ export type DischargeSessionItemDetail = {
   producer?: string;
   origin?: string;
   category?: string;
-  supplier?: string;
   qty: number;
 };
 
 const SESSION_ITEMS_SELECT_WITH_SNAPSHOT =
-  'session_id, wine_id, qty, wine_name, wine_age, wine_producer, wine_origin, wine_category, wine_supplier, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category, supplier)';
+  'session_id, wine_id, qty, wine_name, wine_age, wine_producer, wine_origin, wine_category, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category)';
 const SESSION_ITEMS_SELECT_LEGACY =
-  'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category, supplier)';
+  'session_id, wine_id, qty, discharge_sessions!inner(status, created_at, submitted_at), wines(name, age, producer, origin, category)';
 const DEFAULT_PAGE_SIZE = 1000;
 const MAX_PAGE_SIZE = 1000;
 const DEFAULT_MAX_ROWS = 50_000;
@@ -78,7 +76,6 @@ type SessionItemRow = {
   wine_producer?: string | null;
   wine_origin?: string | null;
   wine_category?: string | null;
-  wine_supplier?: string | null;
   discharge_sessions:
     | {
         status: DischargeStatus;
@@ -98,7 +95,6 @@ type SessionItemRow = {
         producer?: string | null;
         origin?: string | null;
         category?: string | null;
-        supplier?: string | null;
       }
     | Array<{
         name?: string | null;
@@ -106,7 +102,6 @@ type SessionItemRow = {
         producer?: string | null;
         origin?: string | null;
         category?: string | null;
-        supplier?: string | null;
       }>
     | null;
 };
@@ -123,7 +118,6 @@ type WineSnapshotRow = {
   producer?: string | null;
   origin?: string | null;
   category?: string | null;
-  supplier?: string | null;
 };
 
 export async function listDischargeSessions(
@@ -219,7 +213,7 @@ export async function createDischargeSession(input: {
   if (wineIds.length > 0) {
     const { data: snapshotRows, error: snapshotError } = await client
       .from('wines')
-      .select('id, name, age, producer, origin, category, supplier')
+      .select('id, name, age, producer, origin, category')
       .in('id', wineIds);
     if (snapshotError) throw snapshotError;
     snapshotsById = new Map((snapshotRows ?? []).map((row) => [row.id, row] as const));
@@ -235,8 +229,7 @@ export async function createDischargeSession(input: {
       wine_age: snap?.age ?? null,
       wine_producer: snap?.producer ? normalizeWineProducer(snap.producer) : null,
       wine_origin: snap?.origin ? normalizeOrigin(snap.origin) : null,
-      wine_category: snap?.category ? normalizeWineCategory(snap.category) : null,
-      wine_supplier: snap?.supplier ? normalizeWineSupplier(snap.supplier) : null
+      wine_category: snap?.category ? normalizeWineCategory(snap.category) : null
     };
   });
 
@@ -390,11 +383,6 @@ function mapSessionItemRow(row: SessionItemRow): DischargeSessionItemDetail {
       ? normalizeWineCategory(row.wine_category)
       : wine?.category
         ? normalizeWineCategory(wine.category)
-        : undefined,
-    supplier: row.wine_supplier
-      ? normalizeWineSupplier(row.wine_supplier)
-      : wine?.supplier
-        ? normalizeWineSupplier(wine.supplier)
         : undefined,
     qty: Math.max(0, Number(row.qty ?? 0))
   };

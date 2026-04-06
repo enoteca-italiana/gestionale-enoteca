@@ -1,6 +1,6 @@
 # Text Casing Policy (obbligatoria)
 
-Ultimo aggiornamento: **16/03/2026 16:35 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Regole vincolanti
 
@@ -8,7 +8,7 @@ Queste regole valgono sempre in tutta l'app (input, import CSV, visualizzazione,
 
 1. `categoria`, `nome`, `provenienza`:
    - sempre in **MAIUSCOLO**.
-2. `produttore`, `fornitore`:
+2. `produttore`:
    - sempre con **iniziale maiuscola** (stile `Initcap`).
 
 ## Punti di enforcement nel codice
@@ -18,7 +18,6 @@ Queste regole valgono sempre in tutta l'app (input, import CSV, visualizzazione,
     - `normalizeWineCategory`
     - `normalizeWineName`
     - `normalizeWineProducer`
-    - `normalizeWineSupplier`
 - `src/domain/normalizeOrigin.ts`
   - provenienza sempre uppercase.
 - `src/data/wineRepository.ts`
@@ -27,10 +26,8 @@ Queste regole valgono sempre in tutta l'app (input, import CSV, visualizzazione,
   - normalizzazione durante `parseArchiveCsv` e durante export CSV.
 - `src/data/categoryRepository.ts`
   - categorie gestite sempre uppercase.
-- `src/data/supplierRepository.ts`
-  - fornitori gestiti sempre initcap.
 - `src/data/dischargeRepository.ts`
-  - snapshot sessioni (`wine_name`, `wine_category`, `wine_producer`, `wine_origin`, `wine_supplier`) coerenti con policy.
+  - snapshot sessioni (`wine_name`, `wine_category`, `wine_producer`, `wine_origin`) coerenti con policy.
 - `src/domain/formatWineInfoLine.ts`
   - riga informativa sempre renderizzata con policy corretta.
 
@@ -44,14 +41,14 @@ Cosa fa:
 
 - applica trigger `BEFORE INSERT/UPDATE` su `wines`;
 - normalizza retroattivamente i record in `wines`;
-- applica trigger coerenti anche su registry (`categories`, `suppliers`, `origins`) se presenti.
+- applica trigger coerenti anche su registry (`categories`, `origins`, `producers`) se presenti.
 
 ## Regola operativa per script SQL futuri
 
 Quando vengono preparati script SQL di insert/update manuali, usare sempre questa convenzione:
 
 - `UPPER(...)` per `categoria`, `nome`, `provenienza`;
-- `INITCAP(LOWER(...))` per `produttore`, `fornitore`;
+- `INITCAP(LOWER(...))` per `produttore`;
 - `TRIM + collapse spazi` prima della trasformazione.
 
 In caso di dubbi, fare riferimento a questo file e allo script SQL versionato sopra.
@@ -60,13 +57,12 @@ Template SQL (insert manuale su `public.wines`):
 
 ```sql
 insert into public.wines (
-  category, name, producer, origin, supplier, qty
+  category, name, producer, origin, qty
 ) values (
   upper(regexp_replace(trim(:category), '\s+', ' ', 'g')),
   upper(regexp_replace(trim(:name), '\s+', ' ', 'g')),
   initcap(lower(regexp_replace(trim(:producer), '\s+', ' ', 'g'))),
   upper(regexp_replace(trim(:origin), '\s+', ' ', 'g')),
-  initcap(lower(regexp_replace(trim(:supplier), '\s+', ' ', 'g'))),
   :qty
 );
 ```

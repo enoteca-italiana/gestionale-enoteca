@@ -1,6 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
 import type { Wine } from '@/domain/types';
-import type { Filters, StockFilter } from '@/pages/admina/types';
-import { RefreshCcw } from 'lucide-react';
+import { hasActiveArchiveFilters, type Filters, type StockFilter } from '@/pages/admina/types';
+import { ChevronDown, RefreshCcw } from 'lucide-react';
 
 type Props = {
   winesCount: number;
@@ -11,18 +12,126 @@ type Props = {
   categories: string[];
   producers: string[];
   origins: string[];
-  suppliers: string[];
   onFiltersChange: (next: Filters) => void;
   onRequestAddCategory: (onResult: (created: string | null) => void) => void;
   onRequestAddProducer: (onResult: (created: string | null) => void) => void;
   onRequestAddOrigin: (onResult: (created: string | null) => void) => void;
-  onRequestAddSupplier: (onResult: (created: string | null) => void) => void;
   onResetFilters: () => void;
   onOpenCreate: () => void;
   onOpenAi: () => void;
-  noteReady: boolean;
-  onOpenDischargeNote: () => void;
 };
+
+type StickyFilterSelectProps = {
+  label: string;
+  ariaLabel: string;
+  value: string;
+  allValue: string;
+  allLabel: string;
+  addLabel: string;
+  options: string[];
+  active: boolean;
+  onAdd: () => void;
+  onChange: (nextValue: string) => void;
+};
+
+function StickyFilterSelect({
+  label,
+  ariaLabel,
+  value,
+  allValue,
+  allLabel,
+  addLabel,
+  options,
+  active,
+  onAdd,
+  onChange
+}: StickyFilterSelectProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (rootRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const selectedLabel = value === allValue ? allLabel : value;
+
+  return (
+    <div className="archiveFilterField archiveFilterCustomRoot" ref={rootRef}>
+      <div className="archiveFilterFieldLabel">{label}</div>
+      <button
+        className={`input archiveFilterControl archiveFilterSelect archiveFilterSelectButton ${
+          active ? 'archiveFilterSelectActive' : ''
+        }`}
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open ? 'true' : 'false'}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <span className="archiveFilterSelectText">{selectedLabel}</span>
+        <ChevronDown className="archiveFilterSelectChevron" size={16} strokeWidth={2} />
+      </button>
+      {open ? (
+        <div className="archiveFilterCustomMenu" role="listbox" aria-label={ariaLabel}>
+          <button
+            className="archiveFilterCustomAdd"
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onAdd();
+            }}
+          >
+            {addLabel}
+          </button>
+          <div className="archiveFilterCustomOptions">
+            <button
+              className={`archiveFilterCustomOption ${
+                value === allValue ? 'archiveFilterCustomOptionActive' : ''
+              }`}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onChange(allValue);
+              }}
+            >
+              {allLabel}
+            </button>
+            {options.map((option) => (
+              <button
+                key={option}
+                className={`archiveFilterCustomOption ${
+                  value === option ? 'archiveFilterCustomOptionActive' : ''
+                }`}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onChange(option);
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function AdminArchiveToolbar({
   winesCount,
@@ -33,19 +142,16 @@ export function AdminArchiveToolbar({
   categories,
   producers,
   origins,
-  suppliers,
   onFiltersChange,
   onRequestAddCategory,
   onRequestAddProducer,
   onRequestAddOrigin,
-  onRequestAddSupplier,
   onResetFilters,
   onOpenCreate,
-  onOpenAi,
-  noteReady,
-  onOpenDischargeNote
+  onOpenAi
 }: Props) {
   const setStockFilter = (stock: StockFilter) => onFiltersChange({ ...filters, stock });
+  const hasActiveFilters = hasActiveArchiveFilters(filters);
 
   const buildExportFileBaseName = () => {
     const now = new Date();
@@ -63,7 +169,6 @@ export function AdminArchiveToolbar({
       'Anno',
       'Produttore',
       'Provenienza',
-      'Fornitore',
       'Soglia',
       'Acquisto',
       'Vendita',
@@ -76,7 +181,6 @@ export function AdminArchiveToolbar({
       Anno: { min: 10, max: 12 },
       Produttore: { min: 16, max: 34 },
       Provenienza: { min: 16, max: 32 },
-      Fornitore: { min: 14, max: 34 },
       Soglia: { min: 10, max: 12 },
       Acquisto: { min: 12, max: 16 },
       Vendita: { min: 12, max: 16 },
@@ -91,7 +195,6 @@ export function AdminArchiveToolbar({
       Anno: wine.age ?? '',
       Produttore: wine.producer,
       Provenienza: wine.origin,
-      Fornitore: wine.supplier ?? '',
       Soglia: wine.threshold ?? '',
       Acquisto: wine.purchasePrice ?? '',
       Vendita: wine.salePrice ?? '',
@@ -269,7 +372,6 @@ export function AdminArchiveToolbar({
       wine.name,
       wine.producer,
       wine.origin,
-      wine.supplier?.trim() || '—',
       String(wine.qty),
       formatMoney(wine.purchasePrice),
       formatMoney(wine.salePrice)
@@ -282,7 +384,6 @@ export function AdminArchiveToolbar({
           'Nome',
           'Produttore',
           'Provenienza',
-          'Fornitore',
           'Q.tà',
           'Acquisto',
           'Vendita'
@@ -312,15 +413,14 @@ export function AdminArchiveToolbar({
       columnStyles: {
         0: { cellWidth: 88 },
         1: { cellWidth: 118 },
-        2: { cellWidth: 120 },
-        3: { cellWidth: 110 },
-        4: { cellWidth: 120 },
-        5: { halign: 'right', cellWidth: 38 },
-        6: { halign: 'right', cellWidth: 70 },
-        7: { halign: 'right', cellWidth: 70 }
+        2: { cellWidth: 124 },
+        3: { cellWidth: 122 },
+        4: { halign: 'right', cellWidth: 44 },
+        5: { halign: 'right', cellWidth: 74 },
+        6: { halign: 'right', cellWidth: 74 }
       },
       didParseCell(data) {
-        if (data.section !== 'body' || data.column.index !== 5) return;
+        if (data.section !== 'body' || data.column.index !== 4) return;
         const wine = wines[data.row.index];
         if (!wine) return;
         const qty = Math.max(0, Math.round(wine.qty));
@@ -415,143 +515,71 @@ export function AdminArchiveToolbar({
       </div>
 
       <div className="archiveFilters">
-        <button
-          className={`archiveNoteButton ${noteReady ? 'archiveNoteButtonReady' : ''}`}
-          type="button"
-          aria-label="Apri nota scarico"
-          title="Nota scarico"
-          onClick={onOpenDischargeNote}
-        >
-          Nota
+        <button className="button buttonAuto archiveAddButton" type="button" onClick={onOpenCreate}>
+          Aggiungi vino
         </button>
 
         <input
           className="input archiveFilterControl"
-          placeholder="Cerca vino..."
+          placeholder="Cerca..."
           value={filters.term}
           onChange={(e) => onFiltersChange({ ...filters, term: e.target.value })}
         />
 
         <div className="archiveFilterGroup" role="group" aria-label="Filtri archivio">
-          <div className="archiveFilterField">
-            <div className="archiveFilterFieldLabel">Categoria</div>
-            <select
-              className={`input archiveFilterControl archiveFilterSelect ${
-                filters.category !== 'all' ? 'archiveFilterSelectActive' : ''
-              }`}
-              aria-label="Filtro categoria"
-              value={filters.category}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '__add_category__') {
-                  onRequestAddCategory((created) => {
-                    if (!created) return;
-                    onFiltersChange({ ...filters, category: 'all' });
-                  });
-                  return;
-                }
-                onFiltersChange({ ...filters, category: value });
-              }}
-            >
-              <option value="__add_category__">+ Aggiungi categoria…</option>
-              <option value="all">Tutte</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+          <StickyFilterSelect
+            label="Categoria"
+            ariaLabel="Filtro categoria"
+            value={filters.category}
+            allValue="all"
+            allLabel="Tutte"
+            addLabel="+ Aggiungi categoria..."
+            options={categories}
+            active={filters.category !== 'all'}
+            onAdd={() => {
+              onRequestAddCategory((created) => {
+                if (!created) return;
+                onFiltersChange({ ...filters, category: 'all' });
+              });
+            }}
+            onChange={(nextValue) => onFiltersChange({ ...filters, category: nextValue })}
+          />
 
-          <div className="archiveFilterField">
-            <div className="archiveFilterFieldLabel">Produttore</div>
-            <select
-              className={`input archiveFilterControl archiveFilterSelect ${
-                filters.producer !== 'all' ? 'archiveFilterSelectActive' : ''
-              }`}
-              aria-label="Filtro produttore"
-              value={filters.producer}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '__add_producer__') {
-                  onRequestAddProducer((created) => {
-                    if (!created) return;
-                    onFiltersChange({ ...filters, producer: 'all' });
-                  });
-                  return;
-                }
-                onFiltersChange({ ...filters, producer: value });
-              }}
-            >
-              <option value="__add_producer__">+ Aggiungi produttore…</option>
-              <option value="all">Tutti</option>
-              {producers.map((producer) => (
-                <option key={producer} value={producer}>
-                  {producer}
-                </option>
-              ))}
-            </select>
-          </div>
+          <StickyFilterSelect
+            label="Produttore"
+            ariaLabel="Filtro produttore"
+            value={filters.producer}
+            allValue="all"
+            allLabel="Tutti"
+            addLabel="+ Aggiungi produttore..."
+            options={producers}
+            active={filters.producer !== 'all'}
+            onAdd={() => {
+              onRequestAddProducer((created) => {
+                if (!created) return;
+                onFiltersChange({ ...filters, producer: 'all' });
+              });
+            }}
+            onChange={(nextValue) => onFiltersChange({ ...filters, producer: nextValue })}
+          />
 
-          <div className="archiveFilterField">
-            <div className="archiveFilterFieldLabel">Provenienza</div>
-            <select
-              className={`input archiveFilterControl archiveFilterSelect ${
-                filters.origin !== 'all' ? 'archiveFilterSelectActive' : ''
-              }`}
-              aria-label="Filtro provenienza"
-              value={filters.origin}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '__add_origin__') {
-                  onRequestAddOrigin((created) => {
-                    if (!created) return;
-                    onFiltersChange({ ...filters, origin: 'all' });
-                  });
-                  return;
-                }
-                onFiltersChange({ ...filters, origin: value });
-              }}
-            >
-              <option value="__add_origin__">+ Aggiungi provenienza…</option>
-              <option value="all">Tutte</option>
-              {origins.map((origin) => (
-                <option key={origin} value={origin}>
-                  {origin}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="archiveFilterField">
-            <div className="archiveFilterFieldLabel">Fornitore</div>
-            <select
-              className={`input archiveFilterControl archiveFilterSelect ${
-                filters.supplier !== 'all' ? 'archiveFilterSelectActive' : ''
-              }`}
-              aria-label="Filtro fornitore"
-              value={filters.supplier}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '__add_supplier__') {
-                  onRequestAddSupplier((created) => {
-                    if (!created) return;
-                    onFiltersChange({ ...filters, supplier: 'all' });
-                  });
-                  return;
-                }
-                onFiltersChange({ ...filters, supplier: value });
-              }}
-            >
-              <option value="__add_supplier__">+ Aggiungi fornitore…</option>
-              <option value="all">Tutti</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-          </div>
+          <StickyFilterSelect
+            label="Provenienza"
+            ariaLabel="Filtro provenienza"
+            value={filters.origin}
+            allValue="all"
+            allLabel="Tutte"
+            addLabel="+ Aggiungi provenienza..."
+            options={origins}
+            active={filters.origin !== 'all'}
+            onAdd={() => {
+              onRequestAddOrigin((created) => {
+                if (!created) return;
+                onFiltersChange({ ...filters, origin: 'all' });
+              });
+            }}
+            onChange={(nextValue) => onFiltersChange({ ...filters, origin: nextValue })}
+          />
         </div>
 
         <div className="archiveStatsBox" aria-label="Riepilogo vini">
@@ -591,17 +619,13 @@ export function AdminArchiveToolbar({
         </div>
 
         <button
-          className="archiveResetButton"
+          className={`archiveResetButton ${hasActiveFilters ? 'archiveResetButtonActive' : ''}`}
           type="button"
           aria-label="Reset filtri"
           title="Reset filtri"
           onClick={onResetFilters}
         >
           <RefreshCcw size={18} strokeWidth={2.2} />
-        </button>
-
-        <button className="button buttonAuto archiveAddButton" type="button" onClick={onOpenCreate}>
-          Aggiungi vino
         </button>
 
         <button

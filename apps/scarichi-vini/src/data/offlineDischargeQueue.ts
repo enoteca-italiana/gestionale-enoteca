@@ -277,10 +277,7 @@ export async function flushPendingDischargeQueue(options?: {
     const reason = options?.reason ?? 'manual';
     emitQueueStatus({ type: 'sync_started', pendingCount: initialQueue.length, reason });
 
-    const [dischargeRepository, dischargeNoteRepository] = await Promise.all([
-      import('@/data/dischargeRepository'),
-      import('@/data/dischargeNoteRepository')
-    ]);
+    const dischargeRepository = await import('@/data/dischargeRepository');
 
     let processed = 0;
     while (true) {
@@ -306,7 +303,6 @@ export async function flushPendingDischargeQueue(options?: {
           source: head.source,
           expectedQtyByWineId: head.expectedQtyByWineId
         });
-        await dischargeNoteRepository.completeInProgressDischargeNote();
         const queueAfterSuccess = removeQueueItemById(readQueue(), head.id);
         writeQueue(queueAfterSuccess);
         processed += 1;

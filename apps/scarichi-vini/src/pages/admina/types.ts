@@ -7,7 +7,6 @@ export type Filters = {
   category: string;
   producer: string;
   origin: string;
-  supplier: string;
   stock: StockFilter;
 };
 
@@ -18,7 +17,6 @@ export type WineFormState = {
   age?: string;
   producer: string;
   origin: string;
-  supplier: string;
   threshold?: number;
   purchasePrice?: number;
   salePrice?: number;
@@ -31,7 +29,6 @@ export const defaultFilters: Filters = {
   category: 'all',
   producer: 'all',
   origin: 'all',
-  supplier: 'all',
   stock: 'all'
 };
 
@@ -41,7 +38,6 @@ export function hasActiveArchiveFilters(filters: Filters): boolean {
     filters.category !== defaultFilters.category ||
     filters.producer !== defaultFilters.producer ||
     filters.origin !== defaultFilters.origin ||
-    filters.supplier !== defaultFilters.supplier ||
     filters.stock !== defaultFilters.stock
   );
 }
@@ -53,7 +49,6 @@ export const emptyWine: WineFormState = {
   age: '',
   producer: '',
   origin: '',
-  supplier: '',
   threshold: undefined,
   purchasePrice: undefined,
   salePrice: undefined,

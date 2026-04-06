@@ -76,10 +76,9 @@
   display: grid;
   grid-template-columns:
     auto
-    minmax(230px, 0.95fr)
+    minmax(320px, 1.15fr)
     minmax(500px, 1.35fr)
     minmax(192px, auto)
-    auto
     auto
     auto
     auto;
@@ -94,7 +93,7 @@
 
 .archiveFilterGroup {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   min-width: 0;
 }
@@ -119,6 +118,86 @@
 
 .archiveFilterSelect {
   min-width: 0;
+}
+
+.archiveFilterCustomRoot {
+  position: relative;
+}
+
+.archiveFilterSelectButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  background: #ffffff;
+}
+
+.archiveFilterSelectText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archiveFilterSelectChevron {
+  flex: 0 0 auto;
+}
+
+.archiveFilterCustomMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.18);
+  overflow: hidden;
+  z-index: 40;
+}
+
+.archiveFilterCustomAdd {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f7f8fa;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.archiveFilterCustomAdd:hover {
+  background: #eef0f4;
+}
+
+.archiveFilterCustomOptions {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.archiveFilterCustomOption {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: #fff;
+  color: #111827;
+  font-size: 14px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.archiveFilterCustomOption:hover {
+  background: #f9fafb;
+}
+
+.archiveFilterCustomOptionActive {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
 }
 
 .archiveFilterSelectActive {
@@ -307,39 +386,6 @@
   overflow: hidden;
 }
 
-.archiveNoteButton {
-  appearance: none;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #7c164a;
-  border-radius: 999px;
-  min-width: 82px;
-  height: var(--archive-top-action-size);
-  display: inline-grid;
-  place-items: center;
-  padding: 0 14px;
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.archiveNoteButton:hover {
-  border-color: #7c164a;
-  background: #fcf6f9;
-}
-
-.archiveNoteButtonReady {
-  border-color: #15803d;
-  background: #15803d;
-  color: #ffffff;
-}
-
-.archiveNoteButtonReady:hover {
-  border-color: #166534;
-  background: #166534;
-}
-
 .archiveResetButton {
   appearance: none;
   border: 1px solid #d1d5db;
@@ -366,6 +412,33 @@
   stroke: currentColor;
 }
 
+.archiveResetButtonActive {
+  border-color: #7c164a;
+  background: #f9eaf2;
+  color: #7c164a;
+  animation: archiveResetPulse 0.55s ease-in-out infinite;
+}
+
+.archiveResetButtonActive:hover {
+  border-color: #7c164a;
+  background: #f8dce9;
+}
+
+@keyframes archiveResetPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 22, 74, 0.22);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(124, 22, 74, 0.08);
+    opacity: 0.7;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 22, 74, 0.22);
+    opacity: 1;
+  }
+}
+
 .archiveLoadMoreButton {
   min-width: 240px;
 }
@@ -377,283 +450,6 @@
   object-position: center;
   display: block;
   transform: translate(1px, 1px);
-}
-
-.archiveNoteOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  background: rgba(10, 12, 16, 0.36);
-  display: flex;
-  justify-content: flex-start;
-}
-
-.archiveNoteDrawer {
-  width: min(504px, 95vw);
-  height: 100%;
-  background: var(--bg);
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 16px 0 38px rgba(17, 24, 39, 0.22);
-  display: flex;
-  flex-direction: column;
-  padding: 18px 14px 14px;
-}
-
-.archiveNoteHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.archiveNoteTitle {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: #1f2937;
-}
-
-.archiveNoteSubtle {
-  margin-top: 4px;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.archiveNoteClose {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: #6b7280;
-  font-size: 30px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  width: 36px;
-  height: 36px;
-}
-
-.archiveNoteSearchRow {
-  margin-top: 12px;
-}
-
-.archiveNoteSearchInput {
-  border-radius: 14px;
-  padding: 11px 13px;
-  font-size: 14px;
-}
-
-.archiveNoteSectionTitle {
-  font-size: 16px;
-  font-weight: 700;
-  color: #374151;
-}
-
-.archiveNoteSuggestions {
-  margin-top: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  overflow: auto;
-  max-height: 210px;
-}
-
-.archiveNoteSuggestionRow {
-  appearance: none;
-  width: 100%;
-  text-align: left;
-  border: 0;
-  border-top: 1px solid #eef2f7;
-  background: #ffffff;
-  color: inherit;
-  font: inherit;
-  display: grid;
-  gap: 2px;
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
-.archiveNoteSuggestionRow:first-child {
-  border-top: 0;
-}
-
-.archiveNoteSuggestionRow:hover {
-  background: #faf4f8;
-}
-
-.archiveNoteList {
-  margin-top: 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: #ffffff;
-  min-height: 0;
-  flex: 1 1 auto;
-  overflow: auto;
-}
-
-.archiveNoteListSimple {
-  max-height: none;
-  min-height: 0;
-}
-
-.archiveNoteListRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 11px 10px;
-  border-top: 1px solid #eef2f7;
-}
-
-.archiveNoteListRow:first-child {
-  border-top: 0;
-}
-
-.archiveNoteRowActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-
-.archiveNoteQtySelect {
-  width: 56px;
-  min-width: 56px;
-  border-radius: 10px;
-  padding: 6px 4px;
-  font-size: 14px;
-  height: 36px;
-}
-
-.archiveNoteListRow .lineTitle {
-  font-size: 12px;
-  line-height: 1.15;
-  letter-spacing: -0.15px;
-}
-
-.archiveNoteListRow .subtle {
-  font-size: 11px;
-  letter-spacing: -0.1px;
-}
-
-.archiveNoteTrashButton {
-  appearance: none;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #b91c1c;
-  border-radius: 10px;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.archiveNoteTrashButton:hover {
-  border-color: #fca5a5;
-  background: #fff6f6;
-}
-
-.archiveNoteEmpty {
-  padding: 14px;
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.archiveNoteHistory {
-  margin-top: 8px;
-}
-
-.archiveNoteHistoryList {
-  margin-top: 6px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
-  max-height: 170px;
-  overflow: auto;
-}
-
-.archiveNoteHistoryRow {
-  padding: 8px 10px;
-  border-top: 1px solid #eef2f7;
-  display: grid;
-  gap: 7px;
-}
-
-.archiveNoteHistoryRow:first-child {
-  border-top: 0;
-}
-
-.archiveNoteHistoryTitleLine {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1f2937;
-  letter-spacing: -0.08px;
-}
-
-.archiveNoteHistoryPreview {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #6b7280;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.archiveNoteHistoryActions {
-  display: flex;
-  gap: 6px;
-}
-
-.archiveNoteHistoryActionButton,
-.archiveNoteHistoryDeleteButton {
-  appearance: none;
-  border-radius: 9px;
-  height: 28px;
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.archiveNoteHistoryActionButton {
-  border: 1px solid #15803d;
-  background: #ffffff;
-  color: #166534;
-}
-
-.archiveNoteHistoryActionButton:hover {
-  background: #f0fdf4;
-}
-
-.archiveNoteHistoryDeleteButton {
-  border: 1px solid #fecaca;
-  background: #fff5f5;
-  color: #b91c1c;
-}
-
-.archiveNoteHistoryDeleteButton:hover {
-  background: #fee2e2;
-}
-
-.archiveNoteHistoryActionButton:disabled,
-.archiveNoteHistoryDeleteButton:disabled {
-  opacity: 0.58;
-  cursor: wait;
-}
-
-.archiveNoteFooter {
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.archiveNoteFooterButton {
-  min-height: 48px;
-  border-radius: 14px;
-  font-size: 15px;
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 .archiveAiModalCard {
@@ -1014,22 +810,7 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: auto minmax(210px, 0.82fr) minmax(420px, 1.2fr) auto auto auto;
-  }
-
-  .archiveAddButton {
-    grid-column: 1 / -1;
-    justify-self: end;
-  }
-
-  .archiveNoteButton {
-    grid-column: 1 / -1;
-    justify-self: end;
-  }
-
-  .archiveAiButton {
-    grid-column: 1 / -1;
-    justify-self: end;
+    grid-template-columns: auto minmax(292px, 1fr) minmax(420px, 1.2fr) auto auto auto;
   }
 }
 
@@ -1086,30 +867,28 @@
 
 .archiveTable th:nth-child(6),
 .archiveTable td:nth-child(6) {
-  width: 9%;
+  width: 6.4%;
 }
 
 .archiveTable th:nth-child(7),
 .archiveTable td:nth-child(7),
-.archiveTable th:nth-child(8),
-.archiveTable td:nth-child(8),
+.archiveTable th:nth-child(9),
+.archiveTable td:nth-child(9),
 .archiveTable th:nth-child(10),
-.archiveTable td:nth-child(10),
-.archiveTable th:nth-child(11),
-.archiveTable td:nth-child(11) {
-  width: 6.4%;
+.archiveTable td:nth-child(10) {
+  width: 6.8%;
 }
 
-.archiveTable th:nth-child(9),
-.archiveTable td:nth-child(9) {
+.archiveTable th:nth-child(8),
+.archiveTable td:nth-child(8) {
   width: 4%;
   padding-left: 4px;
   padding-right: 4px;
 }
 
-.archiveTable th:nth-child(12),
-.archiveTable td:nth-child(12) {
-  width: 7%;
+.archiveTable th:nth-child(11),
+.archiveTable td:nth-child(11) {
+  width: 8.6%;
 }
 
 .archiveTable thead th {
@@ -1273,6 +1052,80 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   background-image: none;
+}
+
+.archiveInlineSelectRoot {
+  position: relative;
+}
+
+.archiveInlineSelectButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  text-align: left;
+}
+
+.archiveInlineSelectText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archiveInlineSelectMenu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.18);
+  overflow: hidden;
+  z-index: 45;
+}
+
+.archiveInlineSelectAdd {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f7f8fa;
+  color: #4b5563;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  padding: 7px 8px;
+  cursor: pointer;
+}
+
+.archiveInlineSelectAdd:hover {
+  background: #eef0f4;
+}
+
+.archiveInlineSelectOptions {
+  max-height: 188px;
+  overflow-y: auto;
+}
+
+.archiveInlineSelectOption {
+  width: 100%;
+  border: 0;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  text-align: left;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.archiveInlineSelectOption:hover {
+  background: #f9fafb;
+}
+
+.archiveInlineSelectOptionActive {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
 }
 
 .archiveColCenter {
@@ -1611,15 +1464,6 @@
     justify-self: stretch;
     min-width: 0;
     width: 100%;
-  }
-
-  .archiveNoteButton {
-    justify-self: stretch;
-    width: 100%;
-  }
-
-  .archiveNoteFooter {
-    grid-template-columns: 1fr;
   }
 
   .archiveAiModalCard {

@@ -40,10 +40,7 @@ function readErrorMessage(payload: unknown): string | null {
   return message || null;
 }
 
-export async function onRequestPost(context: {
-  request: Request;
-  env: Env;
-}): Promise<Response> {
+export async function onRequestPost(context: { request: Request; env: Env }): Promise<Response> {
   const apiKey = (context.env.OPENAI_API_KEY ?? '').trim();
   if (!apiKey) {
     return jsonResponse(
@@ -73,7 +70,10 @@ export async function onRequestPost(context: {
   };
 
   if (typeof payload.instructions !== 'string' || !Array.isArray(payload.input)) {
-    return jsonResponse({ error: { message: 'Payload incompleto: instructions/input richiesti.' } }, 400);
+    return jsonResponse(
+      { error: { message: 'Payload incompleto: instructions/input richiesti.' } },
+      400
+    );
   }
 
   const model = sanitizeModel(payload.model, context.env.OPENAI_MODEL);
@@ -119,4 +119,3 @@ export async function onRequestPost(context: {
 
   return jsonResponse(upstreamJson ?? {}, 200);
 }
-

@@ -9,7 +9,6 @@ function buildWineSearchText(wine: Wine) {
     wine.age,
     wine.producer,
     wine.origin,
-    wine.supplier,
     wine.notes,
     wine.warehouse
   ]

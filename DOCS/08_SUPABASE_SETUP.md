@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **25/03/2026 12:55 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Stato attuale
 
@@ -12,14 +12,13 @@ Risoluzione completa alert Security Advisor su ambiente production:
 
 - stato finale advisor: `0 errors`, `0 warnings`, `0 info`.
 - alert critico risolto: `RLS Disabled in Public` su:
-  - `public.suppliers`
   - `public.categories`
   - `public.categories_backup_20260313`
   - `public.origins`
 
 Decisioni applicate in base al codice runtime reale:
 
-- `public.categories`, `public.suppliers`:
+- `public.categories`:
   - usate dal frontend con chiave anon per flussi registry admin;
   - RLS abilitata;
   - grants/policy ridotti a minimo necessario per `anon`:
@@ -52,16 +51,6 @@ Conferme principali:
 - tabelle sessioni presenti:
   - `public.discharge_sessions`
   - `public.discharge_session_items`
-- modulo Nota Scarico presente:
-  - tabelle:
-    - `public.discharge_notes`
-    - `public.discharge_note_items`
-  - RPC:
-    - `save_discharge_note_draft`
-    - `confirm_discharge_note_draft`
-    - `start_ready_discharge_note`
-    - `complete_in_progress_discharge_note`
-    - `get_discharge_note_state`
 
 ## Integrazione frontend completata
 
@@ -73,15 +62,8 @@ Conferme principali:
   - sospesi letti da `discharge_sessions.status = 'pending'`
   - reset/elimina agiscono direttamente su Supabase
 - Nota Scarico:
-  - archivio salva bozza su RPC `save_discharge_note_draft`
-  - conferma bozza su RPC `confirm_discharge_note_draft`
-  - Home avvia nota pronta con RPC `start_ready_discharge_note`
-  - submit sessione chiude nota con RPC `complete_in_progress_discharge_note`
-  - stato UI archivio/home letto da RPC `get_discharge_note_state`
-  - storico ultime note in archivio letto da `discharge_notes.status = 'completed'` + `discharge_note_items`
-  - reinvio nota storico: riuso items storici -> nuova bozza -> conferma (`ready`)
-  - eliminazione storico: delete su `discharge_note_items` + `discharge_notes` per nota `completed`
-  - per questa evoluzione non sono richieste nuove migrazioni SQL (schema/RPC attuali già compatibili)
+  - modulo runtime rimosso dal frontend (`/` e `/admina`);
+  - eventuali tabelle/RPC legacy `discharge_notes*` possono restare presenti a DB senza essere usate dal codice corrente.
 
 ## Variabili ambiente usate dall'app
 
@@ -107,13 +89,8 @@ Stato repository:
 Policy SQL obbligatoria su insert/update record vino:
 
 - `category`, `name`, `origin` => `UPPER(...)`
-- `producer`, `supplier` => `INITCAP(LOWER(...))`
+- `producer` => `INITCAP(LOWER(...))`
 - sempre con `TRIM` + normalizzazione spazi.
-
-Script Nota Scarico (operativi in SQL Editor):
-
-1. `SCRIPT 1` schema + RLS (`discharge_notes`, `discharge_note_items`)
-2. `SCRIPT 2` RPC (`save/confirm/start/complete/get_state`)
 
 Ordine esecuzione:
 
@@ -129,13 +106,14 @@ Ordine esecuzione:
 10. `SCRIPT 08` seed upsert
 11. `SCRIPT 09A/09B` check finale
 
-### Migrazione Fornitore (nuova)
+### Migrazione rimozione Fornitore (nuova)
 
-Per attivare il nuovo campo `Fornitore` lato archivio vini:
+Stato runtime attuale: il campo `fornitore/supplier` non è più usato dall'applicazione.
 
-1. eseguire in SQL Editor lo script migrazione `supplier` concordato in chat/procedura operativa;
-2. verificare presenza colonna `public.wines.supplier`;
-3. verificare tabella `public.suppliers` popolata con i valori distinti già presenti.
+- il frontend non legge/scrive più `public.wines.supplier`;
+- i registry frontend sono limitati a `categories`, `producers`, `origins`.
+
+Nota: eventuali colonne/tabelle legacy (`public.wines.supplier`, `public.suppliers`) possono restare presenti a DB senza impatto runtime.
 
 ### Migrazione indipendenza storico/archivio (nuova)
 
@@ -143,7 +121,7 @@ Per abilitare `Reset archivio` senza perdere/stressare lo storico sessioni:
 
 1. eseguire in SQL Editor lo script migrazione indipendenza storico/archivio concordato in chat/procedura operativa;
 2. verificare su `public.discharge_session_items`:
-   - colonne snapshot presenti (`wine_name`, `wine_age`, `wine_producer`, `wine_origin`, `wine_category`, `wine_supplier`);
+   - colonne snapshot presenti (`wine_name`, `wine_age`, `wine_producer`, `wine_origin`, `wine_category`);
    - `wine_id` nullable (`YES`);
    - FK `discharge_session_items_wine_id_fkey` con `ON DELETE SET NULL`.
 
@@ -160,7 +138,7 @@ Query check principale:
 
 Per migliorare tempi di filtro/ordinamento lato app con migliaia di record, applicare in SQL Editor:
 
-- indici B-Tree sui campi filtro principali (`category`, `producer`, `origin`, `supplier`, `qty`, `threshold`);
+- indici B-Tree sui campi filtro principali (`category`, `producer`, `origin`, `qty`, `threshold`);
 - indice funzionale su `lower(name)` per ricerche case-insensitive;
 - opzionale: `pg_trgm` + GIN su `name` per ricerche testuali parziali più rapide.
 
@@ -174,7 +152,7 @@ Script pronto:
 
 Effetti:
 
-- rimuove indici duplicati su `discharge_session_items(session_id)`, `discharge_session_items(wine_id)`, `wines(supplier)`;
+- rimuove indici duplicati su `discharge_session_items(session_id)`, `discharge_session_items(wine_id)`.
 - preserva gli indici univoci e quelli realmente usati;
 - esegue `ANALYZE` finale per riallineare planner statistiche.
 

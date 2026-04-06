@@ -18,7 +18,6 @@ export function matchesFilters(wine: Wine, filters: Filters) {
       wine.age,
       wine.producer,
       wine.origin,
-      wine.supplier,
       wine.notes,
       wine.warehouse
     ]
@@ -39,10 +38,6 @@ export function matchesFilters(wine: Wine, filters: Filters) {
   if (filters.origin !== 'all') {
     const origin = wine.origin?.toLowerCase() ?? '';
     if (origin !== filters.origin.toLowerCase()) return false;
-  }
-  if (filters.supplier !== 'all') {
-    const supplier = wine.supplier?.toLowerCase() ?? '';
-    if (supplier !== filters.supplier.toLowerCase()) return false;
   }
 
   if (filters.stock === 'threshold' && !isInThreshold(wine)) return false;

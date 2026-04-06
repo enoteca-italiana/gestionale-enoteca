@@ -1,13 +1,10 @@
 import { useEffect } from 'react';
-import { dischargeQueueChangedEvent, flushPendingDischargeQueue } from '@/data/offlineDischargeQueue';
+import {
+  dischargeQueueChangedEvent,
+  flushPendingDischargeQueue
+} from '@/data/offlineDischargeQueue';
 
-type FlushReason =
-  | 'startup'
-  | 'online'
-  | 'focus'
-  | 'pageshow'
-  | 'visibility'
-  | 'queue_changed';
+type FlushReason = 'startup' | 'online' | 'focus' | 'pageshow' | 'visibility' | 'queue_changed';
 
 export function useOfflineDischargeQueueSync() {
   useEffect(() => {

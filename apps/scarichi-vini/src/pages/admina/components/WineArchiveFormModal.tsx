@@ -9,10 +9,8 @@ type Props = {
   initial: WineFormState;
   categories: string[];
   origins: string[];
-  suppliers: string[];
   onRequestAddCategory: (onResult: (created: string | null) => void) => void;
   onRequestAddOrigin: (onResult: (created: string | null) => void) => void;
-  onRequestAddSupplier: (onResult: (created: string | null) => void) => void;
   onSubmit: (wine: WineFormState) => Promise<void>;
   onCancel: () => void;
 };
@@ -22,6 +20,24 @@ function asNumber(value: string): number | undefined {
   if (!normalized) return undefined;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function formatNumberForPriceInput(value?: number): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+  return String(value).replace('.', ',');
+}
+
+function normalizePriceInput(rawValue: string): string {
+  const cleaned = rawValue.replace(/[^\d.,]/g, '');
+  if (!cleaned) return '';
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  const separatorIndex = Math.max(lastComma, lastDot);
+  if (separatorIndex === -1) return cleaned.replace(/[.,]/g, '');
+
+  const intPart = cleaned.slice(0, separatorIndex).replace(/[.,]/g, '');
+  const decimalPart = cleaned.slice(separatorIndex + 1).replace(/[.,]/g, '').slice(0, 2);
+  return `${intPart},${decimalPart}`;
 }
 
 function normalizeYear(value?: string) {
@@ -38,14 +54,14 @@ export function WineArchiveFormModal({
   initial,
   categories,
   origins,
-  suppliers,
   onRequestAddCategory,
   onRequestAddOrigin,
-  onRequestAddSupplier,
   onSubmit,
   onCancel
 }: Props) {
   const [state, setState] = useState<WineFormState>(initial);
+  const [purchasePriceInput, setPurchasePriceInput] = useState('');
+  const [salePriceInput, setSalePriceInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -73,19 +89,19 @@ export function WineArchiveFormModal({
         age: normalizeYear(initial.age),
         qty: Number.isFinite(initial.qty) ? Math.max(0, Math.min(99, Math.round(initial.qty))) : 0
       });
+      setPurchasePriceInput(formatNumberForPriceInput(initial.purchasePrice));
+      setSalePriceInput(formatNumberForPriceInput(initial.salePrice));
       setError(null);
     }
   }, [open, initial]);
 
   const canSubmit = useMemo(() => {
-    const supplierRequired = mode === 'create';
     return (
       state.name.trim().length > 0 &&
       state.producer.trim().length > 0 &&
-      state.origin.trim().length > 0 &&
-      (!supplierRequired || state.supplier.trim().length > 0)
+      state.origin.trim().length > 0
     );
-  }, [mode, state.name, state.origin, state.producer, state.supplier]);
+  }, [state.name, state.origin, state.producer]);
 
   if (!open) return null;
 
@@ -101,16 +117,14 @@ export function WineArchiveFormModal({
     setState((prev) => ({ ...prev, [key]: value }));
   };
 
-  const setNumericField = (key: keyof WineFormState, value: string) => {
-    setState((prev) => ({ ...prev, [key]: asNumber(value) }));
-  };
-
   const submit = async () => {
     if (!canSubmit || busy) return;
     try {
       await onSubmit({
         ...state,
         age: normalizeYear(state.age),
+        purchasePrice: asNumber(purchasePriceInput),
+        salePrice: asNumber(salePriceInput),
         qty: Number.isFinite(state.qty) ? Math.max(0, Math.round(state.qty)) : 0
       });
     } catch (err) {
@@ -236,31 +250,6 @@ export function WineArchiveFormModal({
               </select>
             </label>
           </div>
-          <label className="modalLabel archiveFormSpan2">
-            Fornitore
-            <select
-              className="input mt4"
-              value={state.supplier}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '__add_supplier__') {
-                  onRequestAddSupplier((created) => {
-                    if (created) setField('supplier', created);
-                  });
-                  return;
-                }
-                setField('supplier', value);
-              }}
-            >
-              <option value="__add_supplier__">+ Aggiungi fornitore…</option>
-              <option value="">Seleziona fornitore</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-          </label>
           <div className="archiveFormInline3">
             <label className="modalLabel archiveFormQtyLabel">
               Q.tà
@@ -290,8 +279,8 @@ export function WineArchiveFormModal({
                 <input
                   className="input archiveCurrencyInput"
                   inputMode="decimal"
-                  value={state.purchasePrice ?? ''}
-                  onChange={(e) => setNumericField('purchasePrice', e.target.value)}
+                  value={purchasePriceInput}
+                  onChange={(e) => setPurchasePriceInput(normalizePriceInput(e.target.value))}
                 />
               </div>
             </label>
@@ -304,8 +293,8 @@ export function WineArchiveFormModal({
                 <input
                   className="input archiveCurrencyInput"
                   inputMode="decimal"
-                  value={state.salePrice ?? ''}
-                  onChange={(e) => setNumericField('salePrice', e.target.value)}
+                  value={salePriceInput}
+                  onChange={(e) => setSalePriceInput(normalizePriceInput(e.target.value))}
                 />
               </div>
             </label>

@@ -96,7 +96,6 @@ type AnalyticWine = {
   category: string;
   producer: string;
   origin: string;
-  supplier: string;
   qty: number;
   threshold: number | null;
   purchase: number | null;
@@ -118,7 +117,6 @@ function toAnalyticWine(wine: Wine): AnalyticWine {
     category: (wine.category ?? '').trim(),
     producer: wine.producer,
     origin: wine.origin,
-    supplier: (wine.supplier ?? '').trim(),
     qty,
     threshold: typeof wine.threshold === 'number' ? wine.threshold : null,
     purchase,
@@ -131,7 +129,7 @@ function toAnalyticWine(wine: Wine): AnalyticWine {
 
 function aggregateBy(
   items: AnalyticWine[],
-  field: 'category' | 'producer' | 'origin' | 'supplier'
+  field: 'category' | 'producer' | 'origin'
 ) {
   const map = new Map<
     string,
@@ -172,7 +170,6 @@ type InventoryAnalytics = {
     byCategory: ReturnType<typeof aggregateBy>;
     byProducer: ReturnType<typeof aggregateBy>;
     byOrigin: ReturnType<typeof aggregateBy>;
-    bySupplier: ReturnType<typeof aggregateBy>;
   };
 };
 
@@ -182,7 +179,6 @@ type WineRecencyRow = {
   producer: string;
   origin: string;
   category: string;
-  supplier: string;
   currentQty: number;
   totalDischargedQty: number;
   dischargeEvents: number;
@@ -274,8 +270,7 @@ function buildInventoryAnalytics(wines: Wine[]): InventoryAnalytics {
     breakdowns: {
       byCategory: aggregateBy(all, 'category'),
       byProducer: aggregateBy(all, 'producer'),
-      byOrigin: aggregateBy(all, 'origin'),
-      bySupplier: aggregateBy(all, 'supplier')
+      byOrigin: aggregateBy(all, 'origin')
     }
   };
 }
@@ -340,7 +335,6 @@ function buildRecencyContext(wines: Wine[], submittedItems: DischargeSessionItem
       producer: wine.producer,
       origin: wine.origin,
       category: wine.category ?? '',
-      supplier: wine.supplier ?? '',
       currentQty: Math.max(0, wine.qty),
       totalDischargedQty: agg?.totalDischargedQty ?? 0,
       dischargeEvents: agg?.dischargeEvents ?? 0,
@@ -703,7 +697,6 @@ function buildSessionsContext(
       producer?: string;
       origin?: string;
       category?: string;
-      supplier?: string;
     }
   >();
 
@@ -715,8 +708,7 @@ function buildSessionsContext(
       sessions: 0,
       producer: item.producer,
       origin: item.origin,
-      category: item.category,
-      supplier: item.supplier
+      category: item.category
     };
     current.qtyTotal += item.qty;
     current.sessions += 1;
@@ -897,7 +889,6 @@ export function AiAssistantModal({
           wine.category ?? '',
           wine.producer,
           wine.origin,
-          wine.supplier ?? '',
           wine.notes ?? ''
         ]
           .join(' ')

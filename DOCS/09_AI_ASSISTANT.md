@@ -1,6 +1,6 @@
 # Assistente AI Archivio
 
-Ultimo aggiornamento: **16/03/2026 02:14 CET**.
+Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 
 ## Scopo
 
@@ -59,7 +59,7 @@ VITE_OPENAI_MODEL=gpt-4.1-mini
 2. Il client costruisce contesto completo:
    - snapshot inventario;
    - leaderboard margini/giacenze/valore;
-   - breakdown per categoria/produttore/provenienza/fornitore;
+   - breakdown per categoria/produttore/provenienza;
    - sessioni `submitted` e item storico caricati con paginazione completa;
    - blocco recency per analisi temporale per vino:
      - `neverDischarged`

@@ -3,8 +3,7 @@ import { normalizeOrigin } from '@/domain/normalizeOrigin';
 import {
   normalizeWineCategory,
   normalizeWineName,
-  normalizeWineProducer,
-  normalizeWineSupplier
+  normalizeWineProducer
 } from '@/domain/normalizeWineText';
 
 export type ArchiveCsvWineInput = {
@@ -14,7 +13,6 @@ export type ArchiveCsvWineInput = {
   age?: string;
   producer: string;
   origin: string;
-  supplier?: string;
   threshold?: number;
   purchasePrice?: number;
   salePrice?: number;
@@ -34,7 +32,6 @@ const CSV_COLUMNS: CsvColumn[] = [
   { header: 'Anno', key: 'age' },
   { header: 'Produttore', key: 'producer' },
   { header: 'Provenienza', key: 'origin' },
-  { header: 'Fornitore', key: 'supplier' },
   { header: 'Soglia', key: 'threshold' },
   { header: 'Acquisto', key: 'purchasePrice' },
   { header: 'Vendita', key: 'salePrice' },
@@ -55,8 +52,6 @@ const HEADER_ALIASES: Record<string, keyof ArchiveCsvWineInput> = {
   provenienza: 'origin',
   origine: 'origin',
   origin: 'origin',
-  fornitore: 'supplier',
-  supplier: 'supplier',
   soglia: 'threshold',
   threshold: 'threshold',
   acquisto: 'purchasePrice',
@@ -179,7 +174,6 @@ function toCsvRecord(wine: Wine): ArchiveCsvWineInput {
     age: wine.age ?? '',
     producer: normalizeWineProducer(wine.producer),
     origin: normalizeOrigin(wine.origin),
-    supplier: wine.supplier ? normalizeWineSupplier(wine.supplier) : '',
     threshold: wine.threshold,
     purchasePrice: wine.purchasePrice,
     salePrice: wine.salePrice,
@@ -268,9 +262,6 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
       age: record.age?.toString(),
       producer,
       origin,
-      supplier: record.supplier?.toString()
-        ? normalizeWineSupplier(record.supplier.toString())
-        : undefined,
       threshold: typeof record.threshold === 'number' ? record.threshold : undefined,
       purchasePrice: typeof record.purchasePrice === 'number' ? record.purchasePrice : undefined,
       salePrice: typeof record.salePrice === 'number' ? record.salePrice : undefined,
