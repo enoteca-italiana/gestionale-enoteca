@@ -60,6 +60,22 @@
 .buttonSessionConfirmActive {
   background: #15803d;
   color: #ffffff;
+  animation: homeConfirmPulse 0.55s ease-in-out infinite;
+}
+
+@keyframes homeConfirmPulse {
+  0% {
+    background: #15803d;
+    box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.22);
+  }
+  50% {
+    background: #1b9346;
+    box-shadow: 0 0 0 6px rgba(21, 128, 61, 0.08);
+  }
+  100% {
+    background: #15803d;
+    box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.22);
+  }
 }
 
 .buttonSessionConfirmInactive {
