@@ -2,6 +2,7 @@ export type AdminRootSection =
   | 'history'
   | 'registryManager'
   | 'import'
+  | 'export'
   | 'threshold'
   | 'password'
   | 'pinRequest'
@@ -41,6 +42,9 @@ export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => v
         </button>
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('import')}>
           Importa archivio
+        </button>
+        <button className="button adminHomeAction" type="button" onClick={() => onOpen('export')}>
+          Esporta archivio
         </button>
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('reset')}>
           Reset archivio

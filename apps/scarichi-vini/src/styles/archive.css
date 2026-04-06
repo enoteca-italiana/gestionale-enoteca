@@ -259,6 +259,23 @@
   background: #fcf8fa;
 }
 
+.archiveGoogleSheetButton {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 122px;
+  padding: 0 12px;
+}
+
+.archiveGoogleSheetButton:hover {
+  border-color: #166534;
+  background: #166534;
+  color: #ffffff;
+}
+
 .archiveStatsBox {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -847,7 +864,7 @@
 
 .archiveTable th:nth-child(2),
 .archiveTable td:nth-child(2) {
-  width: 18.6%;
+  width: 20.6%;
 }
 
 .archiveTable th:nth-child(3),
@@ -881,7 +898,7 @@
 
 .archiveTable th:nth-child(8),
 .archiveTable td:nth-child(8) {
-  width: 4%;
+  width: 2%;
   padding-left: 4px;
   padding-right: 4px;
 }
@@ -1039,6 +1056,20 @@
   margin: 0 auto;
 }
 
+.archiveInlinePriceInput {
+  width: 100%;
+  max-width: 110px;
+  margin: 0 auto;
+  border: 1px solid #7c164a;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  text-align: center;
+  padding: 4px 8px;
+  box-sizing: border-box;
+}
+
 .archiveInlineCategorySelect {
   width: 100%;
   border: 1px solid #7c164a;
@@ -1052,6 +1083,17 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   background-image: none;
+}
+
+.archiveInlineMoneyButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: center;
+  font: inherit;
+  padding: 0;
+  cursor: text;
 }
 
 .archiveInlineSelectRoot {

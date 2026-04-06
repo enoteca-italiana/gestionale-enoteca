@@ -480,10 +480,14 @@ export function WineAdminPage() {
       category?: string;
       producer?: string;
       origin?: string;
+      purchasePrice?: number;
     }
   ) => {
     setBusy(true);
     try {
+      const nextPurchasePrice = Object.prototype.hasOwnProperty.call(patch, 'purchasePrice')
+        ? patch.purchasePrice
+        : wine.purchasePrice;
       await updateWine({
         id: wine.id,
         category: patch.category ?? wine.category ?? '',
@@ -492,7 +496,7 @@ export function WineAdminPage() {
         producer: patch.producer ?? wine.producer,
         origin: patch.origin ?? wine.origin,
         threshold: wine.threshold,
-        purchasePrice: wine.purchasePrice,
+        purchasePrice: nextPurchasePrice,
         salePrice: wine.salePrice,
         vintage: wine.vintage,
         qty: wine.qty,
@@ -582,7 +586,6 @@ export function WineAdminPage() {
         winesCount={archiveStats.winesCount}
         thresholdCount={archiveStats.thresholdCount}
         outCount={archiveStats.outCount}
-        wines={filteredWines}
         filters={filters}
         categories={categories}
         producers={producers}

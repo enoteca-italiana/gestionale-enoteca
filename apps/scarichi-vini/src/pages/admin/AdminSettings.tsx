@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { getBool, setBool, storageKeys } from '@/pages/admin/storage';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { parseArchiveCsv, type ArchiveCsvWineInput } from '@/data/archiveCsv';
-import { appendWines, replaceAllWines, updateThresholdForAllWines } from '@/data/wineRepository';
+import { appendWines, listWines, replaceAllWines, updateThresholdForAllWines } from '@/data/wineRepository';
+import { exportArchiveExcel, exportArchivePdf } from '@/pages/admina/utils/archiveExport';
 import { sha256Base64 } from '@/pages/admin/crypto';
 
 type ImportMode = 'replace' | 'append';
@@ -20,7 +21,7 @@ export function AdminSettings({
   onLogout: () => void;
   onHardReset: () => Promise<void>;
   onBack?: () => void;
-  openAction?: 'password' | 'import' | 'threshold' | 'pinRequest' | 'reset' | null;
+  openAction?: 'password' | 'import' | 'export' | 'threshold' | 'pinRequest' | 'reset' | null;
   onActionHandled?: () => void;
   hidePanel?: boolean;
 }) {
@@ -46,6 +47,9 @@ export function AdminSettings({
   const [importPin, setImportPin] = useState('');
   const [importPinError, setImportPinError] = useState<string | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<ImportMode>('replace');
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false);
   const [thresholdValue, setThresholdValue] = useState('');
@@ -92,6 +96,12 @@ export function AdminSettings({
       setImportPinConfirm(false);
       setImportMode('replace');
       setImportModalOpen(true);
+      onActionHandled?.();
+      return;
+    }
+    if (openAction === 'export') {
+      setExportError(null);
+      setExportModalOpen(true);
       onActionHandled?.();
       return;
     }
@@ -278,6 +288,24 @@ export function AdminSettings({
       }
     } finally {
       setResetBusy(false);
+    }
+  };
+
+  const handleExportArchive = async (mode: 'excel' | 'pdf') => {
+    if (exportBusy) return;
+    setExportError(null);
+    setExportBusy(true);
+    try {
+      const wines = await listWines({ forceRemote: true });
+      if (mode === 'excel') {
+        await exportArchiveExcel(wines);
+      } else {
+        await exportArchivePdf(wines);
+      }
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : "Errore durante export archivio");
+    } finally {
+      setExportBusy(false);
     }
   };
 
@@ -746,6 +774,47 @@ export function AdminSettings({
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {exportModalOpen ? (
+        <div className="modalOverlay adminSettingsOverlay" role="dialog" aria-modal="true">
+          <div className="modalCard adminSettingsModalCard">
+            <div className="modalTitle">Esporta archivio</div>
+            <div className="modalDescription">
+              Seleziona il formato di esportazione dell&apos;archivio vini.
+            </div>
+            {exportError ? <div className="errorText mt10">{exportError}</div> : null}
+            <div className="modalActions">
+              <button
+                className="button"
+                type="button"
+                disabled={exportBusy}
+                onClick={() => void handleExportArchive('excel')}
+              >
+                {exportBusy ? 'Esportazione…' : 'Esporta Excel'}
+              </button>
+              <button
+                className="button"
+                type="button"
+                disabled={exportBusy}
+                onClick={() => void handleExportArchive('pdf')}
+              >
+                {exportBusy ? 'Esportazione…' : 'Esporta PDF'}
+              </button>
+              <button
+                className="button buttonSecondary buttonCancel"
+                type="button"
+                onClick={() => {
+                  if (exportBusy) return;
+                  setExportModalOpen(false);
+                  setExportError(null);
+                }}
+              >
+                Chiudi
+              </button>
             </div>
           </div>
         </div>

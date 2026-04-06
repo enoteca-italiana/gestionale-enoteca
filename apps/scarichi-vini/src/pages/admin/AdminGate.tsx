@@ -6,7 +6,14 @@ import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { useAdminAuth } from '@/pages/admin/useAdminAuth';
 
 type AdminSection = 'home' | 'history' | 'registryManager';
-type SettingsAction = 'password' | 'import' | 'threshold' | 'pinRequest' | 'reset' | null;
+type SettingsAction =
+  | 'password'
+  | 'import'
+  | 'export'
+  | 'threshold'
+  | 'pinRequest'
+  | 'reset'
+  | null;
 
 const AdminHistory = lazy(() =>
   import('@/pages/admin/AdminHistory').then((m) => ({ default: m.AdminHistory }))

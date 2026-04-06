@@ -27,6 +27,7 @@ type Props = {
       category?: string;
       producer?: string;
       origin?: string;
+      purchasePrice?: number;
     }
   ) => Promise<boolean>;
   onRequestAddCategory: (onResult: (created: string | null) => void) => void;
@@ -78,6 +79,32 @@ function computeWarehouse(wine: Wine) {
 function computeMargin(wine: Wine) {
   if (wine.purchasePrice === undefined || wine.salePrice === undefined) return undefined;
   return Number((wine.salePrice - wine.purchasePrice).toFixed(2));
+}
+
+function formatPriceInput(value?: number) {
+  if (value === undefined || value === null || Number.isNaN(value)) return '';
+  return String(value).replace('.', ',');
+}
+
+function normalizePriceInput(rawValue: string): string {
+  const cleaned = rawValue.replace(/[^\d.,]/g, '');
+  if (!cleaned) return '';
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  const separatorIndex = Math.max(lastComma, lastDot);
+  if (separatorIndex === -1) return cleaned.replace(/[.,]/g, '');
+
+  const intPart = cleaned.slice(0, separatorIndex).replace(/[.,]/g, '');
+  const decimalPart = cleaned.slice(separatorIndex + 1).replace(/[.,]/g, '').slice(0, 2);
+  return `${intPart},${decimalPart}`;
+}
+
+function parsePriceInput(rawValue: string): number | undefined {
+  const normalized = rawValue.replace(',', '.').trim();
+  if (!normalized) return undefined;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed < 0) return undefined;
+  return Number(parsed.toFixed(2));
 }
 
 type InlineStickyAddSelectProps = {
@@ -213,6 +240,7 @@ export function AdminArchiveTable({
   const ageInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const producerInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const originInlineBoxRef = useRef<HTMLDivElement | null>(null);
+  const purchasePriceInlineBoxRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRowRef = useRef<HTMLTableRowElement | null>(null);
   const autoLoadLockRef = useRef(false);
   const [targetRows, setTargetRows] = useState(BASE_ROWS);
@@ -229,6 +257,8 @@ export function AdminArchiveTable({
   const [editingProducerValue, setEditingProducerValue] = useState<string>('');
   const [editingOriginWineId, setEditingOriginWineId] = useState<string | null>(null);
   const [editingOriginValue, setEditingOriginValue] = useState<string>('');
+  const [editingPurchasePriceWineId, setEditingPurchasePriceWineId] = useState<string | null>(null);
+  const [editingPurchasePriceValue, setEditingPurchasePriceValue] = useState<string>('');
   const [savingQtyWineId, setSavingQtyWineId] = useState<string | null>(null);
   const [savingInlineWineId, setSavingInlineWineId] = useState<string | null>(null);
   const [visibleRows, setVisibleRows] = useState(TABLE_RENDER_BATCH);
@@ -351,6 +381,8 @@ export function AdminArchiveTable({
     setEditingProducerValue('');
     setEditingOriginWineId(null);
     setEditingOriginValue('');
+    setEditingPurchasePriceWineId(null);
+    setEditingPurchasePriceValue('');
     startTransition(() => {
       setVisibleRows(TABLE_RENDER_BATCH);
     });
@@ -370,6 +402,7 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelQtyEdit = useCallback(() => {
@@ -387,6 +420,7 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelNameEdit = useCallback(() => {
@@ -404,6 +438,7 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelAgeEdit = useCallback(() => {
@@ -421,6 +456,7 @@ export function AdminArchiveTable({
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
     setEditingOriginWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelCategoryEdit = useCallback(() => {
@@ -438,6 +474,7 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingAgeWineId(null);
     setEditingOriginWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelProducerEdit = useCallback(() => {
@@ -455,12 +492,31 @@ export function AdminArchiveTable({
     setEditingNameWineId(null);
     setEditingAgeWineId(null);
     setEditingProducerWineId(null);
+    setEditingPurchasePriceWineId(null);
   };
 
   const cancelOriginEdit = useCallback(() => {
     if (savingQtyWineId || savingInlineWineId) return;
     setEditingOriginWineId(null);
     setEditingOriginValue('');
+  }, [savingInlineWineId, savingQtyWineId]);
+
+  const beginPurchasePriceEdit = (wine: Wine) => {
+    if (savingQtyWineId || savingInlineWineId) return;
+    setEditingPurchasePriceWineId(wine.id);
+    setEditingPurchasePriceValue(formatPriceInput(wine.purchasePrice));
+    setEditingQtyWineId(null);
+    setEditingCategoryWineId(null);
+    setEditingNameWineId(null);
+    setEditingAgeWineId(null);
+    setEditingProducerWineId(null);
+    setEditingOriginWineId(null);
+  };
+
+  const cancelPurchasePriceEdit = useCallback(() => {
+    if (savingQtyWineId || savingInlineWineId) return;
+    setEditingPurchasePriceWineId(null);
+    setEditingPurchasePriceValue('');
   }, [savingInlineWineId, savingQtyWineId]);
 
   useEffect(() => {
@@ -470,7 +526,8 @@ export function AdminArchiveTable({
       !editingNameWineId &&
       !editingAgeWineId &&
       !editingProducerWineId &&
-      !editingOriginWineId
+      !editingOriginWineId &&
+      !editingPurchasePriceWineId
     )
       return;
     if (qtyConfirmModal || inlineSelectConfirmModal) return;
@@ -484,6 +541,7 @@ export function AdminArchiveTable({
       if (ageInlineBoxRef.current?.contains(target)) return;
       if (producerInlineBoxRef.current?.contains(target)) return;
       if (originInlineBoxRef.current?.contains(target)) return;
+      if (purchasePriceInlineBoxRef.current?.contains(target)) return;
       swallowNextClickRef.current = true;
       cancelQtyEdit();
       cancelCategoryEdit();
@@ -491,6 +549,7 @@ export function AdminArchiveTable({
       cancelAgeEdit();
       cancelProducerEdit();
       cancelOriginEdit();
+      cancelPurchasePriceEdit();
     };
     const handleClickCapture = (event: MouseEvent) => {
       if (!swallowNextClickRef.current) return;
@@ -513,12 +572,14 @@ export function AdminArchiveTable({
     cancelCategoryEdit,
     cancelNameEdit,
     cancelOriginEdit,
+    cancelPurchasePriceEdit,
     cancelProducerEdit,
     cancelQtyEdit,
     editingCategoryWineId,
     editingAgeWineId,
     editingOriginWineId,
     editingNameWineId,
+    editingPurchasePriceWineId,
     editingProducerWineId,
     editingQtyWineId,
     inlineSelectConfirmModal,
@@ -630,6 +691,24 @@ export function AdminArchiveTable({
     if (updated) {
       setEditingOriginWineId(null);
       setEditingOriginValue('');
+    }
+  };
+
+  const savePurchasePriceEdit = async (wine: Wine) => {
+    const normalized = editingPurchasePriceValue.trim();
+    const parsed = parsePriceInput(normalized);
+    if (normalized.length > 0 && parsed === undefined) return;
+    const current = wine.purchasePrice;
+    if (parsed === current) {
+      cancelPurchasePriceEdit();
+      return;
+    }
+    setSavingInlineWineId(wine.id);
+    const updated = await onUpdateInlineFields(wine, { purchasePrice: parsed });
+    setSavingInlineWineId(null);
+    if (updated) {
+      setEditingPurchasePriceWineId(null);
+      setEditingPurchasePriceValue('');
     }
   };
 
@@ -1067,7 +1146,60 @@ export function AdminArchiveTable({
                         </button>
                       )}
                     </td>
-                    <td className="archiveColCenter">{formatMoney(wine.purchasePrice)}</td>
+                    <td className="archiveColCenter">
+                      {editingPurchasePriceWineId === wine.id ? (
+                        <div className="archiveInlineEditBox" ref={purchasePriceInlineBoxRef}>
+                          <input
+                            className="archiveInlinePriceInput"
+                            type="text"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck={false}
+                            data-form-type="other"
+                            data-lpignore="true"
+                            data-1p-ignore="true"
+                            data-bwignore="true"
+                            inputMode="decimal"
+                            value={editingPurchasePriceValue}
+                            onChange={(e) => {
+                              setEditingPurchasePriceValue(normalizePriceInput(e.target.value));
+                            }}
+                            onKeyDown={(e) => {
+                              if (
+                                e.key.length === 1 &&
+                                !/[0-9.,]/.test(e.key) &&
+                                !e.ctrlKey &&
+                                !e.metaKey &&
+                                !e.altKey
+                              ) {
+                                e.preventDefault();
+                              }
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                void savePurchasePriceEdit(wine);
+                              }
+                              if (e.key === 'Escape') {
+                                e.preventDefault();
+                                cancelPurchasePriceEdit();
+                              }
+                            }}
+                            aria-label={`Modifica prezzo acquisto ${wine.name}`}
+                            disabled={savingInlineWineId === wine.id}
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          className="archiveInlineMoneyButton"
+                          type="button"
+                          onClick={() => beginPurchasePriceEdit(wine)}
+                          aria-label={`Modifica prezzo acquisto di ${wine.name}`}
+                        >
+                          {formatMoney(wine.purchasePrice)}
+                        </button>
+                      )}
+                    </td>
                     <td className="archiveColCenter">{formatMoney(wine.salePrice)}</td>
                     <td className={`archiveColCenter ${qtyClass}`}>
                       {editingQtyWineId === wine.id ? (
