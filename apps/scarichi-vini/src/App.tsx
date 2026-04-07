@@ -242,9 +242,6 @@ export function App() {
         >
           <div className="modalCard">
             <div className="modalTitle">Inserisci PIN</div>
-            <div className="modalDescription">
-              Richiesta PIN attiva. Inserisci il PIN per accedere all&apos;app.
-            </div>
             <div className="mt12">
               <input
                 ref={appPinInputRef}

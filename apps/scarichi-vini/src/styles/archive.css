@@ -446,11 +446,30 @@
   border-color: #7c164a;
   background: #f9eaf2;
   color: #7c164a;
+  animation: archiveResetPulse 0.45s ease-in-out infinite;
 }
 
 .archiveResetButtonActive:hover {
   border-color: #7c164a;
   background: #f8dce9;
+}
+
+@keyframes archiveResetPulse {
+  0% {
+    border-color: #7c164a;
+    background: #f9eaf2;
+    color: #7c164a;
+  }
+  50% {
+    border-color: #9f2a63;
+    background: #f5d2e4;
+    color: #9f2a63;
+  }
+  100% {
+    border-color: #7c164a;
+    background: #f9eaf2;
+    color: #7c164a;
+  }
 }
 
 .archiveGoogleSheetButton {
