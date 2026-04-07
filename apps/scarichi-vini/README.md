@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
+Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
 
 ## Quick Start
 
@@ -64,7 +64,16 @@ Nota tecnica (07/04/2026):
   - `Gestione voci filtri` (`/admin`):
     - apertura ottimizzata con warm start locale + sync remoto in background;
     - cache in-memory a TTL breve per riaperture rapide;
+    - creazione nuova voce via modale standard (non inline);
+    - enforcement casing live su voci filtro:
+      - `Categorie` uppercase;
+      - `Produttori` iniziale maiuscola;
+      - `Provenienze` uppercase;
     - eliminazione voce: i vini collegati mantengono il record ma il campo viene svuotato (render `-`).
+  - `Esporta archivio` (modale):
+    - pulsante Excel verde;
+    - pulsante PDF rosso;
+    - stato `Esportazione...` mostrato solo sul pulsante del formato selezionato.
 - Archivio vini desktop-first (`/admina`) con CRUD completo:
   - colonne estese (categoria, nome, anno, produttore, provenienza, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)

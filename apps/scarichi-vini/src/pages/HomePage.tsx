@@ -441,7 +441,6 @@ export function HomePage({
         <div className={`introCenter ${introVisible ? 'introVisible' : ''}`}>
           <Logo variant="intro" />
         </div>
-        <div className="introByline">By DERO</div>
       </div>
     );
   }

@@ -118,6 +118,10 @@ function readFieldByKind(wine: Wine, kind: RegistryKind): string {
   return wine.origin ?? '';
 }
 
+function formatRegistryDisplayValue(kind: RegistryKind, value: string): string {
+  return normalizeByKind(kind, value);
+}
+
 export function AdminRegistryManager() {
   const [wines, setWines] = useState<Wine[]>([]);
   const [managedCategories, setManagedCategories] = useState<string[]>([]);
@@ -588,43 +592,6 @@ export function AdminRegistryManager() {
             />
           </div>
 
-          {creating?.kind === activeKind ? (
-            <div className="adminRegistryCreateBar mt10">
-              <input
-                className="input adminRegistrySearchInput"
-                value={creating.draft}
-                placeholder={KIND_PLACEHOLDER[activeKind]}
-                onChange={(event) =>
-                  setCreating((prev) => (prev ? { ...prev, draft: event.target.value } : prev))
-                }
-                onKeyDown={(event) => {
-                  if (event.key !== 'Enter') return;
-                  event.preventDefault();
-                  void saveCreate();
-                }}
-                autoFocus
-              />
-              <button
-                className="adminRegistryActionButton adminRegistryActionButtonSave"
-                type="button"
-                disabled={actionBusy}
-                onClick={() => {
-                  void saveCreate();
-                }}
-              >
-                Aggiungi
-              </button>
-              <button
-                className="adminRegistryActionButton"
-                type="button"
-                disabled={actionBusy}
-                onClick={() => setCreating(null)}
-              >
-                Annulla
-              </button>
-            </div>
-          ) : null}
-
           <div className="adminRegistryTableWrap mt10">
             <div className="adminRegistryTableHead">
               <div className="adminRegistryVoiceHeader">
@@ -664,7 +631,9 @@ export function AdminRegistryManager() {
                   return (
                     <div key={`${activeKind}_${value}`} className="adminRegistryTableRow">
                       <div className="adminRegistryCellValue">
-                        <div className="adminRegistryValue">{value}</div>
+                        <div className="adminRegistryValue">
+                          {formatRegistryDisplayValue(activeKind, value)}
+                        </div>
                       </div>
                       <div className="adminRegistryCellUsage">{usageCount} vini</div>
                       <div className="adminRegistryCellActions">
@@ -718,6 +687,43 @@ export function AdminRegistryManager() {
       )}
 
       <ConfirmModal
+        open={Boolean(creating)}
+        title="Nuova voce"
+        cardClassName="adminRegistryEditModalCard"
+        description={
+          creating ? (
+            <div className="adminRegistryEditModalContent">
+              <input
+                className="input adminRegistrySearchInput mt10"
+                value={creating.draft}
+                placeholder={KIND_PLACEHOLDER[creating.kind]}
+                onChange={(event) => {
+                  const nextRaw = event.target.value;
+                  const next = normalizeByKind(creating.kind, nextRaw);
+                  setCreating((prev) => (prev ? { ...prev, draft: next } : prev));
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  void saveCreate();
+                }}
+                autoFocus
+              />
+            </div>
+          ) : undefined
+        }
+        confirmLabel={actionBusy ? 'Salvataggio...' : 'Aggiungi'}
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          void saveCreate();
+        }}
+        onCancel={() => {
+          if (actionBusy) return;
+          setCreating(null);
+        }}
+      />
+
+      <ConfirmModal
         open={Boolean(editing)}
         title="Modifica voce"
         cardClassName="adminRegistryEditModalCard"
@@ -732,7 +738,8 @@ export function AdminRegistryManager() {
                 value={editing.draft}
                 placeholder={KIND_PLACEHOLDER[editing.kind]}
                 onChange={(event) => {
-                  const next = event.target.value;
+                  const nextRaw = event.target.value;
+                  const next = normalizeByKind(editing.kind, nextRaw);
                   setEditing((prev) => (prev ? { ...prev, draft: next } : prev));
                 }}
                 onKeyDown={(event) => {

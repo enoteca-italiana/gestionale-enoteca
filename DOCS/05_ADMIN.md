@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
 
 ## Accesso
 
@@ -109,6 +109,14 @@ Vincolo sicurezza:
 
 - l'import non parte mai senza doppia conferma + PIN.
 
+### Export archivio (modale)
+
+Nel modale `Esporta archivio`:
+
+- pulsante `Esporta Excel` su sfondo verde;
+- pulsante `Esporta PDF` su sfondo rosso;
+- durante export, la label `Esportazione...` appare solo sul pulsante del formato cliccato (non su entrambi).
+
 ### Imposta Soglie (nuovo)
 
 Obiettivo:
@@ -193,6 +201,12 @@ Comportamento aggiornato:
 - eliminazione voce:
   - warning centrato e PIN obbligatorio;
   - i vini associati restano in archivio ma il campo viene impostato vuoto (render `-`), non `0`.
+- creazione voce:
+  - apertura tramite modale standard (`Nuova voce`), non più barra input inline.
+- policy casing enforcement (in input e visualizzazione):
+  - `Categorie` => maiuscolo;
+  - `Produttori` => iniziale maiuscola;
+  - `Provenienze` => maiuscolo.
 
 ## Sessioni sospese
 

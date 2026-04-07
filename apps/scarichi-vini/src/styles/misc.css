@@ -39,6 +39,16 @@
   border: 1px solid #e5e7eb;
 }
 
+.adminExportExcelButton {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.adminExportPdfButton {
+  background: #dc2626;
+  color: #ffffff;
+}
+
 .smallButtonDanger {
   background: #f5eaf0;
   color: #7c164a;

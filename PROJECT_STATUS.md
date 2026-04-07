@@ -1,6 +1,25 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
+Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
+
+## Ultimi aggiornamenti (07/04/2026 - wave 24, hardening UX admin + coerenza casing)
+
+- Intro home:
+  - rimossa byline `By DERO`.
+- Archivio `/admina`:
+  - colonna `Q.tà` allargata progressivamente fino a `3.64%` (da `2%` base);
+  - spazio compensato sulla colonna `Nome` (`18.96%`).
+- Admin impostazioni (`/impostazioni`) -> export archivio:
+  - pulsante `Esporta Excel` con sfondo verde;
+  - pulsante `Esporta PDF` con sfondo rosso;
+  - fix stato busy export: label `Esportazione…` mostrata solo sul pulsante formato cliccato.
+- Gestione voci filtri (`/admin`):
+  - creazione nuova voce spostata da barra inline a modale standard;
+  - enforcement casing live in `Nuova voce` e `Modifica voce`:
+    - `Categorie` => maiuscolo;
+    - `Produttori` => iniziale maiuscola;
+    - `Provenienze` => maiuscolo;
+  - visualizzazione tabella allineata alla stessa policy per tutte le voci filtro.
 
 ## Ultimi aggiornamenti (07/04/2026 - wave 23, hardening operativo post-migrazione Supabase)
 

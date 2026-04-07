@@ -1,6 +1,6 @@
 # Text Casing Policy (obbligatoria)
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
 
 ## Regole vincolanti
 
@@ -26,6 +26,12 @@ Queste regole valgono sempre in tutta l'app (input, import CSV, visualizzazione,
   - normalizzazione durante `parseArchiveCsv` e durante export CSV.
 - `src/data/categoryRepository.ts`
   - categorie gestite sempre uppercase.
+- `src/pages/admin/AdminRegistryManager.tsx`
+  - enforcement live in creazione/modifica registry:
+    - `category` uppercase,
+    - `producer` initial uppercase,
+    - `origin` uppercase;
+  - rendering valori registry allineato alla stessa policy.
 - `src/data/dischargeRepository.ts`
   - snapshot sessioni (`wine_name`, `wine_category`, `wine_producer`, `wine_origin`) coerenti con policy.
 - `src/domain/formatWineInfoLine.ts`
@@ -66,3 +72,13 @@ insert into public.wines (
   :qty
 );
 ```
+
+## Google Sheet / Apps Script (sync bidirezionale)
+
+Per evitare conflitti di casing tra app e foglio condiviso:
+
+- in `syncFromSheetToSupabase` normalizzare sempre prima dell'upsert:
+  - `NOME` => uppercase;
+  - `PROVENIENZA` => uppercase;
+  - `PRODUTTORE` => initial uppercase.
+- dopo normalizzazione, riscrivere i valori nel foglio così l'utente vede subito il formato corretto.

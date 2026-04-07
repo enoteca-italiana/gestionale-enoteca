@@ -865,7 +865,7 @@
 
 .archiveTable th:nth-child(2),
 .archiveTable td:nth-child(2) {
-  width: 20.6%;
+  width: 18.96%;
 }
 
 .archiveTable th:nth-child(3),
@@ -899,7 +899,7 @@
 
 .archiveTable th:nth-child(8),
 .archiveTable td:nth-child(8) {
-  width: 2%;
+  width: 3.64%;
   padding-left: 4px;
   padding-right: 4px;
 }

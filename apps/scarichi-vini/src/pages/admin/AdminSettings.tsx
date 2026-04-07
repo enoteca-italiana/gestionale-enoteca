@@ -49,6 +49,7 @@ export function AdminSettings({
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportBusy, setExportBusy] = useState(false);
+  const [exportBusyMode, setExportBusyMode] = useState<'excel' | 'pdf' | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<ImportMode>('replace');
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false);
@@ -101,6 +102,7 @@ export function AdminSettings({
     }
     if (openAction === 'export') {
       setExportError(null);
+      setExportBusyMode(null);
       setExportModalOpen(true);
       onActionHandled?.();
       return;
@@ -294,6 +296,7 @@ export function AdminSettings({
   const handleExportArchive = async (mode: 'excel' | 'pdf') => {
     if (exportBusy) return;
     setExportError(null);
+    setExportBusyMode(mode);
     setExportBusy(true);
     try {
       const wines = await listWines({ forceRemote: true });
@@ -306,6 +309,7 @@ export function AdminSettings({
       setExportError(error instanceof Error ? error.message : "Errore durante export archivio");
     } finally {
       setExportBusy(false);
+      setExportBusyMode(null);
     }
   };
 
@@ -789,20 +793,20 @@ export function AdminSettings({
             {exportError ? <div className="errorText mt10">{exportError}</div> : null}
             <div className="modalActions">
               <button
-                className="button"
+                className="button adminExportExcelButton"
                 type="button"
                 disabled={exportBusy}
                 onClick={() => void handleExportArchive('excel')}
               >
-                {exportBusy ? 'Esportazione…' : 'Esporta Excel'}
+                {exportBusyMode === 'excel' ? 'Esportazione…' : 'Esporta Excel'}
               </button>
               <button
-                className="button"
+                className="button adminExportPdfButton"
                 type="button"
                 disabled={exportBusy}
                 onClick={() => void handleExportArchive('pdf')}
               >
-                {exportBusy ? 'Esportazione…' : 'Esporta PDF'}
+                {exportBusyMode === 'pdf' ? 'Esportazione…' : 'Esporta PDF'}
               </button>
               <button
                 className="button buttonSecondary buttonCancel"
@@ -810,6 +814,7 @@ export function AdminSettings({
                 onClick={() => {
                   if (exportBusy) return;
                   setExportModalOpen(false);
+                  setExportBusyMode(null);
                   setExportError(null);
                 }}
               >
