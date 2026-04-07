@@ -9,7 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['logo.png', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       devOptions: {
-        enabled: true
+        // Keep SW generation for production only: in dev this can leave stale
+        // service workers that interfere with local startup/cache refresh.
+        enabled: false
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}']

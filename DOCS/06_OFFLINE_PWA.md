@@ -1,6 +1,6 @@
 # Offline & PWA
 
-Ultimo aggiornamento: **17/03/2026 16:20 CET**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
 
 ## Obiettivo
 
@@ -16,7 +16,7 @@ Ultimo aggiornamento: **17/03/2026 16:20 CET**.
 
 ### Dev
 
-- In dev viene eseguito un unregister “once per session” per evitare cache stale durante lo sviluppo.
+- In dev la PWA è disabilitata (`VitePWA.devOptions.enabled = false`) per evitare cache/service worker stale durante debug locale.
 
 ## Caching
 

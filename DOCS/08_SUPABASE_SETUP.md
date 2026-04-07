@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **07/04/2026 02:30 CEST**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
 
 ## Stato attuale
 
@@ -62,7 +62,8 @@ Conferme principali:
 - RLS attivo sulle tabelle applicative con policy allineate ai percorsi runtime reali.
 - privilegi tabella/policy allineati con principio di minimo privilegio (least privilege).
 - indici principali presenti (`name`, `category`, `producer`, `origin`, `qty`).
-- seed caricato: `20` vini.
+- seed SQL (`SCRIPT 08`) disponibile ma opzionale.
+  - nel riallineamento del 07/04/2026 è stato **saltato** per preservare dataset reale già presente su Foglio/App.
 - routine RPC presente: `submit_discharge_session`.
 - tabelle sessioni presenti:
   - `public.discharge_sessions`
@@ -119,6 +120,14 @@ Questo trigger invia evento verso Apps Script Web App per refresh del foglio.
 Script SQL completo e checklist nel file:
 
 - `Refactoring supabase.md`
+
+Stato verifica operativa (07/04/2026):
+
+- trigger `trg_wines_before_write` presente;
+- trigger `trg_wines_notify_google_sheets` presente;
+- colonne snapshot sessioni verificate su `public.discharge_session_items`:
+  - `wine_name`, `wine_age`, `wine_producer`, `wine_origin`, `wine_category`;
+  - `wine_id` nullable `YES`.
 
 Policy SQL obbligatoria su insert/update record vino:
 

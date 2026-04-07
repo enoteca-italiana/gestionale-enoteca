@@ -2,7 +2,7 @@
 
 Questa cartella contiene la documentazione operativa allineata allo stato reale del progetto.
 
-Ultimo aggiornamento: **07/04/2026 02:30 CEST**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
 
 ## Documenti
 

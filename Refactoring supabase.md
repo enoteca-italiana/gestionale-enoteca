@@ -105,6 +105,10 @@ Riferimento ordine ufficiale in `DOCS/08_SUPABASE_SETUP.md`:
 10. SCRIPT 08 seed upsert
 11. SCRIPT 09A/09B check finale
 
+Nota operativa (07/04/2026):
+- su ambiente con dataset reale già allineato da Google Sheet, `SCRIPT 08` va saltato per evitare overwrite seed.
+- in questo caso procedere con `SCRIPT 09A/09B` e poi webhook.
+
 ## 5.4 SQL webhook verso Google Sheets
 Eseguire in SQL Editor questo blocco (aggiornando URL/secret se cambiano):
 

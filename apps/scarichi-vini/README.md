@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
 
 ## Quick Start
 
@@ -18,6 +18,11 @@ Comandi utili:
 - `npm run build`
 - `npm run preview`
 - `npm run dev -w @enoteca/scarichi-vini -- --port 5001` (porta dedicata)
+
+Nota tecnica (07/04/2026):
+
+- in sviluppo locale la PWA è disabilitata (`vite.config.ts -> VitePWA.devOptions.enabled = false`) per evitare cache/service worker stale che possono bloccare il bootstrap dev;
+- in build production la PWA resta attiva.
 
 ## Funzionalità principali
 

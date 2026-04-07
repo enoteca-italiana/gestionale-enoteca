@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
 
 ## Introduzione
 
@@ -827,6 +827,8 @@ Questa scheda rappresenta la base tecnica e funzionale su cui costruire il proge
 
 - DOCS e PROJECT_STATUS sincronizzati con le novità (GitHub, workflow push, Cloudflare setup).
 - Dev server locale attivo su `npm run dev` (porta 5173) e preview IDE disponibile.
+- hardening dev locale completato: PWA disabilitata in dev per prevenire cache/service worker stale durante debug e test su `5001`.
+- Apps Script operativo e trigger attivi per sync bidirezionale Foglio/Supabase; eseguito riallineamento CSV -> Supabase.
 - Vulnerabilità npm note (vite/esbuild/serialize-javascript): valutare upgrade controllato in fase successiva.
 
 ---

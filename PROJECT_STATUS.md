@@ -1,6 +1,21 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
+
+## Ultimi aggiornamenti (07/04/2026 - wave 23, hardening operativo post-migrazione Supabase)
+
+- Quality gate enterprise rieseguito end-to-end:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅ (10 test)
+  - `npm run build` ✅
+- Stabilità locale dev server migliorata:
+  - in `apps/scarichi-vini/vite.config.ts` disabilitata PWA in dev (`devOptions.enabled = false`) per evitare Service Worker stale e `ERR_CONNECTION_REFUSED` durante sviluppo locale su `5001`;
+  - comportamento production invariato (PWA attiva in build).
+- Riallineamento operativo completato tra ambienti:
+  - push su `main` eseguito da account GitHub corretto `enoteca-italiana`;
+  - variabili Supabase aggiornate in Cloudflare Pages (Production);
+  - Apps Script riallineato e sincronizzazione Foglio <-> Supabase verificata.
 
 ## Ultimi aggiornamenti (07/04/2026 - switch Supabase project ref)
 
