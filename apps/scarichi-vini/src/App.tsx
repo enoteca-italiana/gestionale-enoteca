@@ -1,5 +1,5 @@
 import { Route, Switch, useLocation } from 'wouter';
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import { APP_ROUTES, isSettingsPath } from '@/app/routes';
 import { useOfflineDischargeQueueSync } from '@/app/useOfflineDischargeQueueSync';
@@ -58,6 +58,8 @@ export function App() {
   const [settingsPin, setSettingsPin] = useState('');
   const [settingsPinError, setSettingsPinError] = useState<string | null>(null);
   const [settingsPinBusy, setSettingsPinBusy] = useState(false);
+  const appPinInputRef = useRef<HTMLInputElement | null>(null);
+  const settingsPinInputRef = useRef<HTMLInputElement | null>(null);
 
   const ensureAdminPinHash = useCallback(async () => {
     const storedHash = localStorage.getItem(storageKeys.adminPasswordHash);
@@ -184,6 +186,40 @@ export function App() {
     !introVisible &&
     !showAppPinGate;
 
+  useEffect(() => {
+    if (!showAppPinGate && !showSettingsPinGate) return;
+
+    const getActivePinInput = () =>
+      showAppPinGate ? appPinInputRef.current : settingsPinInputRef.current;
+
+    const focusPinInput = () => {
+      const input = getActivePinInput();
+      if (!input) return;
+      input.focus({ preventScroll: true });
+      const cursor = input.value.length;
+      try {
+        input.setSelectionRange(cursor, cursor);
+      } catch {
+        // Ignore selection failures on non-text-capable inputs.
+      }
+    };
+
+    const frame = window.requestAnimationFrame(focusPinInput);
+    const onFocusIn = (event: FocusEvent) => {
+      const input = getActivePinInput();
+      const target = event.target as Node | null;
+      if (!input || !target) return;
+      if (target === input || input.contains(target)) return;
+      focusPinInput();
+    };
+
+    document.addEventListener('focusin', onFocusIn, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener('focusin', onFocusIn, true);
+    };
+  }, [showAppPinGate, showSettingsPinGate]);
+
   return (
     <>
       <Suspense fallback={<div className="container">Caricamento…</div>}>
@@ -211,6 +247,8 @@ export function App() {
             </div>
             <div className="mt12">
               <input
+                ref={appPinInputRef}
+                autoFocus
                 className="input"
                 type="password"
                 inputMode="numeric"
@@ -257,6 +295,8 @@ export function App() {
             </div>
             <div className="mt12">
               <input
+                ref={settingsPinInputRef}
+                autoFocus
                 className="input"
                 type="password"
                 inputMode="numeric"

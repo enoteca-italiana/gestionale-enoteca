@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:39 CEST**.
 
 ## Quick Start
 
@@ -51,6 +51,9 @@ Nota tecnica (07/04/2026):
     - update sincronizzato su locale + Supabase;
     - toast `Giacenza aggiornata` in verde (2s).
 - Admin impostazioni (`/impostazioni`, compat legacy `/admin`) con autenticazione locale.
+  - modale `Inserisci PIN` con focus lock:
+    - il cursore resta sempre nel campo PIN mentre il gate è aperto;
+    - bloccata digitazione accidentale nei campi sottostanti.
   - azione `Reset archivio` con PIN:
     - cancella archivio vini e pulisce i registry/cache filtri correlati
     - storico sessioni preservato (indipendente dall'archivio vini)
@@ -83,6 +86,7 @@ Nota tecnica (07/04/2026):
     - stile: sfondo bianco, bordo grigio leggero, icona frecce viola
   - il box statistiche sostituisce il vecchio filtro `Tutte le giacenze`
   - filtri archivio (`Cerca...`, `Categoria`, `Produttore`, `Provenienza`) complementari tra loro
+  - riga filtri desktop stabilizzata con distribuzione equa su `Categoria`, `Produttore`, `Provenienza`
   - filtri archivio (`Categoria`, `Produttore`, `Provenienza`) con shortcut `+ Aggiungi ...` direttamente nelle tendine
     - la voce `+ Aggiungi ...` è sempre fissa in cima (toolbar + inline tabella), anche durante lo scroll opzioni
   - pulsanti statistiche con stato selezionato a colori invertiti (testo bianco)
@@ -114,6 +118,7 @@ Nota tecnica (07/04/2026):
   - policy campi testuali vino (input, CSV, visualizzazione, export):
     - `Categoria`, `Nome`, `Provenienza` sempre in **MAIUSCOLO**
     - `Produttore` sempre con **iniziale maiuscola**
+  - colonna `Categoria`: valori centrati nella cella (anche in rendering inline)
   - modale aggiungi/modifica vino:
     - `Acquisto`/`Vendita` supportano decimali e centesimi in digitazione (`virgola`/`punto`) con parsing numerico al salvataggio
   - pulsante reset filtri:

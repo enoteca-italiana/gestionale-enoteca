@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:39 CEST**.
 
 ## Workspace
 
@@ -130,6 +130,8 @@ Standard UI dati vino:
 - `src/app/useAppSettings.ts`
 - `src/app/useOnlineStatus.ts`
 - `src/app/routes.ts` (costanti route + helper condivisi `isSettingsPath`/`isArchivePath`)
+- `src/App.tsx`:
+  - gate PIN startup/impostazioni con focus lock sull'input PIN quando il modale è attivo.
 
 ## Invarianti (da rispettare)
 

@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:39 CEST**.
 
 ## Accesso
 
@@ -79,6 +79,9 @@ Comportamento:
 - PIN impostazioni:
   - `ON` richiede PIN per accesso a `/impostazioni` (valido anche per alias `/admin`);
   - lo sblocco non resta persistente tra accessi (nuova richiesta PIN a ogni rientro in Impostazioni).
+- Focus sicurezza modale PIN:
+  - quando il modale `Inserisci PIN` è visibile, il cursore resta vincolato all'input PIN;
+  - eventuali tentativi di focus su campi sottostanti vengono reindirizzati automaticamente all'input PIN.
 
 ### Cambio password admin
 
@@ -262,6 +265,7 @@ Funzioni principali:
 - filtri su singola riga desktop con box statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
 - ordine toolbar: `Aggiungi vino` in prima posizione a sinistra, poi campo `Cerca...`, poi filtri/comandi.
 - comandi finali toolbar: `Reset` -> `Foglio Google` -> `Totali` (ultima posizione a destra).
+- distribuzione spazio filtri desktop stabilizzata: `Categoria`, `Produttore`, `Provenienza` su tre colonne equivalenti.
 - filtri con creazione rapida valori:
   - `+ Aggiungi categoria…`
   - `+ Aggiungi produttore…`
@@ -284,6 +288,8 @@ Funzioni principali:
 - placeholder celle vuote:
   - `—` centrato solo quando valore assente in `Categoria`, `Produttore`, `Provenienza`;
   - valore presente sempre allineato a sinistra.
+- colonna `Categoria`:
+  - valori centrati nella cella anche durante rendering inline/edit.
 - modifica massiva su filtri attivi (tabella):
   - apertura con click destro;
   - applicazione su tutti i vini filtrati;

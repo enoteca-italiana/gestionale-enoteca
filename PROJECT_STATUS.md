@@ -1,6 +1,21 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:39 CEST**.
+
+## Ultimi aggiornamenti (07/04/2026 - wave 26, focus lock PIN + stabilizzazione toolbar archivio)
+
+- Gate PIN app/impostazioni:
+  - fix race focus all'apertura modale `Inserisci PIN`;
+  - introdotto focus lock sul solo input PIN (`focusin` guard + ref) finché il modale è aperto;
+  - impedita digitazione accidentale nei campi sottostanti (es. `Cerca` archivio) durante richiesta PIN.
+- Archivio `/admina`:
+  - stabilizzata la riga filtri con griglia coerente e distribuzione equa dei tre filtri (`Categoria`, `Produttore`, `Provenienza`);
+  - allineamento centrato valori in colonna `Categoria` (render inline della prima colonna).
+- Quality gate post-fix:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (07/04/2026 - wave 25, pulizia enterprise + dashboard totali)
 

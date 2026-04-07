@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:39 CEST**.
 
 ## Introduzione
 
@@ -32,6 +32,7 @@ L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su
   - voce `+ Aggiungi ...` fissa in cima nei selector filtri (toolbar + inline tabella);
   - pulsante reset filtri con stato attivo lampeggiante quando presenti filtri applicati;
   - comandi finali allineati: `Reset` -> `Foglio Google` -> `Totali` (ultima posizione destra).
+  - distribuzione spazio filtri `Categoria/Produttore/Provenienza` stabilizzata su colonne equivalenti.
 - dashboard `Totali Archivio` (`/admina/totali`):
   - filtri complementari su categoria/produttore/provenienza;
   - totali real-time: acquisto, vendita, margine, magazzino;
@@ -59,6 +60,7 @@ L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su
     - richiesta PIN all'avvio App;
     - richiesta PIN accesso pagina Impostazioni;
   - toggle `ON/OFF` touch-friendly;
+  - focus lock modale PIN (cursore vincolato all'input PIN durante il gate);
   - richiesta PIN impostazioni non persistente tra accessi.
 - Cambio password admin:
   - aggiunto campo `Conferma nuova password` con validazione match obbligatoria.

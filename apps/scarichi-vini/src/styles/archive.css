@@ -63,15 +63,21 @@
   margin-top: 10px;
   display: grid;
   grid-template-columns:
+    10%
+    18.96%
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
     auto
-    minmax(150px, 0.7fr)
-    minmax(500px, 1.35fr)
-    minmax(192px, auto)
     auto
-    auto
-    auto;
+    6.8%
+    8.6%;
   gap: 10px;
   align-items: center;
+}
+
+.archiveFilters > * {
+  min-width: 0;
 }
 
 .archiveFilterControl {
@@ -81,6 +87,7 @@
 
 .archiveSearchInput {
   min-width: 0;
+  grid-column: 2;
 }
 
 .archiveFilterGroup {
@@ -88,6 +95,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   min-width: 0;
+  grid-column: 3 / 6;
 }
 
 .archiveFilterField {
@@ -279,6 +287,8 @@
   background: transparent;
   border-radius: 0;
   padding: 0;
+  grid-column: 6;
+  width: 100%;
 }
 
 .archiveStatsBox .archiveStatLabel {
@@ -370,8 +380,10 @@
 }
 
 .archiveAddButton {
-  justify-self: end;
-  min-width: 170px;
+  grid-column: 1;
+  justify-self: center;
+  min-width: 0;
+  width: 100%;
   min-height: var(--archive-top-action-size);
   height: var(--archive-top-action-size);
   font-size: 12px;
@@ -383,11 +395,13 @@
 }
 
 .archiveTotalsButton {
+  grid-column: 9;
   appearance: none;
   text-decoration: none;
   font-size: 12px;
   font-weight: 700;
-  min-width: 122px;
+  min-width: 0;
+  width: 100%;
   padding: 0 12px;
   border-radius: 16px;
   border: 1px solid #ca8a04;
@@ -401,6 +415,8 @@
 }
 
 .archiveResetButton {
+  grid-column: 7;
+  justify-self: center;
   appearance: none;
   border: 1px solid #d1d5db;
   background: #ffffff;
@@ -435,6 +451,12 @@
 .archiveResetButtonActive:hover {
   border-color: #7c164a;
   background: #f8dce9;
+}
+
+.archiveGoogleSheetButton {
+  grid-column: 8;
+  min-width: 0;
+  width: 100%;
 }
 
 .archiveTotalsTopBar {
@@ -581,7 +603,16 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: auto minmax(130px, 0.65fr) minmax(420px, 1.2fr) auto auto auto auto;
+    grid-template-columns:
+      10%
+      18.96%
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      auto
+      auto
+      6.8%
+      8.6%;
   }
 }
 
@@ -789,6 +820,10 @@
 }
 
 .archiveInlineCategoryButtonEmpty {
+  text-align: center;
+}
+
+.archiveTable tbody td:nth-child(1) .archiveInlineCategoryButton {
   text-align: center;
 }
 
