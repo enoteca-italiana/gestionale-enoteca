@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
 
 ## Accesso
 
@@ -254,19 +254,21 @@ Componenti:
 - `pages/admina/components/AdminArchiveToolbar.tsx`
 - `pages/admina/components/AdminArchiveTable.tsx`
 - `pages/admina/components/WineArchiveFormModal.tsx`
+- `pages/admina/WineTotalsPage.tsx` (route `/admina/totali`)
 
 Funzioni principali:
 
 - ricerca e filtri (testo, categoria, soglia/esauriti)
 - filtri su singola riga desktop con box statistiche (`Totale`, `Soglia`, `Esauriti`) e pulsante `Aggiungi vino`
 - ordine toolbar: `Aggiungi vino` in prima posizione a sinistra, poi campo `Cerca...`, poi filtri/comandi.
+- comandi finali toolbar: `Reset` -> `Foglio Google` -> `Totali` (ultima posizione a destra).
 - filtri con creazione rapida valori:
   - `+ Aggiungi categoria…`
   - `+ Aggiungi produttore…`
   - `+ Aggiungi provenienza…`
   - nei selector (toolbar + inline tabella), la voce `+ Aggiungi...` resta fissa in cima mentre la lista scorre.
   - dopo creazione valore da una tendina filtro, il filtro resta su default `Tutte/Tutti` (`all`).
-- pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra box statistiche e pulsante AI
+- pulsante reset filtri dedicato (tondo bianco, icona frecce viola) tra box statistiche e comandi a destra
   - resetta tutti i filtri allo stato default (`Totale` + select su `Tutti` + ricerca vuota);
   - resetta anche stati tabella (ordinamenti colonne verdi e stati inline aperti).
   - con filtri attivi cambia colore e lampeggia; dopo reset torna normale.
@@ -294,12 +296,23 @@ Funzioni principali:
   - tabella con rendering progressivo righe (`Carica altre righe`)
   - filtro ricerca con `useDeferredValue`
   - caricamento iniziale: hydration locale immediata + sync Supabase
-- assistente AI in `/admina`:
-  - export report contestuale solo PDF;
-  - pulsante `Esporta PDF` mostrato nel singolo messaggio report (non fisso in header);
-  - PDF con logo in alto e numerazione pagine `1/N`.
 - notifiche spot:
   - rimossi toast inline non bloccanti in archivio (es. `Nome aggiornato`), mantenendo feedback errori.
+
+## Totali archivio (`/admina/totali`)
+
+Vista analitica dedicata ai totali inventariali.
+
+Funzioni principali:
+
+- filtri complementari su una riga (`Categoria`, `Produttore`, `Provenienza`);
+- calcolo in tempo reale su dataset filtrato:
+  - `Totale acquisto` = somma prezzi acquisto;
+  - `Totale vendita` = somma prezzi vendita;
+  - `Totale margine` = somma (`vendita - acquisto`);
+  - `Totale magazzino` = somma (`acquisto x q.tà`);
+- conteggio `N voci incluse nel calcolo` centrato tra sottotitolo e blocco filtri;
+- pulsante `Esci` per ritorno rapido a `/admina`.
 
 Regole business:
 

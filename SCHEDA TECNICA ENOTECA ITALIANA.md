@@ -1,6 +1,6 @@
 # SCHEDA TECNICA — APP GESTIONE SCARICHI VINI ENOTECA
 
-Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
 
 ## Introduzione
 
@@ -30,7 +30,13 @@ L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su
   - pulsante `Aggiungi vino` in prima posizione a sinistra, prima del campo `Cerca...`;
   - filtri `Cerca...`, `Categoria`, `Produttore`, `Provenienza` complementari;
   - voce `+ Aggiungi ...` fissa in cima nei selector filtri (toolbar + inline tabella);
-  - pulsante reset filtri con stato attivo lampeggiante quando presenti filtri applicati.
+  - pulsante reset filtri con stato attivo lampeggiante quando presenti filtri applicati;
+  - comandi finali allineati: `Reset` -> `Foglio Google` -> `Totali` (ultima posizione destra).
+- dashboard `Totali Archivio` (`/admina/totali`):
+  - filtri complementari su categoria/produttore/provenienza;
+  - totali real-time: acquisto, vendita, margine, magazzino;
+  - indicatore centrato `N voci incluse nel calcolo`;
+  - uscita rapida con pulsante `Esci` verso archivio.
 - gestione voci filtri admin:
   - creazione voce via modale standard;
   - enforcement casing in input/modifica:
@@ -42,11 +48,6 @@ L’app è sviluppata su ambiente locale/Replit, con repository sincronizzato su
 - impostazioni admin con import archivio CSV:
   - validazione tracciato colonne;
   - sostituzione totale record archivio in un’unica operazione.
-- assistente AI archivio (`/admina`) con modale dedicato:
-  - chat analitica su dati correnti archivio;
-  - chat unica (nessuna vista impostazioni separata nel modale);
-  - chiamata AI sicura via backend server-side (Cloudflare Function), nessuna chiave nel frontend;
-  - nessuna scrittura automatica su Supabase (solo consultazione/analisi).
 - Home consultiva:
   - click su card vino apre modale `Giacenza`;
   - modifica quantità con doppia conferma;
@@ -815,7 +816,6 @@ Questa scheda rappresenta la base tecnica e funzionale su cui costruire il proge
 - Variabili ambiente obbligatorie produzione:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
-  - `OPENAI_API_KEY` (secret server-side per Function `/api/ai`)
 - Valori Supabase correnti (07/04/2026):
   - `VITE_SUPABASE_URL=https://aezqtgadyaxdcptwlpci.supabase.co`
   - `VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlenF0Z2FkeWF4ZGNwdHdscGNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NTE3MzYsImV4cCI6MjA5MTEyNzczNn0.XHygA3zVLT10OICJMsKJ8EmVK1-VUkIop9jFG4aZciQ`

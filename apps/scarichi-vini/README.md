@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
 
 ## Quick Start
 
@@ -78,7 +78,7 @@ Nota tecnica (07/04/2026):
   - colonne estese (categoria, nome, anno, produttore, provenienza, prezzi, q.tà, azioni)
   - toolbar filtri ottimizzata su una riga desktop con box statistiche compatto (`Totale`, `Soglia`, `Esauriti`)
   - pulsante `Aggiungi vino` in prima posizione a sinistra, prima del box `Cerca...`
-  - pulsante reset filtri tondo (tra box statistiche e pulsante AI), stesso diametro del pulsante AI:
+  - pulsante reset filtri tondo (tra box statistiche e comandi a destra), con diametro coerente agli action button:
     - reset completo filtri a default (`Totale` + tutti i select su `Tutti` + ricerca vuota)
     - stile: sfondo bianco, bordo grigio leggero, icona frecce viola
   - il box statistiche sostituisce il vecchio filtro `Tutte le giacenze`
@@ -120,6 +120,12 @@ Nota tecnica (07/04/2026):
     - con filtri attivi cambia colore e lampeggia;
     - dopo reset torna allo stato normale
   - export archivio: Excel/PDF con icone dockate in alto a destra (solo icone)
+  - pulsante `Totali` (ambra) in ultima posizione a destra, dopo `Foglio Google`
+  - pagina `Totali Archivio` (`/admina/totali`):
+    - filtri `Categoria`, `Produttore`, `Provenienza` complementari;
+    - card aggregate `Totale acquisto`, `Totale vendita`, `Totale margine`, `Totale magazzino`;
+    - indicatore centrale `N voci incluse nel calcolo`;
+    - pulsante `Esci` per ritorno a `/admina`.
   - performance avanzata (dataset grandi):
     - route lazy-loaded (`/`, `/impostazioni`, `/admin`, `/admina`) per startup più rapido
     - rendering progressivo liste (`Carica altri vini` / `Carica altre righe`)
@@ -130,28 +136,12 @@ Nota tecnica (07/04/2026):
     - autoload progressivo con `IntersectionObserver` su liste lunghe (Home/Archivio/Storico)
     - normalizzazione memoizzata campi filtro archivio per ridurre lavoro per-riga
     - fetch paginato `wines` allineato al limite API Supabase (page size 1000) per evitare blocco a 1000 righe
-- Assistente AI archivio:
-  - chat unica nel modale (nessuna vista impostazioni separata)
-  - modello selezionabile inline vicino a `Invia`
-  - contesto completo su archivio + sessioni storiche/sospese per risposte più affidabili
-  - supporto modalità web+app con vincoli di sicurezza su dati interni
-  - cache TTL locale su sessioni storiche AI + analytics inventario precomputati (meno latenza su invio)
-  - caricamento storico AI completo via paginazione (sessioni/items `submitted`) con blocco recency (`mai scaricati`, `>6 mesi`, `>12 mesi`)
-  - modalità analitica rigorosa:
-    - blocco `inventory.byProducer` (metriche aggregate per produttore),
-    - blocco `sessions.dataQuality` (anomalie deterministiche),
-    - blocco `sessions.outliers` (sessioni anomale su base statistica),
-    - risposta vincolata: niente stime/ipotesi, uso esplicito di `non disponibile nel contesto` quando manca dato.
-  - export report AI:
-    - formato disponibile: **PDF**;
-    - pulsante `Esporta PDF` visibile solo nei messaggi report richiesti esplicitamente in chat;
-    - PDF con logo `Enoteca Italiana` in alto (proporzioni preservate) e numerazione pagine `1/N`.
 - Logo applicativo ottimizzato in `public/logo.png` per ridurre peso asset.
 - Icone installazione PWA multi-device:
   - Android/desktop: `pwa-192x192.png`, `pwa-512x512.png` + `maskable`
   - iOS/Safari: `apple-touch-icon.png`
 - Tema PWA/title bar allineato al brand: `#7c164a` (manifest + meta theme-color)
-- Export PDF (Archivio + Assistente AI): numerazione pagine in footer `1/N`.
+- Export PDF archivio: numerazione pagine in footer `1/N`.
 
 ## Quality Gate
 
@@ -175,17 +165,12 @@ Nota tecnica (07/04/2026):
 - Supabase corrente (07/04/2026):
   - `VITE_SUPABASE_URL=https://aezqtgadyaxdcptwlpci.supabase.co`
   - `VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlenF0Z2FkeWF4ZGNwdHdscGNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NTE3MzYsImV4cCI6MjA5MTEyNzczNn0.XHygA3zVLT10OICJMsKJ8EmVK1-VUkIop9jFG4aZciQ`
-- AI (sicuro su Cloudflare Pages Functions):
-  - secret server-side obbligatorio: `OPENAI_API_KEY`
-  - default model server-side opzionale: `OPENAI_MODEL`
-  - model pre-selezionato in UI opzionale: `VITE_OPENAI_MODEL`
-  - `VITE_OPENAI_API_KEY` non è più usata (chiave sempre server-side).
 - Con Supabase configurato, storico/sospesi sessioni usano le tabelle dedicate server-side.
 - Post-submit sessione: riconciliazione difensiva delle giacenze `wines.qty` per garantire allineamento archivio/storico anche in caso di RPC parziale.
 - Script SQL enterprise DB ops: `scripts/sql/supabase_enterprise_index_cleanup.sql`.
 - Script SQL policy casing campi vino: `scripts/sql/supabase_text_casing_policy.sql`.
 - Cloudflare Pages SPA routing:
-  - file `public/_redirects` incluso per deep-link client-side (`/impostazioni`, `/admin`, `/admina`) + bypass `/api/*`.
+  - file `public/_redirects` incluso per deep-link client-side (`/impostazioni`, `/admin`, `/admina`).
 
 ## Regole Deploy (Cloudflare Pages)
 

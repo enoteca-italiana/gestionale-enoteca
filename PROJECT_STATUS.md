@@ -1,6 +1,24 @@
 # Enoteca — Scarichi Vini (PWA)
 
-Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
+
+## Ultimi aggiornamenti (07/04/2026 - wave 25, pulizia enterprise + dashboard totali)
+
+- Rimozione completa Assistente AI dal runtime:
+  - eliminati endpoint/function, componenti UI e asset dedicati;
+  - rimossi riferimenti config/variabili AI da `.env.example`, docs operative e README.
+- Archivio `/admina`:
+  - toolbar allineata definitivamente con comandi finali `Reset` -> `Foglio Google` -> `Totali` (ultima posizione destra);
+  - pulsante reset ripristinato in stile tondo standard (bordi chiari, icona bordeaux).
+- Nuova route `/admina/totali`:
+  - filtri complementari `Categoria`, `Produttore`, `Provenienza`;
+  - card aggregate `Totale acquisto`, `Totale vendita`, `Totale margine`, `Totale magazzino`;
+  - testo `N voci incluse nel calcolo` centrato tra sottotitolo e blocco filtri, in bordeaux e grassetto.
+- Quality gate completo post-hardening:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅
+  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (07/04/2026 - wave 24, hardening UX admin + coerenza casing)
 
@@ -49,7 +67,7 @@ Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
 ## Ultimi aggiornamenti (07/04/2026 - wave 22, hardening archivio filtri + rimozione fornitore)
 
 - Rimozione completa dominio `Fornitore` dal runtime:
-  - eliminata logica `supplier` da tipi, repository, parsing CSV, filtri, UI archivio, bulk edit e AI analytics;
+  - eliminata logica `supplier` da tipi, repository, parsing CSV, filtri, UI archivio e bulk edit;
   - eliminato file obsoleto `apps/scarichi-vini/src/data/supplierRepository.ts`;
   - allineata gestione registry su soli domini `Categoria`, `Produttore`, `Provenienza`.
 - Archivio `/admina`:
@@ -96,14 +114,10 @@ Ultimo aggiornamento: **07/04/2026 16:04 CEST**.
 - Hardening codice (senza cambi logica business/UX):
   - introdotto modulo condiviso `src/app/routes.ts` per costanti route e helper path;
   - rimossa duplicazione logica route tra `App.tsx` e `BottomNav.tsx`;
-  - tipizzazione env allineata in `vite-env.d.ts` (`VITE_OPENAI_MODEL`).
 - Pulizia obsoleti:
-  - rimossi file legacy non più usati per parsing chiave OpenAI lato client:
-    - `src/pages/admina/components/aiAssistantKey.ts`
-    - `src/pages/admina/components/aiAssistantKey.test.ts`
+  - rimossi file legacy non più usati.
 - Cloudflare production verificato:
   - deep-link SPA operativi (`/`, `/impostazioni`, `/admin`, `/admina`);
-  - function AI operativa via `POST /api/ai` con secret server-side.
 - Quality gate sessione:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
@@ -305,7 +319,6 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - nessun marker merge (`<<<<<<<`, `=======`, `>>>>>>>`).
 - Verifica hygiene:
   - nessun file obsoleto rimosso in questa wave per vincolo risk-zero su logica/layout;
-  - top file più lunghi identificati (`AiAssistantModal.tsx`, `AdminSettings.tsx`, `WineAdminPage.tsx`) e mantenuti invariati lato comportamento.
 - Backup creato senza eliminare backup precedenti:
   - `backup/backup_16 Lunedi_16.24.tar.gz`.
 
@@ -446,9 +459,6 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 - Performance filtri e query locali:
   - Archivio: campi filtro normalizzati memoizzati per vino (`category/producer/origin/supplier`) per ridurre trasformazioni ripetute;
   - fetch paginato Supabase su `wines` allineato al limite API (`1000`) per evitare stop prematuro a 1000 record.
-- Assistente AI (stabilità + velocità):
-  - cache in memoria TTL per storico sessioni usato dal contesto AI;
-  - precomputo analytics inventario memoizzato (leaderboard/breakdown) evitando ricalcolo completo a ogni domanda.
 - DB ops:
   - aggiunto script SQL versionato per cleanup indici duplicati:
     - `scripts/sql/supabase_enterprise_index_cleanup.sql`
@@ -457,30 +467,7 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
 
 - Archivio desktop UX:
   - confinato lo scroll verticale alla sola tabella; pagina esterna fissa su desktop.
-- Assistente AI (copertura dataset storico completa):
-  - lettura paginata completa di `discharge_sessions` e `discharge_session_items` (submitted), non più limitata a 600/1200;
-  - contesto AI arricchito con blocco `recency` per:
-    - vini mai scaricati,
-    - vini non scaricati da >3 mesi / >6 mesi / >12 mesi,
-    - classifica “più vecchi o mai scaricati”;
-  - metadata contesto con conteggi record effettivamente caricati (`loadedSubmittedSessions`, `loadedSubmittedItems`).
 - Quality gate post-wave 5:
-  - `npm run lint` ✅
-  - `npm run typecheck` ✅
-  - `npm run test` ✅
-
-## Ultimi aggiornamenti (16/03/2026 - wave 6)
-
-- Assistente AI “strict analytics mode”:
-  - regole prompt più rigide: niente stime/ipotesi, uso esplicito `non disponibile nel contesto` quando manca un dato;
-  - nuovo blocco `inventory.byProducer` con metriche determinate per produttore (vini, qty attuale, qty scaricata, % mai scaricati, % sotto soglia/esauriti);
-  - nuovo blocco `sessions.dataQuality` con conteggi/samples deterministici su:
-    - nomi mancanti,
-    - qty non positive,
-    - duplicati sessione-vino,
-    - date incoerenti;
-  - nuovo blocco `sessions.outliers` con analisi outlier sessioni basata su media/deviazione standard.
-- Quality gate post-wave 6:
   - `npm run lint` ✅
   - `npm run typecheck` ✅
   - `npm run test` ✅
@@ -492,21 +479,8 @@ Questo documento serve per riprendere il progetto su un nuovo PC in modo rapido 
   - mobile: dopo intro resta su `/` (home).
 - Theme UI shell PWA:
   - `theme_color` allineato al viola brand `#7c164a` (manifest + meta).
-
-## Ultimi aggiornamenti (16/03/2026 - wave 7, AI export PDF)
-
-- Assistente AI (`/admina`):
-  - export messaggi assistente limitato a **PDF** (rimossi CSV/XLSX dal flusso AI);
-  - pulsante `Esporta PDF` mostrato **solo** sui messaggi assistente derivanti da richieste esplicite di report/export;
-  - PDF assistente con logo `Enoteca Italiana` in alto, proporzioni preservate;
-  - numerazione pagine in piccolo formato `1/N` su tutte le pagine.
 - Export PDF Archivio:
   - aggiunta numerazione pagine globale in footer `1/N` su tutte le pagine.
-- Quality gate post-wave 7:
-  - `npm run lint` ✅
-  - `npm run typecheck` ✅
-  - `npm run test` ✅
-  - `npm run build` ✅
 
 ## Ultimi aggiornamenti (16/03/2026 - wave 8, reset storico selettivo)
 
@@ -740,14 +714,7 @@ Comandi root:
   - formule automatiche:
     - `Magazzino = Acquisto × Q.tà`
     - `Margine = Vendita − Acquisto`
-  - Assistente AI archivio:
-    - apertura da pulsante AI in toolbar
     - modale conversazionale con analisi dati archivio
-    - nessuna vista impostazioni dedicata nel modale
-    - chiamata AI sicura via `/api/ai` (Cloudflare Function server-side)
-    - chat allineata in colonna verticale (stile chat classica)
-    - chiave OpenAI gestita solo lato server (`OPENAI_API_KEY`)
-    - nessuna scrittura dati su DB (solo analisi)
 - PWA:
   - service worker + caching app shell/assets
   - auto-update
@@ -829,18 +796,6 @@ Comandi root:
     - `archivio_vini_13 Marzo 2026.pdf`
   - impostazioni admin: import archivio CSV con validazione e conferma
   - import CSV con sostituzione totale record archivio (Supabase + cache locale allineata)
-
-### Ultimi aggiornamenti AI + toolbar (14/03/2026)
-
-- Assistente AI (`/admina`):
-  - unificata la chat in una sola vista (rimossa la sezione impostazioni separata nel modale);
-  - selezione modello spostata accanto al pulsante `Invia`;
-  - chiamata `Responses API` stabilizzata (fix errore payload `input_text`);
-  - contesto AI esteso con dati archivio completi + contesto sessioni storico/sospese;
-  - modalità operativa web+app attiva lato chiamata AI con vincoli anti-divulgazione nel system prompt.
-- Configurazione API key:
-  - supporto variabile ambiente server-side `OPENAI_API_KEY` (obbligatoria in Cloudflare);
-  - supporto fallback modello con `VITE_OPENAI_MODEL`.
 - Toolbar archivio:
   - fix chirurgico altezze pulsanti: allineamento uniforme basato su variabile CSS condivisa;
   - riduzione dimensionale progressiva dei pulsanti top in base alla richiesta utente.

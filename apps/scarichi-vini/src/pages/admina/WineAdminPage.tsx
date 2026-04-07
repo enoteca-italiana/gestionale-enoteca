@@ -1,4 +1,5 @@
-import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'wouter';
 import type { Wine } from '@/domain/types';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import {
@@ -32,6 +33,7 @@ import { BulkEditFilteredModal } from '@/pages/admina/components/BulkEditFiltere
 import { CategoryCreateModal } from '@/pages/admina/components/CategoryCreateModal';
 import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormModal';
 import { isInThreshold } from '@/pages/admina/utils/wineFilters';
+import { APP_ROUTES } from '@/app/routes';
 import {
   defaultFilters,
   emptyWine,
@@ -41,13 +43,8 @@ import {
   type WineFormState
 } from '@/pages/admina/types';
 
-const AiAssistantModal = lazy(() =>
-  import('@/pages/admina/components/AiAssistantModal').then((m) => ({
-    default: m.AiAssistantModal
-  }))
-);
-
 export function WineAdminPage() {
+  const [, setLocation] = useLocation();
   const [wines, setWines] = useState<Wine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +73,6 @@ export function WineAdminPage() {
   const [producerResultHandler, setProducerResultHandler] = useState<
     ((created: string | null) => void) | null
   >(null);
-  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [bulkEditBusy, setBulkEditBusy] = useState(false);
   const deferredTerm = useDeferredValue(filters.term);
@@ -599,7 +595,7 @@ export function WineAdminPage() {
           setTableResetVersion((prev) => prev + 1);
         }}
         onOpenCreate={openCreate}
-        onOpenAi={() => setAiModalOpen(true)}
+        onOpenTotals={() => setLocation(APP_ROUTES.ARCHIVE_TOTALS)}
       />
 
       {error ? (
@@ -638,15 +634,6 @@ export function WineAdminPage() {
         onSubmit={handleSubmit}
         onCancel={closeForm}
       />
-      {aiModalOpen ? (
-        <Suspense fallback={null}>
-          <AiAssistantModal
-            open={aiModalOpen}
-            wines={wines}
-            onClose={() => setAiModalOpen(false)}
-          />
-        </Suspense>
-      ) : null}
       <BulkEditFilteredModal
         open={bulkEditModalOpen}
         busy={busy || bulkEditBusy}

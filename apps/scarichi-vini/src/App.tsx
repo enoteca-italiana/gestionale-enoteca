@@ -11,6 +11,9 @@ const HomePage = lazy(() => import('@/pages/HomePage').then((m) => ({ default: m
 const WineAdminPage = lazy(() =>
   import('@/pages/admina/WineAdminPage').then((m) => ({ default: m.WineAdminPage }))
 );
+const WineTotalsPage = lazy(() =>
+  import('@/pages/admina/WineTotalsPage').then((m) => ({ default: m.WineTotalsPage }))
+);
 
 const APP_PIN_UNLOCKED_SESSION_KEY = 'scarichi.app.pinUnlocked.v1';
 const DEFAULT_ADMIN_PIN = '1909';
@@ -185,6 +188,7 @@ export function App() {
     <>
       <Suspense fallback={<div className="container">Caricamento…</div>}>
         <Switch>
+          <Route path={APP_ROUTES.ARCHIVE_TOTALS} component={WineTotalsPage} />
           <Route path={APP_ROUTES.ARCHIVE} component={WineAdminPage} />
           <Route path={APP_ROUTES.SETTINGS} component={AdminPage} />
           <Route path={APP_ROUTES.SETTINGS_LEGACY} component={AdminPage} />

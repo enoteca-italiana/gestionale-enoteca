@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **07/04/2026 15:35 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
 
 ## Dev server
 
@@ -35,7 +35,6 @@ Variabili ambiente obbligatorie (Production):
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
-- `OPENAI_API_KEY` (Secret)
 
 Valori Supabase correnti (07/04/2026):
 
@@ -50,11 +49,6 @@ Stato operativo Apps Script (07/04/2026):
   - `syncFromSupabaseToSheet` (`Basato sull'ora`, frequenza 1 minuto);
 - sincronizzazione foglio/Supabase verificata dopo import CSV e push verso DB;
 - se cambia URL Web App `/exec`, aggiornare `integration.runtime_config.google_sheets_webhook_url` in Supabase.
-
-Variabili opzionali:
-
-- `OPENAI_MODEL`
-- `VITE_OPENAI_MODEL`
 
 ## GitHub
 
@@ -184,6 +178,9 @@ Naming richiesto dall’utente:
 - ultimo backup creato: `backup_15 Domenica_23.17.tar.gz`
 - ultimo backup creato: `backup_16 Lunedi_02.14.tar.gz`
 - ultimo backup creato: `backup_16 Lunedi_16.24.tar.gz`
+- ultimo backup creato: `backup_07 Martedi_15.36.tar.gz`
+- ultimo backup creato: `backup_07 Martedi_16.07.tar.gz`
+- ultimo backup creato: `backup_07 Martedi_17.14.tar.gz`
 - ultimo backup creato: `backup_16 Lunedi_22.36.tar.gz`
 - ultimo backup creato: `backup_16 Lunedi_23.18.tar.gz`
 - ultimo backup creato: `backup_16 Lunedi_23.46.tar.gz`

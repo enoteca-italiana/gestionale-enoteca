@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **07/04/2026 17:12 CEST**.
 
 ## Workspace
 
@@ -19,6 +19,7 @@ Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
 - `/impostazioni` → `AdminPage`
 - `/admin` → `AdminPage` (alias legacy supportato)
 - `/admina` → `WineAdminPage` (archivio vini, desktop-first)
+- `/admina/totali` → `WineTotalsPage` (dashboard totali archivio)
 
 ## Moduli chiave
 
@@ -40,6 +41,7 @@ Asset logo:
 - `src/pages/HomePage.tsx`
 - `src/pages/AdminPage.tsx`
 - `src/pages/admina/WineAdminPage.tsx`
+- `src/pages/admina/WineTotalsPage.tsx`
 
 Nota Intro:
 
@@ -79,13 +81,18 @@ Toolbar archivio:
 - filtri ottimizzati su una riga desktop;
 - pulsante `Aggiungi vino` in prima posizione a sinistra, seguito dal campo `Cerca...`;
 - box compatto statistiche (`Totale`, `Soglia`, `Esauriti`) con comportamento filtro (rimosso filtro `Tutte le giacenze`);
-- pulsante reset filtri dedicato tra box statistiche e pulsante AI:
+- pulsante reset filtri dedicato tra box statistiche e comandi a destra:
   - azzera term + select (`all`) e riporta il filtro stock su `Totale`;
-  - dimensioni e allineamento coerenti al pulsante AI;
+  - dimensioni e allineamento coerenti agli action button della toolbar;
   - stato attivo: colore evidenziato + lampeggio quando ci sono filtri applicati.
 - filtri `Cerca...`, `Categoria`, `Produttore`, `Provenienza` complementari tra loro (opzioni ridotte in base ai filtri già applicati).
 - selector custom su toolbar + inline tabella con voce `+ Aggiungi ...` fissa in cima e lista opzioni scrollabile.
 - indicatori: `Totale` verde, `Soglia` ambra, `Esauriti` rosso;
+- pulsante `Foglio Google` verde e pulsante `Totali` ambra in ultima posizione a destra;
+- `Totali` apre `/admina/totali` con:
+  - filtri complementari (`Categoria`, `Produttore`, `Provenienza`);
+  - card `Totale acquisto`, `Totale vendita`, `Totale margine`, `Totale magazzino`;
+  - nota conteggio voci incluse nel calcolo.
 - stato selezionato dei tre pulsanti con colori invertiti (testo bianco su sfondo colorato).
 - colonna `ANNO`: se dato assente, cella vuota (senza placeholder).
 - colonna `Azioni`: include icona note (gialla se presenti, grigia/disabilitata se assenti) con preview note in modale.
