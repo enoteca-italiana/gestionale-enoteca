@@ -2,7 +2,7 @@
 
 App frontend del progetto Enoteca (workspace `@enoteca/scarichi-vini`).
 
-Ultimo aggiornamento: **07/04/2026 00:25 CEST**.
+Ultimo aggiornamento: **03/05/2026 — CEST**.
 
 ## Quick Start
 
@@ -45,6 +45,11 @@ Comandi utili:
     - doppia conferma prima del salvataggio;
     - update sincronizzato su locale + Supabase;
     - toast `Giacenza aggiornata` in verde (2s).
+- Bottom Nav (mobile, 2 tab visibili):
+  - Tab sinistra mostra `CircleArrowLeft` (lucide-react) senza testo su tutte le pagine non-impostazioni.
+  - Nella **home impostazioni** (non in sotto-sezione): tab sinistra nascosta, solo `Home` centrato (`.navbarInnerCentered`).
+  - In **sotto-sezione admin**: `CircleArrowLeft` come button → emette `scarichi:openAdminHome`.
+- Riepilogo Conferma Scarico: nome vino sempre visibile su più righe, nessuno scroll orizzontale.
 - Admin impostazioni (`/impostazioni`, compat legacy `/admin`) con autenticazione locale.
   - azione `Reset archivio` con PIN:
     - cancella archivio vini e pulisce i registry/cache filtri correlati
