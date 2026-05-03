@@ -19,6 +19,53 @@ Se l'app mostra `ERR_NAME_NOT_RESOLVED`: riattivare manualmente dal dashboard Su
 
 ---
 
+## Gestione Egress (banda Supabase Free Tier)
+
+**Limite gratuito:** 5 GB/mese di egress (tutto il traffico in uscita).
+
+### Causa principale di egress elevato
+
+La pagina `/admina` (Archivio vini) chiamava `listWines({ forceRemote: true })` ad ogni mount,
+scaricando tutti i ~6000+ vini dal DB senza limite di frequenza. Con uso intenso in sviluppo,
+questo ha causato 8.28 GB di egress nel ciclo aprile 2026 (166% del limite).
+
+### Soluzione implementata — TTL 10 minuti
+
+`src/data/wineRepository.ts` espone il parametro `skipTtl`:
+
+```ts
+export async function listWines(options?: {
+  forceRemote?: boolean;
+  skipTtl?: boolean; // bypassa TTL quando dati aggiornati sono necessari (es. import)
+}): Promise<Wine[]>;
+```
+
+Comportamento:
+
+- `forceRemote: true` (default pages): rispetta TTL 10 min — nessuna fetch se sync recente
+- `skipTtl: true`: bypassa il TTL (pulsante Aggiorna manuale in HomePage)
+- Prima fetch (localStorage vuoto): ignora TTL, scarica sempre da Supabase
+
+### Regole operative per mantenere egress basso
+
+1. Evitare navigazioni ripetute su `/admina` durante lo sviluppo attivo
+2. Non usare `forceRemote: true` + `skipTtl: true` in loop o automaticamente
+3. Monitorare: Dashboard Supabase → Settings → Usage (cycle corrente)
+4. Se quota quasi esaurita: ridurre testing su `/admina`, il ciclo si resetta ogni mese
+
+### Warning Security Advisor Supabase
+
+Fix da applicare via Dashboard → SQL Editor (script: `scripts/fix_security_warnings.sql`):
+
+```sql
+ALTER FUNCTION public.wines_before_write() SET search_path = public, pg_temp;
+ALTER FUNCTION public.submit_discharge_session(p_session_id uuid) SET search_path = public, pg_temp;
+```
+
+Dopo esecuzione: i 3 warning nel Security Advisor scompaiono.
+
+---
+
 ## Variabili ambiente
 
 Solo queste due chiavi vengono lette dal codice frontend:
