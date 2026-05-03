@@ -43,7 +43,8 @@ module.exports = [
       ],
       'react/react-in-jsx-scope': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'import/order': 'off'
+      'import/order': 'off',
+      'no-console': ['warn', { allow: ['warn', 'error'] }]
     }
   }
 ];
