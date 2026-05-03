@@ -3,15 +3,19 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
+      (process.env.SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '')
+    ),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY),
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo.png', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       devOptions: {
-        // Keep SW generation for production only: in dev this can leave stale
-        // service workers that interfere with local startup/cache refresh.
-        enabled: false
+        enabled: true
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}']
@@ -75,11 +79,14 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173,
-    strictPort: true
+    host: true,
+    port: 5000,
+    strictPort: true,
+    allowedHosts: true
   },
   preview: {
     host: true,
+    port: 5000,
     strictPort: true,
     allowedHosts: true
   }
