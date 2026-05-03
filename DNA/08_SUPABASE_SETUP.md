@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **03/05/2026 — CEST**.
+Ultimo aggiornamento: **03/05/2026 — 16:30 CEST**.
 
 ---
 
@@ -55,14 +55,27 @@ Comportamento:
 
 ### Warning Security Advisor Supabase
 
-Fix da applicare via Dashboard → SQL Editor (script: `scripts/fix_security_warnings.sql`):
+**APPLICATO il 03/05/2026 via psql diretto** (script: `scripts/fix_security_warnings.sql`):
 
 ```sql
+-- Fix search_path mutable
 ALTER FUNCTION public.wines_before_write() SET search_path = public, pg_temp;
 ALTER FUNCTION public.submit_discharge_session(p_session_id uuid) SET search_path = public, pg_temp;
+
+-- Fix GRANT UPDATE mancante per ruolo anon (causava HTTP 401 su PATCH REST API)
+GRANT UPDATE ON public.discharge_sessions TO anon;
+GRANT UPDATE ON public.discharge_session_items TO anon;
+GRANT UPDATE ON public.categories TO anon;
 ```
 
-Dopo esecuzione: i 3 warning nel Security Advisor scompaiono.
+Dopo esecuzione: i warning nel Security Advisor scompaiono.
+
+### Bug Grant UPDATE (risolto il 03/05/2026)
+
+Le RLS policy UPDATE per `anon` esistevano su `discharge_sessions` e `discharge_session_items`
+ma il GRANT a livello tabella era assente. Questo causava `error 42501 "permission denied"`
+su qualsiasi PATCH via REST API con anon key. Fix: `GRANT UPDATE ... TO anon` applicato.
+La RPC `submit_discharge_session` non era affetta (è `SECURITY DEFINER`, bypassa RLS).
 
 ---
 
@@ -130,11 +143,14 @@ Nota critica: `wine_id` è **nullable** con `ON DELETE SET NULL`. Questo garanti
 
 ### `public.categories`
 
-Registry categorie gestite. RLS abilitata con policy `SELECT/INSERT/DELETE` per `anon`.
+Registry categorie gestite. RLS abilitata con policy `SELECT/INSERT/UPDATE/DELETE` per `anon`.
+Valori presenti: `ROSSI` (id=1), `BIANCHI` (id=3).
 
-### `public.producers` / `public.origins`
+### `public.origins` / `public.suppliers`
 
-Registry produttori e provenienze. Gestiti principalmente in cache locale frontend.
+Tabelle legacy vuote (0 righe). RLS policy `DENY ALL` per anon e authenticated.
+Non usate dal frontend (produttori e provenienze gestiti in localStorage).
+Mantenute per compatibilità schema.
 
 ---
 
@@ -165,16 +181,29 @@ Procedura atomica eseguita alla conferma sessione:
 
 ## RLS (Row Level Security)
 
-| Tabella                             | RLS       | Policy anon                    |
-| ----------------------------------- | --------- | ------------------------------ |
-| `public.wines`                      | Abilitata | SELECT, INSERT, UPDATE, DELETE |
-| `public.discharge_sessions`         | Abilitata | SELECT, INSERT, UPDATE         |
-| `public.discharge_session_items`    | Abilitata | SELECT, INSERT                 |
-| `public.categories`                 | Abilitata | SELECT, INSERT, DELETE         |
-| `public.origins`                    | Abilitata | Deny-policy (chiusa)           |
-| `public.categories_backup_20260313` | Abilitata | Deny-policy (chiusa)           |
+| Tabella                          | RLS       | Grant anon                          | Note                          |
+| -------------------------------- | --------- | ----------------------------------- | ----------------------------- |
+| `public.wines`                   | Abilitata | SELECT, INSERT, UPDATE, DELETE      |                               |
+| `public.discharge_sessions`      | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
+| `public.discharge_session_items` | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
+| `public.categories`              | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
+| `public.origins`                 | Abilitata | Deny ALL (chiusa, legacy vuota)     |                               |
+| `public.suppliers`               | Abilitata | Deny ALL (chiusa, legacy vuota)     |                               |
 
-Security advisor: `0 errors, 0 warnings, 0 info` (stato al 25/03/2026).
+Security advisor: `search_path` fix applicato il 03/05/2026 via psql. Grant UPDATE corretti.
+
+---
+
+## Trigger DB
+
+### `AFTER INSERT OR UPDATE OR DELETE` su `public.wines` — Google Sheets
+
+Funzione: `integration.notify_google_sheets_wines()`. Invia una notifica HTTP POST a un webhook
+Google Apps Script configurato in `integration.runtime_config`:
+- `google_sheets_webhook_url`: URL dello script GAS (configurato)
+- `google_sheets_webhook_secret`: segreto per autenticare la richiesta (configurato)
+
+Se l'URL è vuoto, emette un WARNING e continua senza errore (fail-safe).
 
 ---
 
@@ -182,6 +211,9 @@ Security advisor: `0 errors, 0 warnings, 0 info` (stato al 25/03/2026).
 
 Indici B-Tree su campi filtro principali: `category`, `producer`, `origin`, `qty`, `threshold`.
 Indice funzionale su `lower(name)` per ricerche case-insensitive.
+Indici compositi su `discharge_sessions(status, created_at DESC)` e `(status, submitted_at DESC)`.
+
+Dimensione totale DB (pubblico): ~3.4 MB — di cui `wines` ~3.2 MB (dati + indici).
 
 Script cleanup indici duplicati: `scripts/sql/supabase_enterprise_index_cleanup.sql`
 
