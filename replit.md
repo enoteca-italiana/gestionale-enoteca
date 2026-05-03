@@ -77,12 +77,12 @@ apps/scarichi-vini/
 
 ## Routing
 
-| Percorso        | Componente        | Descrizione                     |
-|-----------------|-------------------|---------------------------------|
-| `/`             | HomePage          | Schermata scarichi              |
-| `/admina`       | WineAdminPage     | Archivio vini completo          |
-| `/impostazioni` | AdminPage         | Impostazioni, import/export     |
-| `/admin`        | → redirect legacy | Alias per /impostazioni         |
+| Percorso        | Componente        | Descrizione                 |
+| --------------- | ----------------- | --------------------------- |
+| `/`             | HomePage          | Schermata scarichi          |
+| `/admina`       | WineAdminPage     | Archivio vini completo      |
+| `/impostazioni` | AdminPage         | Impostazioni, import/export |
+| `/admin`        | → redirect legacy | Alias per /impostazioni     |
 
 ## Autenticazione
 
@@ -102,11 +102,13 @@ PIN SHA-256 locale (default "1909"), sessione 12h su `localStorage`.
 ## Pattern di refactoring consolidato
 
 Ogni componente lungo viene diviso in:
+
 1. **Hook** (`use<NomeComponente>.ts`) — tutto lo stato, i computed e gli handler
 2. **Componente** (`<NomeComponente>.tsx`) — solo il JSX, usa l'hook
 3. **Utils** (opzionale) — funzioni pure riusabili senza React
 
 Hook già estratti (NON modificare la logica interna):
+
 - `useHomePage.ts` — stato + 9 useEffect + computed + handler pagina scarichi
 - `useWineAdminPage.ts` — stato + handler archivio vini
 - `useArchiveInlineEdit.ts` — editing inline tabella archivio
