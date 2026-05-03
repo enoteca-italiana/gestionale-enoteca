@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { Archive, House, Settings } from 'lucide-react';
+import { Archive, CircleArrowLeft, House, Settings } from 'lucide-react';
 import { APP_ROUTES, isArchivePath, isSettingsPath } from '@/app/routes';
 
 const FORCE_HOME_ONCE_SESSION_KEY = 'scarichi:force-home-once';
@@ -13,15 +13,62 @@ function canNavigateTo(href: string) {
   return window.dispatchEvent(evt);
 }
 
-export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden?: boolean }) {
+export function BottomNav({
+  currentPath,
+  hidden,
+  adminInSubSection
+}: {
+  currentPath: string;
+  hidden?: boolean;
+  adminInSubSection?: boolean;
+}) {
   if (hidden) return null;
   const isHome = currentPath === APP_ROUTES.HOME;
   const isArchive = isArchivePath(currentPath);
   const isSettings = isSettingsPath(currentPath) && !isArchive;
 
+  const settingsHomeOnly = isSettings && !adminInSubSection;
+
+  function renderRightTab() {
+    if (settingsHomeOnly) return null;
+
+    if (adminInSubSection) {
+      return (
+        <button
+          type="button"
+          className="navNavItem navNavItemActive navNavItemBack"
+          aria-label="Torna a Impostazioni"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('scarichi:openAdminHome'));
+          }}
+        >
+          <CircleArrowLeft size={26} strokeWidth={1.4} />
+        </button>
+      );
+    }
+
+    return (
+      <Link
+        href={APP_ROUTES.SETTINGS}
+        className={`navNavItem ${isSettings ? 'navNavItemActive' : ''}`}
+        aria-label="Impostazioni"
+        onClick={(event) => {
+          if (!canNavigateTo(APP_ROUTES.SETTINGS)) {
+            event.preventDefault();
+            return;
+          }
+          window.dispatchEvent(new CustomEvent('scarichi:openAdminHome'));
+        }}
+      >
+        <Settings size={26} strokeWidth={1.4} />
+        <span>Impostazioni</span>
+      </Link>
+    );
+  }
+
   return (
     <nav className="navbar">
-      <div className="navbarInner">
+      <div className={`navbarInner${settingsHomeOnly ? ' navbarInnerCentered' : ''}`}>
         <Link
           href={APP_ROUTES.HOME}
           className={`navNavItem ${isHome ? 'navNavItemActive' : ''}`}
@@ -54,21 +101,7 @@ export function BottomNav({ currentPath, hidden }: { currentPath: string; hidden
           <Archive size={26} strokeWidth={1.4} />
           <span>Archivio</span>
         </Link>
-        <Link
-          href={APP_ROUTES.SETTINGS}
-          className={`navNavItem ${isSettings ? 'navNavItemActive' : ''}`}
-          aria-label="Impostazioni"
-          onClick={(event) => {
-            if (!canNavigateTo(APP_ROUTES.SETTINGS)) {
-              event.preventDefault();
-              return;
-            }
-            window.dispatchEvent(new CustomEvent('scarichi:openAdminHome'));
-          }}
-        >
-          <Settings size={26} strokeWidth={1.4} />
-          <span>Impostazioni</span>
-        </Link>
+        {renderRightTab()}
       </div>
     </nav>
   );
