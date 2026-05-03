@@ -88,6 +88,7 @@ export function BottomNav({
           <House size={26} strokeWidth={1.4} />
           <span>Home</span>
         </Link>
+<<<<<<< HEAD
         <Link
           href={APP_ROUTES.ARCHIVE}
           className={`navNavItem navNavItemArchive ${isArchive ? 'navNavItemActive' : ''}`}
@@ -101,7 +102,6 @@ export function BottomNav({
           <Archive size={26} strokeWidth={1.4} />
           <span>Archivio</span>
         </Link>
-        {renderRightTab()}
         {renderRightTab()}
       </div>
     </nav>
