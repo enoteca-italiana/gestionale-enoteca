@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **03/05/2026 — CEST**.
 
 ---
 
@@ -59,11 +59,27 @@ Chunk notevoli:
 | Build command  | `npm run build`               |
 | Build output   | `apps/scarichi-vini/dist`     |
 
-Variabili ambiente obbligatorie in Cloudflare:
+Variabili ambiente obbligatorie in Cloudflare (Settings → Environment variables → Production):
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `OPENAI_API_KEY` (Secret — per funzionalità AI archivio)
+| Nome variabile      | Valore                                            |
+| ------------------- | ------------------------------------------------- |
+| `SUPABASE_URL`      | `https://aezqtgadyaxdcptwlpci.supabase.co`        |
+| `SUPABASE_ANON_KEY` | chiave `anon public` da Supabase → Settings → API |
+| `OPENAI_API_KEY`    | Secret — per funzionalità AI archivio             |
+
+`vite.config.ts` accetta anche il nome con prefisso `VITE_` come fallback (ad es. `VITE_SUPABASE_URL`).
+
+> ⚠ **CRITICO — API key mismatch (03/05/2026):** I secret Replit `SUPABASE_ANON_KEY` e
+> `SUPABASE_SERVICE_ROLE_KEY` risultano appartenere al **vecchio progetto** `kuigzaqaewgcosfhahkv`
+> invece dell'attuale `aezqtgadyaxdcptwlpci`. Questo causa 401 su tutte le chiamate REST.
+> L'app funziona solo su localStorage (nessun sync Supabase) finché non si aggiornano le chiavi.
+>
+> Azione richiesta:
+>
+> 1. Supabase Dashboard → progetto `aezqtgadyaxdcptwlpci` → Settings → API → copia `anon public`
+> 2. Aggiornare secret Replit: `SUPABASE_ANON_KEY`
+> 3. Aggiornare variabili Cloudflare Pages come da tabella sopra
+> 4. Aggiornare `apps/scarichi-vini/.env.local` per sviluppo locale
 
 ---
 
@@ -154,7 +170,7 @@ bash backup/make_backup.sh "Backup_2 Maggio_16.00"
 
 Esempio: `Backup_2 Maggio_16.30.tar.gz`
 
-Ultimo backup creato: **`Backup_3 Maggio_15.40.tar.gz`** (2.8 MB)
+Ultimo backup creato: **`Backup_3 Maggio_17.00.tar.gz`** (4.1 MB)
 
 ### Esclusioni
 
