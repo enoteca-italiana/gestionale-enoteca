@@ -14,3 +14,6 @@ backup/*.zip
 apps/scarichi-vini/dev-dist/
 apps/scarichi-vini/coverage/
 *.tsbuildinfo
+
+# Replit agent screenshots / pasted assets (never commit)
+attached_assets/
