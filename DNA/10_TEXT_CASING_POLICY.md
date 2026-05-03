@@ -8,10 +8,10 @@ Ultimo aggiornamento: **02/05/2026 — CEST**.
 
 Queste regole valgono **sempre** in tutta l'app: input utente, import CSV, visualizzazione, export, script SQL, snapshot sessioni.
 
-| Campo | Regola | Esempio |
-|---|---|---|
-| `categoria` / `name` / `provenienza` | **UPPERCASE** | `BAROLO`, `PIEMONT` |
-| `produttore` | **Initcap** (prima lettera maiuscola per parola) | `Giacomo Conterno` |
+| Campo                                | Regola                                           | Esempio             |
+| ------------------------------------ | ------------------------------------------------ | ------------------- |
+| `categoria` / `name` / `provenienza` | **UPPERCASE**                                    | `BAROLO`, `PIEMONT` |
+| `produttore`                         | **Initcap** (prima lettera maiuscola per parola) | `Giacomo Conterno`  |
 
 ---
 
@@ -21,10 +21,10 @@ Queste regole valgono **sempre** in tutta l'app: input utente, import CSV, visua
 
 Funzioni centralizzate, usate ovunque:
 
-| Funzione | Comportamento |
-|---|---|
-| `normalizeWineCategory(v)` | `UPPER(trim + collapse spazi)` |
-| `normalizeWineName(v)` | `UPPER(trim + collapse spazi)` |
+| Funzione                   | Comportamento                           |
+| -------------------------- | --------------------------------------- |
+| `normalizeWineCategory(v)` | `UPPER(trim + collapse spazi)`          |
+| `normalizeWineName(v)`     | `UPPER(trim + collapse spazi)`          |
 | `normalizeWineProducer(v)` | `INITCAP(LOWER(trim + collapse spazi))` |
 
 ### `src/domain/normalizeOrigin.ts`
@@ -97,6 +97,7 @@ VALUES (
 ## Regola operativa per script SQL futuri
 
 Qualsiasi script SQL di insert/update su `wines` deve usare:
+
 - `UPPER(TRIM(...))` per `category`, `name`, `origin`
 - `INITCAP(LOWER(TRIM(...)))` per `producer`
 - `regexp_replace(... '\s+', ' ', 'g')` per collassare spazi multipli
