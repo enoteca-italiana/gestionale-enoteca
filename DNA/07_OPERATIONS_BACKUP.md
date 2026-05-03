@@ -42,6 +42,7 @@ npm run build -w @enoteca/scarichi-vini       # solo il workspace app
 Output: `apps/scarichi-vini/dist/`
 
 Chunk notevoli:
+
 - `vendor_excel` (938 KB non minificato, lazy) — solo su export Excel
 - `vendor_pdf` (422 KB non minificato, lazy) — solo su export PDF
 
@@ -49,16 +50,17 @@ Chunk notevoli:
 
 ## Deploy Cloudflare Pages (production)
 
-| Campo | Valore |
-|---|---|
-| Progetto | `gestionale` |
-| Repository | `enoteca-italiana/gestionale` |
-| Branch | `main` |
-| Root directory | root monorepo |
-| Build command | `npm run build` |
-| Build output | `apps/scarichi-vini/dist` |
+| Campo          | Valore                        |
+| -------------- | ----------------------------- |
+| Progetto       | `gestionale`                  |
+| Repository     | `enoteca-italiana/gestionale` |
+| Branch         | `main`                        |
+| Root directory | root monorepo                 |
+| Build command  | `npm run build`               |
+| Build output   | `apps/scarichi-vini/dist`     |
 
 Variabili ambiente obbligatorie in Cloudflare:
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `OPENAI_API_KEY` (Secret — per funzionalità AI archivio)
@@ -104,13 +106,13 @@ git push https://derohot975:<PAT>@github.com/enoteca-italiana/gestionale.git mai
 
 ### Errori noti e fix
 
-| Errore | Fix |
-|---|---|
-| `missing required scope 'read:org'` | Rigenerare PAT con scope `read:org` |
-| `refusing to allow ... workflow` | Aggiungere scope `workflow` al PAT |
-| `Repository not found` | Verificare URL remote + accesso account + SSO |
-| `could not read Username` | Reimpostare credential helper con `gh auth git-credential` |
-| `Invalid username or token` | PAT scaduto/revocato/non autorizzato SSO |
+| Errore                              | Fix                                                        |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `missing required scope 'read:org'` | Rigenerare PAT con scope `read:org`                        |
+| `refusing to allow ... workflow`    | Aggiungere scope `workflow` al PAT                         |
+| `Repository not found`              | Verificare URL remote + accesso account + SSO              |
+| `could not read Username`           | Reimpostare credential helper con `gh auth git-credential` |
+| `Invalid username or token`         | PAT scaduto/revocato/non autorizzato SSO                   |
 
 ### Regole sicurezza token
 
@@ -152,7 +154,7 @@ bash backup/make_backup.sh "Backup_2 Maggio_16.00"
 
 Esempio: `Backup_2 Maggio_16.30.tar.gz`
 
-Ultimo backup creato: **`Backup_2 Maggio_16.30.tar.gz`** (1.2 MB)
+Ultimo backup creato: **`Backup_3 Maggio_15.40.tar.gz`** (2.8 MB)
 
 ### Esclusioni
 
@@ -174,19 +176,20 @@ Quando viene richiesto un nuovo backup:
 
 Il file `.replitignore` esclude automaticamente le cartelle pesanti:
 
-| Escluso | Motivo |
-|---|---|
-| `node_modules/` | Rigenerato con `npm install` |
-| `apps/.../node_modules/` | Idem |
-| `apps/.../dist/` | Rigenerato con `npm run build` |
-| `apps/.../dev-dist/` | Artefatto dev |
-| `.git/` | Non serve per ricaricare il progetto |
-| `.cache/` `.local/` | Stato interno Replit |
-| `*.tsbuildinfo` | Artefatto compilatore TypeScript |
+| Escluso                  | Motivo                               |
+| ------------------------ | ------------------------------------ |
+| `node_modules/`          | Rigenerato con `npm install`         |
+| `apps/.../node_modules/` | Idem                                 |
+| `apps/.../dist/`         | Rigenerato con `npm run build`       |
+| `apps/.../dev-dist/`     | Artefatto dev                        |
+| `.git/`                  | Non serve per ricaricare il progetto |
+| `.cache/` `.local/`      | Stato interno Replit                 |
+| `*.tsbuildinfo`          | Artefatto compilatore TypeScript     |
 
 **Dimensione zip attesa: ~20 MB** (solo codice sorgente, DNA/, scripts/, backup/).
 
 Dopo ricaricamento in Replit da zip:
+
 - Premere **Run** → il workflow esegue automaticamente `npm install && npm run dev`
 - Nessun comando manuale necessario
 
@@ -204,6 +207,7 @@ Dopo ricaricamento in Replit da zip:
 8. Leggere prima di modifiche: `DNA/00_INDEX.md`, `DNA/02_ARCHITECTURE.md`, `DNA/05_ADMIN.md`
 
 Se l'app non parte:
+
 - Porta 5000 occupata? → fermare il processo che la usa
 - Cache PWA/SW? → hard refresh, rimuovere app installata
-- Supabase paused? → riattivare dal dashboard Supabase (progetto `ndrgcfyoiyychjukhrno`)
+- Supabase paused? → riattivare dal dashboard Supabase (progetto `aezqtgadyaxdcptwlpci`)
