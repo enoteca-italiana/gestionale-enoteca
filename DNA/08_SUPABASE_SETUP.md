@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **03/05/2026 — 16:30 CEST**.
+Ultimo aggiornamento: **03/05/2026 — 17:00 CEST**.
 
 ---
 
@@ -181,14 +181,14 @@ Procedura atomica eseguita alla conferma sessione:
 
 ## RLS (Row Level Security)
 
-| Tabella                          | RLS       | Grant anon                          | Note                          |
-| -------------------------------- | --------- | ----------------------------------- | ----------------------------- |
-| `public.wines`                   | Abilitata | SELECT, INSERT, UPDATE, DELETE      |                               |
-| `public.discharge_sessions`      | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
-| `public.discharge_session_items` | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
-| `public.categories`              | Abilitata | SELECT, INSERT, UPDATE, DELETE      | UPDATE grant aggiunto 03/05   |
-| `public.origins`                 | Abilitata | Deny ALL (chiusa, legacy vuota)     |                               |
-| `public.suppliers`               | Abilitata | Deny ALL (chiusa, legacy vuota)     |                               |
+| Tabella                          | RLS       | Grant anon                      | Note                        |
+| -------------------------------- | --------- | ------------------------------- | --------------------------- |
+| `public.wines`                   | Abilitata | SELECT, INSERT, UPDATE, DELETE  |                             |
+| `public.discharge_sessions`      | Abilitata | SELECT, INSERT, UPDATE, DELETE  | UPDATE grant aggiunto 03/05 |
+| `public.discharge_session_items` | Abilitata | SELECT, INSERT, UPDATE, DELETE  | UPDATE grant aggiunto 03/05 |
+| `public.categories`              | Abilitata | SELECT, INSERT, UPDATE, DELETE  | UPDATE grant aggiunto 03/05 |
+| `public.origins`                 | Abilitata | Deny ALL (chiusa, legacy vuota) |                             |
+| `public.suppliers`               | Abilitata | Deny ALL (chiusa, legacy vuota) |                             |
 
 Security advisor: `search_path` fix applicato il 03/05/2026 via psql. Grant UPDATE corretti.
 
@@ -200,6 +200,7 @@ Security advisor: `search_path` fix applicato il 03/05/2026 via psql. Grant UPDA
 
 Funzione: `integration.notify_google_sheets_wines()`. Invia una notifica HTTP POST a un webhook
 Google Apps Script configurato in `integration.runtime_config`:
+
 - `google_sheets_webhook_url`: URL dello script GAS (configurato)
 - `google_sheets_webhook_secret`: segreto per autenticare la richiesta (configurato)
 
