@@ -42,6 +42,12 @@ const WINE_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 let listWinesInFlight: Promise<Wine[]> | null = null;
 let listWinesCache: Wine[] | null = null;
 
+// Egress control: evita fetch ripetute da Supabase entro la finestra TTL.
+// Il refresh remoto avviene solo se: dati assenti localmente, TTL scaduto,
+// o caller passa esplicitamente skipTtl:true (es. pulsante "Aggiorna" manuale).
+const REMOTE_SYNC_TTL_MS = 10 * 60 * 1000; // 10 minuti
+let lastRemoteSyncAt = 0;
+
 function randomThreshold(): number {
   return Math.floor(Math.random() * 12) + 1;
 }
@@ -278,6 +284,7 @@ async function fetchAndPersistRemoteWines(localInventory: Wine[]): Promise<Wine[
     const data = await listAllWineRows();
     const prepared = prepareInventory((data ?? []).map(toWine), localInventory);
     persistAndCacheInventory(prepared);
+    lastRemoteSyncAt = Date.now();
     return prepared;
   } catch (error) {
     console.error('[wineRepository] Supabase list error', error);
@@ -355,8 +362,12 @@ async function listAllWineRows(): Promise<WineRow[]> {
   return [...firstPage, ...pages.flat()];
 }
 
-export async function listWines(options?: { forceRemote?: boolean }): Promise<Wine[]> {
+export async function listWines(options?: {
+  forceRemote?: boolean;
+  skipTtl?: boolean;
+}): Promise<Wine[]> {
   const forceRemote = options?.forceRemote === true;
+  const skipTtl = options?.skipTtl === true;
   const localInventory = getLocalInventory();
 
   if (!forceRemote) {
@@ -365,6 +376,18 @@ export async function listWines(options?: { forceRemote?: boolean }): Promise<Wi
     }
 
     if (localInventory.length > 0) {
+      const preparedLocal = prepareInventory(localInventory, localInventory);
+      persistAndCacheInventory(preparedLocal);
+      return preparedLocal;
+    }
+  }
+
+  // forceRemote=true: rispetta TTL se i dati locali esistono e la sync è recente.
+  // skipTtl=true bypassa il TTL (usato da pulsante "Aggiorna" manuale).
+  if (forceRemote && !skipTtl && localInventory.length > 0) {
+    const msSinceLastSync = Date.now() - lastRemoteSyncAt;
+    if (msSinceLastSync < REMOTE_SYNC_TTL_MS) {
+      if (listWinesCache) return listWinesCache;
       const preparedLocal = prepareInventory(localInventory, localInventory);
       persistAndCacheInventory(preparedLocal);
       return preparedLocal;
