@@ -102,6 +102,7 @@ export function BottomNav({
           <span>Archivio</span>
         </Link>
         {renderRightTab()}
+        {renderRightTab()}
       </div>
     </nav>
   );
