@@ -14,39 +14,39 @@ fi
 
 cd "${REPO_ROOT}"
 
-if ! git remote get-url origin >/dev/null 2>&1; then
-  echo "[commit_github] Remote 'origin' is not configured. Run:\n  git remote add origin https://github.com/enoteca-italiana/gestionale.git" >&2
+if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+  echo "[commit_github] GITHUB_TOKEN non trovato. Aggiungilo nei segreti di Replit." >&2
   exit 1
 fi
 
 BRANCH="main"
-REMOTE_BRANCH="origin/${BRANCH}"
+REMOTE_URL="https://${GITHUB_TOKEN}@github.com/enoteca-italiana/gestionale.git"
 
 if git status --porcelain --untracked-files=all | grep -q "."; then
   :
 else
-  echo "[commit_github] Nothing to commit" >&2
+  echo "[commit_github] Niente da committare" >&2
   exit 0
 fi
 
 COMMIT_MSG="${1:-${COMMIT_MSG:-}}"
 if [[ -z "${COMMIT_MSG}" ]]; then
-  read -rp "Commit message: " COMMIT_MSG
+  read -rp "Messaggio commit: " COMMIT_MSG
 fi
 
 if [[ -z "${COMMIT_MSG}" ]]; then
-  echo "[commit_github] Commit message is required" >&2
+  echo "[commit_github] Il messaggio del commit è obbligatorio" >&2
   exit 1
 fi
 
-if ! git config user.name >/dev/null 2>&1 || ! git config user.email >/dev/null 2>&1; then
-  echo "[commit_github] git user.name / user.email not configured. Run:\n  git config --global user.name \"Your Name\"\n  git config --global user.email \"you@example.com\"" >&2
-  exit 1
-fi
+git config user.name "enoteca-italiana"
+git config user.email "gestionale@enoteca-italiana.it"
 
 set -x
 git add -A
 git status -sb
 git commit -m "${COMMIT_MSG}"
-git push origin "${BRANCH}"
+git push "${REMOTE_URL}" "${BRANCH}"
 set +x
+
+echo "[commit_github] Push completato su origin/${BRANCH}"
