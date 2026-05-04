@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { hasActiveArchiveFilters, type Filters, type StockFilter } from '@/pages/admina/types';
+import { useAppDomain } from '@/app/appDomain';
 import { ChevronDown, RefreshCcw } from 'lucide-react';
 
 type Props = {
@@ -147,11 +148,37 @@ export function AdminArchiveToolbar({
   onOpenCreate,
   onOpenTotals
 }: Props) {
+  const { activeDomain, setActiveDomain } = useAppDomain();
   const setStockFilter = (stock: StockFilter) => onFiltersChange({ ...filters, stock });
   const hasActiveFilters = hasActiveArchiveFilters(filters);
 
   return (
     <section className="archiveTopBar">
+      <div className="archiveTopRightSwitch">
+        <div className="archiveDomainSwitch" role="group" aria-label="Seleziona modalità">
+          <button
+            type="button"
+            className={`archiveDomainSwitchButton ${
+              activeDomain === 'wine' ? 'archiveDomainSwitchButtonActive' : ''
+            }`}
+            onClick={() => setActiveDomain('wine')}
+            aria-pressed={activeDomain === 'wine'}
+          >
+            Vini
+          </button>
+          <button
+            type="button"
+            className={`archiveDomainSwitchButton ${
+              activeDomain === 'spirits' ? 'archiveDomainSwitchButtonActive' : ''
+            }`}
+            onClick={() => setActiveDomain('spirits')}
+            aria-pressed={activeDomain === 'spirits'}
+          >
+            Spirits
+          </button>
+        </div>
+      </div>
+
       <div className="archiveFilters">
         <button className="button buttonAuto archiveAddButton" type="button" onClick={onOpenCreate}>
           Aggiungi vino

@@ -2,6 +2,7 @@ import { Route, Switch, useLocation } from 'wouter';
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import { APP_ROUTES, isSettingsPath } from '@/app/routes';
+import { AppDomainProvider } from '@/app/appDomain';
 import { useOfflineDischargeQueueSync } from '@/app/useOfflineDischargeQueueSync';
 import { useSupabaseKeepalive } from '@/lib/useSupabaseKeepalive';
 import { sha256Base64 } from '@/pages/admin/crypto';
@@ -197,7 +198,7 @@ export function App() {
     !showAppPinGate;
 
   return (
-    <>
+    <AppDomainProvider>
       <Suspense fallback={<div className="container">Caricamento…</div>}>
         <Switch>
           <Route path={APP_ROUTES.ARCHIVE} component={WineAdminPage} />
@@ -305,6 +306,6 @@ export function App() {
         hidden={hideNav || showAppPinGate || showSettingsPinGate}
         adminInSubSection={isSettingsPath(location) && adminSection !== 'home'}
       />
-    </>
+    </AppDomainProvider>
   );
 }

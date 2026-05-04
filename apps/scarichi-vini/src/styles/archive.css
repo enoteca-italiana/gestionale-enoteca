@@ -30,7 +30,7 @@
 .archiveTopBar {
   --archive-top-action-size: 35px;
   position: relative;
-  padding: 4px 0 10px;
+  padding: 44px 0 10px;
 }
 
 .archiveExportDock {
@@ -79,8 +79,6 @@
     minmax(240px, 0.95fr)
     minmax(500px, 1.35fr)
     minmax(192px, auto)
-    auto
-    auto
     auto
     auto
     auto;
@@ -288,6 +286,10 @@
   text-decoration: none;
   white-space: nowrap;
   min-width: 136px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .archiveGoogleSheetInlineButton:hover,
@@ -310,6 +312,48 @@
 .archiveTotalsButton.button:hover {
   background: #b7791f;
   border-color: #b7791f;
+  color: #ffffff;
+}
+
+.archiveTopRightSwitch {
+  position: absolute;
+  top: -58px;
+  right: 0;
+  z-index: 5;
+  width: 136px;
+}
+
+.archiveDomainSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid #b57a9a;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  min-width: 136px;
+  min-height: var(--archive-top-action-size);
+  height: var(--archive-top-action-size);
+}
+
+.archiveDomainSwitchButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #7c164a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archiveDomainSwitchButtonActive {
+  background: #7c164a;
+  color: #ffffff;
+}
+
+.archiveDomainSwitchButtonActive:last-child {
+  background: #166534;
   color: #ffffff;
 }
 
@@ -504,7 +548,7 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: auto minmax(220px, 0.85fr) minmax(420px, 1.2fr) auto auto auto auto auto;
+    grid-template-columns: auto minmax(220px, 0.85fr) minmax(420px, 1.2fr) auto auto auto auto;
   }
 }
 

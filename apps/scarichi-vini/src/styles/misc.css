@@ -927,7 +927,7 @@
 }
 
 .adminHistoryListSection {
-  margin-top: 12px;
+  margin-top: 34px;
 }
 
 .adminHistoryCardsScroll {
@@ -936,6 +936,48 @@
 
 .adminHistoryTitle {
   margin: 0 auto;
+}
+
+.adminHistoryHeaderRow {
+  position: relative;
+  min-height: 36px;
+  margin-bottom: 10px;
+}
+
+.adminHistoryDomainSwitch {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid #b57a9a;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  min-width: 136px;
+  height: 35px;
+}
+
+.adminHistoryDomainSwitchButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #7c164a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adminHistoryDomainSwitchButtonActive {
+  background: #7c164a;
+  color: #ffffff;
+}
+
+.adminHistoryDomainSwitchButtonActive:last-child {
+  background: #166534;
+  color: #ffffff;
 }
 
 .adminHistoryDateRangeWrap {
@@ -1034,6 +1076,41 @@
 .adminHistoryListSection .listItemButton {
   background: #f7f1e6;
   border-color: #e6dcc8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.adminHistoryCardContent {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.adminHistoryDeleteIconButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  padding: 0;
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  line-height: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.adminHistoryDeleteIconButton:hover {
+  color: #b91c1c;
+}
+
+.adminHistoryDeleteIconButton svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 .adminHistoryDateLine {
@@ -1233,5 +1310,17 @@
   .adminHistoryDateResetButton {
     flex-shrink: 0;
     align-self: center;
+  }
+
+  .adminHistoryHeaderRow {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .adminHistoryDomainSwitch {
+    position: static;
+    align-self: flex-end;
   }
 }

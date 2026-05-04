@@ -137,9 +137,45 @@
 
 .homeSessionActionRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
+}
+
+.homeSessionMainButton {
+  min-width: 0;
+}
+
+.homeDomainSwitch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid #b57a9a;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ffffff;
+  min-width: 128px;
+  height: 42px;
+}
+
+.homeDomainSwitchButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #7c164a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.homeDomainSwitchButtonActive {
+  background: #7c164a;
+  color: #ffffff;
+}
+
+.homeDomainSwitchButtonActive:last-child {
+  background: #166534;
+  color: #ffffff;
 }
 
 .homeForceRefreshButton {
@@ -171,6 +207,17 @@
   width: 18px;
   height: 18px;
   stroke: currentColor;
+}
+
+@media (max-width: 560px) {
+  .homeDomainSwitch {
+    min-width: 116px;
+  }
+
+  .homeDomainSwitchButton {
+    font-size: 11px;
+    padding: 0 10px;
+  }
 }
 
 .homeForceRefreshIconSpinning {

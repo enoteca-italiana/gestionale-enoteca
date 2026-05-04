@@ -37,7 +37,8 @@ export function AdminGate() {
     history,
     loading: sessionsLoading,
     error: sessionsError,
-    clearHistory
+    clearHistory,
+    deleteHistorySession
   } = useDischargeSessions(section === 'history');
 
   useEffect(() => {
@@ -93,6 +94,9 @@ export function AdminGate() {
                 void clearHistory(retention).catch((error) => {
                   console.error('[AdminGate] clearHistory failed', error);
                 });
+              }}
+              onDeleteSession={async (sessionId) => {
+                await deleteHistorySession(sessionId);
               }}
             />
           </Suspense>

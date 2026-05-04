@@ -308,6 +308,16 @@ export async function clearDischargeSessionsByStatus(status: DischargeStatus): P
   if (error) throw error;
 }
 
+export async function deleteSubmittedDischargeSession(sessionId: string): Promise<void> {
+  const client = requireSupabase();
+  const { error } = await client
+    .from('discharge_sessions')
+    .delete()
+    .eq('id', sessionId)
+    .eq('status', 'submitted');
+  if (error) throw error;
+}
+
 export type SubmittedHistoryRetention = 'all' | '7d' | '30d' | '3m' | '12m' | '18m' | '2y' | '3y';
 
 function computeRetentionCutoffIso(retention: Exclude<SubmittedHistoryRetention, 'all'>): string {

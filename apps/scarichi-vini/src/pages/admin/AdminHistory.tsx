@@ -3,19 +3,23 @@ import type {
   SubmittedHistoryRetention
 } from '@/data/dischargeRepository';
 import { ConfirmModal } from '@/components/ConfirmModal';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, Trash2 } from 'lucide-react';
 import { formatDateTime, formatDateTimeLabel } from '@/pages/admin/historyUtils';
 import { formatWineInfoLine } from '@/domain/formatWineInfoLine';
 import { useAdminHistory } from '@/pages/admin/useAdminHistory';
 import { HISTORY_RENDER_BATCH } from '@/pages/admin/historyUtils';
+import { useAppDomain } from '@/app/appDomain';
 
 export function AdminHistory({
   history,
-  onReset
+  onReset,
+  onDeleteSession
 }: {
   history: DischargeSessionSummary[];
   onReset: (retention: SubmittedHistoryRetention) => void;
+  onDeleteSession: (sessionId: string) => Promise<void>;
 }) {
+  const { activeDomain, setActiveDomain } = useAppDomain();
   const {
     datePreset,
     dateFrom,
@@ -38,6 +42,9 @@ export function AdminHistory({
     detailError,
     selectedSession,
     detailItems,
+    deleteTargetSession,
+    deleteBusy,
+    deleteError,
     setVisibleCount,
     loadMoreRef,
     hasActiveDateFilter,
@@ -46,15 +53,42 @@ export function AdminHistory({
     hasMoreRows,
     closeSessionDetail,
     openSessionDetail,
+    requestDeleteSession,
+    cancelDeleteSession,
+    confirmDeleteSession,
     confirmResetWithPin,
     handlePresetChange,
     resetDateFilter
-  } = useAdminHistory({ history, onReset });
+  } = useAdminHistory({ history, onReset, onDeleteSession });
 
   return (
     <>
       <div className="adminHistoryListSection">
-        <div className="title centered adminHistoryTitle">Storico Sessioni</div>
+        <div className="adminHistoryHeaderRow">
+          <div className="title centered adminHistoryTitle">Storico Sessioni</div>
+          <div className="adminHistoryDomainSwitch" role="group" aria-label="Seleziona modalità">
+            <button
+              type="button"
+              className={`adminHistoryDomainSwitchButton ${
+                activeDomain === 'wine' ? 'adminHistoryDomainSwitchButtonActive' : ''
+              }`}
+              onClick={() => setActiveDomain('wine')}
+              aria-pressed={activeDomain === 'wine'}
+            >
+              Vini
+            </button>
+            <button
+              type="button"
+              className={`adminHistoryDomainSwitchButton ${
+                activeDomain === 'spirits' ? 'adminHistoryDomainSwitchButtonActive' : ''
+              }`}
+              onClick={() => setActiveDomain('spirits')}
+              aria-pressed={activeDomain === 'spirits'}
+            >
+              Spirits
+            </button>
+          </div>
+        </div>
         <div className="adminHistoryDateRangeWrap mt12">
           <div className="adminHistoryDateField">
             <label className="adminHistoryDateFilterLabel" htmlFor="admin-history-date-preset">
@@ -140,22 +174,44 @@ export function AdminHistory({
                   s.submittedAt ?? s.createdAt
                 );
                 return (
-                  <button
+                  <div
                     key={s.id}
-                    className="listItem listItemButton"
-                    type="button"
+                    className="listItem listItemButton adminHistoryCardButton"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       void openSessionDetail(s);
                     }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        void openSessionDetail(s);
+                      }
+                    }}
                   >
-                    <div className="lineTitle adminHistoryDateLine">
-                      <span>{formattedDate}</span>,{' '}
-                      <span className="adminHistoryTime">{formattedTime}</span>
+                    <div className="adminHistoryCardContent">
+                      <div className="lineTitle adminHistoryDateLine">
+                        <span>{formattedDate}</span>,{' '}
+                        <span className="adminHistoryTime">{formattedTime}</span>
+                      </div>
+                      <div className="subtle mt4">
+                        {s.itemsCount} vini • {s.totalQty} bottiglie
+                      </div>
                     </div>
-                    <div className="subtle mt4">
-                      {s.itemsCount} vini • {s.totalQty} bottiglie
-                    </div>
-                  </button>
+                    <button
+                      className="adminHistoryDeleteIconButton"
+                      type="button"
+                      aria-label={`Elimina sessione ${formattedDate} ${formattedTime}`}
+                      title="Elimina sessione"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        requestDeleteSession(s);
+                      }}
+                    >
+                      <Trash2 size={16} strokeWidth={2} />
+                    </button>
+                  </div>
                 );
               })
             )}
@@ -244,6 +300,26 @@ export function AdminHistory({
           </div>
         </div>
       ) : null}
+
+      <ConfirmModal
+        open={deleteTargetSession !== null}
+        title="Eliminare questa sessione?"
+        description={
+          deleteTargetSession
+            ? `La sessione del ${formatDateTimeLabel(
+                deleteTargetSession.submittedAt ?? deleteTargetSession.createdAt
+              )} verrà eliminata definitivamente dallo storico.`
+            : undefined
+        }
+        titleCentered
+        descriptionCentered
+        confirmLabel={deleteBusy ? 'Elimino…' : 'Elimina'}
+        cancelLabel="Annulla"
+        onConfirm={() => void confirmDeleteSession()}
+        onCancel={cancelDeleteSession}
+      />
+
+      {deleteError ? <div className="errorText centered mt10">{deleteError}</div> : null}
 
       <ConfirmModal
         open={confirm1}

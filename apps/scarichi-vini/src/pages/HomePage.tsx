@@ -6,6 +6,7 @@ import { SessionConfirmModal } from '@/pages/home/SessionConfirmModal';
 import { StockEditorModal } from '@/pages/home/StockEditorModal';
 import { SummaryList } from '@/pages/home/SummaryList';
 import { useHomePage } from '@/pages/home/useHomePage';
+import { useAppDomain } from '@/app/appDomain';
 import { RefreshCcw } from 'lucide-react';
 
 export function HomePage({
@@ -13,6 +14,7 @@ export function HomePage({
 }: {
   onIntroVisibilityChange?: (visible: boolean) => void;
 }) {
+  const { activeDomain, setActiveDomain } = useAppDomain();
   const {
     showIntro,
     introVisible,
@@ -78,20 +80,6 @@ export function HomePage({
       ) : null}
 
       <div className="mt12 homeSessionActionRow">
-        {sessionOpen ? (
-          <button
-            className={`button ${sessionCount > 0 ? 'buttonSessionConfirmActive' : 'buttonSessionConfirmInactive'}`}
-            type="button"
-            onClick={confirmSubmit}
-            disabled={sessionCount <= 0}
-          >
-            Conferma Scarico
-          </button>
-        ) : (
-          <button className="button" type="button" onClick={startSession}>
-            Inizia sessione di scarico
-          </button>
-        )}
         <button
           className="homeForceRefreshButton"
           type="button"
@@ -106,6 +94,42 @@ export function HomePage({
             className={forceRefreshBusy ? 'homeForceRefreshIconSpinning' : ''}
           />
         </button>
+        {sessionOpen ? (
+          <button
+            className={`button homeSessionMainButton ${
+              sessionCount > 0 ? 'buttonSessionConfirmActive' : 'buttonSessionConfirmInactive'
+            }`}
+            type="button"
+            onClick={confirmSubmit}
+            disabled={sessionCount <= 0}
+          >
+            Conferma Scarico
+          </button>
+        ) : (
+          <button className="button homeSessionMainButton" type="button" onClick={startSession}>
+            Inizia sessione di scarico
+          </button>
+        )}
+        <div className="homeDomainSwitch" role="group" aria-label="Seleziona modalità">
+          <button
+            type="button"
+            className={`homeDomainSwitchButton ${activeDomain === 'wine' ? 'homeDomainSwitchButtonActive' : ''}`}
+            onClick={() => setActiveDomain('wine')}
+            aria-pressed={activeDomain === 'wine'}
+          >
+            Vini
+          </button>
+          <button
+            type="button"
+            className={`homeDomainSwitchButton ${
+              activeDomain === 'spirits' ? 'homeDomainSwitchButtonActive' : ''
+            }`}
+            onClick={() => setActiveDomain('spirits')}
+            aria-pressed={activeDomain === 'spirits'}
+          >
+            Spirits
+          </button>
+        </div>
       </div>
 
       <div className="mt12 searchRow">

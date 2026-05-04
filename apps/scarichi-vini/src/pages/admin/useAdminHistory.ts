@@ -16,10 +16,12 @@ import {
 
 export function useAdminHistory({
   history,
-  onReset
+  onReset,
+  onDeleteSession
 }: {
   history: DischargeSessionSummary[];
   onReset: (retention: SubmittedHistoryRetention) => void;
+  onDeleteSession: (sessionId: string) => Promise<void>;
 }) {
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [dateFrom, setDateFrom] = useState('');
@@ -35,6 +37,9 @@ export function useAdminHistory({
   const [detailError, setDetailError] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<DischargeSessionSummary | null>(null);
   const [detailItems, setDetailItems] = useState<DischargeSessionItemDetail[]>([]);
+  const [deleteTargetSession, setDeleteTargetSession] = useState<DischargeSessionSummary | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(HISTORY_RENDER_BATCH);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -140,6 +145,36 @@ export function useAdminHistory({
     setDateTo('');
   };
 
+  const requestDeleteSession = (session: DischargeSessionSummary) => {
+    if (deleteBusy) return;
+    setDeleteError(null);
+    setDeleteTargetSession(session);
+  };
+
+  const cancelDeleteSession = () => {
+    if (deleteBusy) return;
+    setDeleteError(null);
+    setDeleteTargetSession(null);
+  };
+
+  const confirmDeleteSession = async () => {
+    if (!deleteTargetSession || deleteBusy) return;
+    setDeleteError(null);
+    setDeleteBusy(true);
+    try {
+      await onDeleteSession(deleteTargetSession.id);
+      if (selectedSession?.id === deleteTargetSession.id) {
+        closeSessionDetail();
+      }
+      setDeleteTargetSession(null);
+    } catch (error) {
+      console.error('[AdminHistory] delete session failed', error);
+      setDeleteError('Impossibile eliminare la sessione selezionata.');
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
   return {
     datePreset,
     dateFrom,
@@ -162,6 +197,9 @@ export function useAdminHistory({
     detailError,
     selectedSession,
     detailItems,
+    deleteTargetSession,
+    deleteBusy,
+    deleteError,
     visibleCount,
     setVisibleCount,
     loadMoreRef,
@@ -171,6 +209,9 @@ export function useAdminHistory({
     hasMoreRows,
     closeSessionDetail,
     openSessionDetail,
+    requestDeleteSession,
+    cancelDeleteSession,
+    confirmDeleteSession,
     confirmResetWithPin,
     handlePresetChange,
     resetDateFilter
