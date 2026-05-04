@@ -261,3 +261,4 @@ Decisione UI già approvata:
   - `spirits_session_items`: `0`
 - Campionamento diretto su `spirits_products` conferma record persistiti con `name` maiuscolo, `producer` normalizzato, `sale_price`, `warehouse` e `margin` coerenti.
 - Quality pass completato sul codice applicativo: `test`, `typecheck`, `lint` e `build` verdi dopo split di `appDomainContext` e normalizzazione difensiva di `VITE_SUPABASE_URL` nel client frontend.
+- Fix runtime Home `Spirits`: `useLocalDb` non forza più `inventory = []` sul dominio spirits e `refreshInventory()` esegue correttamente `listSpirits()`, ripristinando il popolamento della Home.

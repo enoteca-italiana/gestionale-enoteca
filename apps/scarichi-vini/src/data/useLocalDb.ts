@@ -99,19 +99,18 @@ export function useLocalDb(domain: AppDomain = 'wine') {
     [flushPending]
   );
 
-  const inventory = useMemo(() => (isWineDomain ? db.inventory : []), [db.inventory, isWineDomain]);
+  const inventory = useMemo(() => db.inventory, [db.inventory]);
   const history = db.history;
 
   const setInventory = useCallback(
     (inv: Wine[] | ((prev: Wine[]) => Wine[])) => {
-      if (!isWineDomain) return;
       commit((prev) => {
         const nextInv =
           typeof inv === 'function' ? (inv as (p: Wine[]) => Wine[])(prev.inventory) : inv;
         return { ...prev, inventory: nextInv };
       });
     },
-    [commit, isWineDomain]
+    [commit]
   );
 
   const clearHistory = useCallback(() => {
@@ -131,10 +130,6 @@ export function useLocalDb(domain: AppDomain = 'wine') {
 
   const refreshInventory = useCallback(
     async (options?: { forceRemote?: boolean; skipTtl?: boolean }) => {
-      if (!isWineDomain) {
-        setDb((prev) => (prev.inventory.length === 0 ? prev : { ...prev, inventory: [] }));
-        return [];
-      }
       if (refreshInFlightRef.current) return refreshInFlightRef.current;
       const task = (async () => {
         try {
