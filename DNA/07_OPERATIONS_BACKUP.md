@@ -1,6 +1,6 @@
 # Operatività (dev) + Backup
 
-Ultimo aggiornamento: **03/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -170,7 +170,7 @@ bash backup/make_backup.sh "Backup_2 Maggio_16.00"
 
 Esempio: `Backup_2 Maggio_16.30.tar.gz`
 
-Ultimo backup creato: **`Backup_3 Maggio_17.00.tar.gz`** (4.1 MB)
+Ultimo backup creato: **`Backup_4 Maggio_13.00.tar.gz`** (1.9 MB)
 
 ### Esclusioni
 

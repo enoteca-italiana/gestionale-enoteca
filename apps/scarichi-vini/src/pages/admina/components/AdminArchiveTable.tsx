@@ -107,6 +107,13 @@ export function AdminArchiveTable({
     return sortState.dir === 'az' ? byField : byField.reverse();
   }, [sortState, wines]);
 
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const years: string[] = [];
+    for (let year = currentYear; year >= 1900; year -= 1) years.push(String(year));
+    return years;
+  }, []);
+
   const renderedWines = useMemo(
     () => sortedWines.slice(0, Math.max(TABLE_RENDER_BATCH, visibleRows)),
     [sortedWines, visibleRows]
@@ -320,48 +327,25 @@ export function AdminArchiveTable({
                     <td className="archiveColCenter">
                       {edit.editingAgeWineId === wine.id ? (
                         <div className="archiveInlineEditBox" ref={edit.ageInlineBoxRef}>
-                          <input
-                            className="archiveInlineYearInput"
-                            type="text"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            spellCheck={false}
-                            data-form-type="other"
-                            data-lpignore="true"
-                            data-1p-ignore="true"
-                            data-bwignore="true"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            maxLength={4}
+                          <select
+                            className="archiveInlineYearInput archiveInlineYearSelect"
                             value={edit.editingAgeValue}
                             onChange={(e) => {
-                              const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
-                              edit.setEditingAgeValue(digits);
-                            }}
-                            onKeyDown={(e) => {
-                              if (
-                                e.key.length === 1 &&
-                                !/[0-9]/.test(e.key) &&
-                                !e.ctrlKey &&
-                                !e.metaKey &&
-                                !e.altKey
-                              ) {
-                                e.preventDefault();
-                              }
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                void edit.saveAgeEdit(wine);
-                              }
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                edit.cancelAgeEdit();
-                              }
+                              const nextValue = e.target.value;
+                              edit.setEditingAgeValue(nextValue);
+                              void edit.saveAgeEditValue(wine, nextValue);
                             }}
                             aria-label={`Modifica anno ${wine.name}`}
                             disabled={edit.savingInlineWineId === wine.id}
                             autoFocus
-                          />
+                          >
+                            <option value="">Vuoto</option>
+                            {yearOptions.map((year) => (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       ) : (
                         <button

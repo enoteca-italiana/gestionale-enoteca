@@ -19,7 +19,7 @@ export function normalizeInitialUppercaseText(value: string) {
 }
 
 export function normalizeWineCategory(value: string) {
-  return normalizeUppercaseText(value);
+  return normalizeInitialUppercaseText(value);
 }
 
 export function normalizeWineName(value: string) {

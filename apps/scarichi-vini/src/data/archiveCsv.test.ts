@@ -10,7 +10,7 @@ describe('archiveCsv normalization', () => {
 
     const rows = parseArchiveCsv(raw);
     expect(rows).toHaveLength(1);
-    expect(rows[0]?.category).toBe('ROSSI');
+    expect(rows[0]?.category).toBe('Rossi');
     expect(rows[0]?.name).toBe('GRENACHE AMABILE 00906');
     expect(rows[0]?.producer).toBe('Hugel');
     expect(rows[0]?.origin).toBe('LANGUEDOC');

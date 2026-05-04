@@ -76,9 +76,11 @@
   display: grid;
   grid-template-columns:
     auto
-    minmax(320px, 1.15fr)
+    minmax(240px, 0.95fr)
     minmax(500px, 1.35fr)
     minmax(192px, auto)
+    auto
+    auto
     auto
     auto
     auto;
@@ -278,6 +280,59 @@
   color: #ffffff;
 }
 
+.archiveGoogleSheetInlineButton,
+.archiveGoogleSheetInlineButton.button {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+  text-decoration: none;
+  white-space: nowrap;
+  min-width: 136px;
+}
+
+.archiveGoogleSheetInlineButton:hover,
+.archiveGoogleSheetInlineButton.button:hover {
+  border-color: #166534;
+  background: #166534;
+  color: #ffffff;
+}
+
+.archiveTotalsButton,
+.archiveTotalsButton.button {
+  background: #ca8a04;
+  border-color: #ca8a04;
+  color: #ffffff;
+  white-space: nowrap;
+  min-width: 136px;
+}
+
+.archiveTotalsButton:hover,
+.archiveTotalsButton.button:hover {
+  background: #b7791f;
+  border-color: #b7791f;
+  color: #ffffff;
+}
+
+.archiveTotalsModalCard {
+  width: min(100%, 420px);
+}
+
+.archiveTotalsGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.archiveTotalsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #faf7f1;
+}
+
 .archiveStatsBox {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -449,7 +504,7 @@
 
 @media (max-width: 1500px) {
   .archiveFilters {
-    grid-template-columns: auto minmax(292px, 1fr) minmax(420px, 1.2fr) auto auto auto;
+    grid-template-columns: auto minmax(220px, 0.85fr) minmax(420px, 1.2fr) auto auto auto auto auto;
   }
 }
 
@@ -677,6 +732,13 @@
   max-width: 72px;
   text-align: center;
   margin: 0 auto;
+}
+
+.archiveInlineYearSelect {
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
 }
 
 .archiveInlinePriceInput {

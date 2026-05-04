@@ -1,6 +1,6 @@
 # Text Casing Policy (obbligatoria)
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -10,7 +10,8 @@ Queste regole valgono **sempre** in tutta l'app: input utente, import CSV, visua
 
 | Campo                                | Regola                                           | Esempio             |
 | ------------------------------------ | ------------------------------------------------ | ------------------- |
-| `categoria` / `name` / `provenienza` | **UPPERCASE**                                    | `BAROLO`, `PIEMONT` |
+| `categoria`                          | **Initcap** (prima lettera maiuscola per parola) | `Rossi Fermi`       |
+| `name` / `provenienza`               | **UPPERCASE**                                    | `BAROLO`, `PIEMONT` |
 | `produttore`                         | **Initcap** (prima lettera maiuscola per parola) | `Giacomo Conterno`  |
 
 ---
@@ -23,7 +24,7 @@ Funzioni centralizzate, usate ovunque:
 
 | Funzione                   | Comportamento                           |
 | -------------------------- | --------------------------------------- |
-| `normalizeWineCategory(v)` | `UPPER(trim + collapse spazi)`          |
+| `normalizeWineCategory(v)` | `INITCAP(LOWER(trim + collapse spazi))` |
 | `normalizeWineName(v)`     | `UPPER(trim + collapse spazi)`          |
 | `normalizeWineProducer(v)` | `INITCAP(LOWER(trim + collapse spazi))` |
 
@@ -47,7 +48,7 @@ Funzioni centralizzate, usate ovunque:
 
 ### `src/data/categoryRepository.ts`
 
-- Le categorie vengono sempre salvate uppercase.
+- Le categorie vengono sempre salvate in Initcap.
 
 ### `src/data/dischargeRepository.ts`
 
@@ -70,7 +71,7 @@ Trigger `BEFORE INSERT OR UPDATE` su `public.wines`:
 
 ```sql
 NEW.name     = upper(regexp_replace(trim(NEW.name),     '\s+', ' ', 'g'));
-NEW.category = upper(regexp_replace(trim(NEW.category), '\s+', ' ', 'g'));
+NEW.category = initcap(lower(regexp_replace(trim(NEW.category), '\s+', ' ', 'g')));
 NEW.origin   = upper(regexp_replace(trim(NEW.origin),   '\s+', ' ', 'g'));
 NEW.producer = initcap(lower(regexp_replace(trim(NEW.producer), '\s+', ' ', 'g')));
 ```
@@ -84,7 +85,7 @@ Script SQL versionato: `scripts/sql/supabase_text_casing_policy.sql`
 ```sql
 INSERT INTO public.wines (category, name, producer, origin, qty)
 VALUES (
-  upper(regexp_replace(trim(:category), '\s+', ' ', 'g')),
+  initcap(lower(regexp_replace(trim(:category), '\s+', ' ', 'g'))),
   upper(regexp_replace(trim(:name),     '\s+', ' ', 'g')),
   initcap(lower(regexp_replace(trim(:producer), '\s+', ' ', 'g'))),
   upper(regexp_replace(trim(:origin),   '\s+', ' ', 'g')),
@@ -98,8 +99,8 @@ VALUES (
 
 Qualsiasi script SQL di insert/update su `wines` deve usare:
 
-- `UPPER(TRIM(...))` per `category`, `name`, `origin`
-- `INITCAP(LOWER(TRIM(...)))` per `producer`
+- `INITCAP(LOWER(TRIM(...)))` per `category`, `producer`
+- `UPPER(TRIM(...))` per `name`, `origin`
 - `regexp_replace(... '\s+', ' ', 'g')` per collassare spazi multipli
 
 In caso di dubbi, il trigger DB corregge comunque — ma è preferibile inviare dati già normalizzati.

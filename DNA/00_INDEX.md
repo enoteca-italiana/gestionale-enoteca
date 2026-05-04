@@ -2,7 +2,7 @@
 
 Quartier generale della documentazione. Chiunque legga questi file deve ottenere una panoramica maniacalmente dettagliata del progetto, senza dover aprire il codice sorgente.
 
-Ultimo aggiornamento: **03/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -19,7 +19,7 @@ Ultimo aggiornamento: **03/05/2026 — CEST**.
 | `07_OPERATIONS_BACKUP.md`   | Dev server, build, GitHub, backup, handover nuovo PC                                 |
 | `08_SUPABASE_SETUP.md`      | Setup Supabase, schema DB, RLS, indici, RPC, variabili ambiente                      |
 | `09_CODE_REFERENCE.md`      | Riferimento codice completo: firme funzioni, logica, comportamento modulo per modulo |
-| `10_TEXT_CASING_POLICY.md`  | Policy obbligatoria casing campi vino (uppercase/initcap)                            |
+| `10_TEXT_CASING_POLICY.md`  | Policy obbligatoria casing campi vino (Categoria Initcap, Nome/Provenienza UPPERCASE) |
 
 ---
 

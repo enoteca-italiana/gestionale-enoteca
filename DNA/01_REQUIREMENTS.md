@@ -1,6 +1,6 @@
 # Requisiti (baseline) — Scarichi Vini
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -110,7 +110,7 @@ Obbligatoria ovunque (input, CSV, DB, storico):
 
 | Campo         | Regola                            |
 | ------------- | --------------------------------- |
-| `Categoria`   | UPPERCASE                         |
+| `Categoria`   | Initcap (prima lettera maiuscola) |
 | `Nome`        | UPPERCASE                         |
 | `Provenienza` | UPPERCASE                         |
 | `Produttore`  | Initcap (prima lettera maiuscola) |

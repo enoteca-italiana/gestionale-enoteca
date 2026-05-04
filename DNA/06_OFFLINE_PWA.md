@@ -1,6 +1,6 @@
 # Offline & PWA
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 

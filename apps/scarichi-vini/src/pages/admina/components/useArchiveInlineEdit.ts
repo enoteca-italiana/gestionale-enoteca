@@ -337,6 +337,23 @@ export function useArchiveInlineEdit({
     }
   };
 
+  const saveAgeEditValue = async (wine: Wine, nextValue: string) => {
+    const normalized = nextValue.trim();
+    if (normalized && normalized.length !== 4) return;
+    const current = (wine.age ?? '').trim();
+    if (normalized === current) {
+      cancelAgeEdit();
+      return;
+    }
+    setSavingInlineWineId(wine.id);
+    const updated = await onUpdateInlineFields(wine, { age: normalized });
+    setSavingInlineWineId(null);
+    if (updated) {
+      setEditingAgeWineId(null);
+      setEditingAgeValue('');
+    }
+  };
+
   const saveCategoryEdit = async (wine: Wine, nextCategory: string) => {
     const normalizedNext = nextCategory.trim();
     const current = (wine.category ?? '').trim();
@@ -495,6 +512,7 @@ export function useArchiveInlineEdit({
     beginAgeEdit,
     cancelAgeEdit,
     saveAgeEdit,
+    saveAgeEditValue,
     beginCategoryEdit,
     cancelCategoryEdit,
     saveCategoryEdit,

@@ -1,6 +1,6 @@
 # Architettura
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -164,7 +164,7 @@ apps/scarichi-vini/
           archiveExport.ts      — export Excel (exceljs, lazy) e PDF (jspdf, lazy)
           archiveTableUtils.ts  — costanti tabella, helper calcoli, TABLE_RENDER_BATCH
         components/
-          AdminArchiveToolbar.tsx    — toolbar filtri su singola riga desktop
+          AdminArchiveToolbar.tsx    — toolbar filtri su singola riga desktop (+ Foglio Google + Totali)
           AdminArchiveTable.tsx      — tabella inline-editable con rendering progressivo (~1219 righe)
           WineArchiveFormModal.tsx   — modale aggiungi/modifica vino
           InlineStickyAddSelect.tsx  — dropdown con "+ Aggiungi …" sempre in cima
@@ -188,7 +188,7 @@ apps/scarichi-vini/
 ```ts
 type Wine = {
   id: string; // UUID o wine_<ts>_<rand>
-  category?: string; // UPPERCASE (opzionale)
+  category?: string; // Initcap (opzionale)
   name: string; // UPPERCASE
   age?: string; // anno vendemmia (label UI: ANNO), stringa libera
   producer: string; // Initcap

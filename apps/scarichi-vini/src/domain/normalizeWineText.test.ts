@@ -7,8 +7,8 @@ import {
 } from '@/domain/normalizeWineText';
 
 describe('normalizeWineText', () => {
-  it('forces uppercase for categoria, nome e provenienza', () => {
-    expect(normalizeWineCategory('  rossi  fermi ')).toBe('ROSSI FERMI');
+  it('forces Initcap for categoria and uppercase for nome/provenienza', () => {
+    expect(normalizeWineCategory('  rossi  fermi ')).toBe('Rossi Fermi');
     expect(normalizeWineName('  grenache amabile 00906 ')).toBe('GRENACHE AMABILE 00906');
     expect(normalizeOrigin('  Languedoc  france ')).toBe('LANGUEDOC FRANCE');
   });

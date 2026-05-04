@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { AdminArchiveToolbar } from '@/pages/admina/components/AdminArchiveToolbar';
 import { AdminArchiveTable } from '@/pages/admina/components/AdminArchiveTable';
@@ -7,6 +8,7 @@ import { WineArchiveFormModal } from '@/pages/admina/components/WineArchiveFormM
 import { useWineAdminPage } from '@/pages/admina/useWineAdminPage';
 
 export function WineAdminPage() {
+  const [totalsOpen, setTotalsOpen] = useState(false);
   const {
     loading,
     error,
@@ -54,6 +56,38 @@ export function WineAdminPage() {
     resetFilters
   } = useWineAdminPage();
 
+  const totals = useMemo(() => {
+    let totalQty = 0;
+    let totalWarehouse = 0;
+    let totalPurchase = 0;
+    let totalSale = 0;
+    let totalMargin = 0;
+
+    for (const wine of filteredWines) {
+      const qty = Number.isFinite(wine.qty) ? Math.max(0, wine.qty) : 0;
+      const purchase = Number.isFinite(wine.purchasePrice) ? (wine.purchasePrice as number) : 0;
+      const sale = Number.isFinite(wine.salePrice) ? (wine.salePrice as number) : 0;
+      const margin = sale - purchase;
+      totalQty += qty;
+      totalWarehouse += purchase * qty;
+      totalPurchase += purchase;
+      totalSale += sale;
+      totalMargin += margin;
+    }
+
+    return {
+      rows: filteredWines.length,
+      qty: totalQty,
+      warehouse: totalWarehouse,
+      purchase: totalPurchase,
+      sale: totalSale,
+      margin: totalMargin
+    };
+  }, [filteredWines]);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(value);
+
   return (
     <div className="container archiveDesktopContainer">
       <div className="archiveLogoTop">
@@ -82,6 +116,7 @@ export function WineAdminPage() {
         onRequestAddOrigin={handleRequestAddOrigin}
         onResetFilters={resetFilters}
         onOpenCreate={openCreate}
+        onOpenTotals={() => setTotalsOpen(true)}
       />
 
       {error ? (
@@ -177,6 +212,45 @@ export function WineAdminPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />
+
+      {totalsOpen ? (
+        <div className="modalOverlay" role="dialog" aria-modal="true" aria-label="Totali archivio">
+          <div className="modalCard archiveTotalsModalCard">
+            <div className="modalTitle">Totali</div>
+            <div className="archiveTotalsGrid mt12">
+              <div className="archiveTotalsRow">
+                <span>Righe filtrate</span>
+                <strong>{totals.rows}</strong>
+              </div>
+              <div className="archiveTotalsRow">
+                <span>Q.tà totale</span>
+                <strong>{totals.qty}</strong>
+              </div>
+              <div className="archiveTotalsRow">
+                <span>Acquisto</span>
+                <strong>{formatCurrency(totals.purchase)}</strong>
+              </div>
+              <div className="archiveTotalsRow">
+                <span>Vendita</span>
+                <strong>{formatCurrency(totals.sale)}</strong>
+              </div>
+              <div className="archiveTotalsRow">
+                <span>Margine</span>
+                <strong>{formatCurrency(totals.margin)}</strong>
+              </div>
+              <div className="archiveTotalsRow">
+                <span>Magazzino</span>
+                <strong>{formatCurrency(totals.warehouse)}</strong>
+              </div>
+            </div>
+            <div className="modalActions mt14">
+              <button className="button" type="button" onClick={() => setTotalsOpen(false)}>
+                Chiudi
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

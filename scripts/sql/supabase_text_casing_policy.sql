@@ -1,8 +1,10 @@
 -- Enoteca Italiana - Text casing policy (wines + registries)
 -- Scope:
---  - wines.category, wines.name, wines.origin => UPPERCASE
+--  - wines.category => Initial Uppercase
+--  - wines.name, wines.origin => UPPERCASE
 --  - wines.producer, wines.supplier => Initial Uppercase
---  - categories.name, origins.name => UPPERCASE
+--  - categories.name => Initial Uppercase
+--  - origins.name => UPPERCASE
 --  - suppliers.name => Initial Uppercase
 --
 -- Safe to re-run (idempotent).
@@ -44,7 +46,7 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if new.category is not null then new.category := public._enoteca_upper(new.category); end if;
+  if new.category is not null then new.category := public._enoteca_initcap(new.category); end if;
   if new.name is not null then new.name := public._enoteca_upper(new.name); end if;
   if new.origin is not null then new.origin := public._enoteca_upper(new.origin); end if;
   if new.producer is not null then new.producer := public._enoteca_initcap(new.producer); end if;
@@ -61,7 +63,7 @@ begin
     execute '
       update public.wines
       set
-        category = public._enoteca_upper(category),
+        category = public._enoteca_initcap(category),
         name = public._enoteca_upper(name),
         origin = public._enoteca_upper(origin),
         producer = public._enoteca_initcap(producer),
@@ -75,7 +77,7 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if new.name is not null then new.name := public._enoteca_upper(new.name); end if;
+  if new.name is not null then new.name := public._enoteca_initcap(new.name); end if;
   return new;
 end;
 $$;

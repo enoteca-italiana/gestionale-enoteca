@@ -120,17 +120,6 @@ a {
   transform: translateY(0) scale(1);
 }
 
-.introByline {
-  position: absolute;
-  top: 75%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--muted);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .introCenter {
     transition: none;

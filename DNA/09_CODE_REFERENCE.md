@@ -1,6 +1,6 @@
 # Riferimento Codice Completo
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 Questo documento descrive ogni modulo, ogni funzione esportata, ogni hook e ogni tipo rilevante del progetto. È la fonte di verità per chi deve capire il codice senza aprirlo.
 
@@ -13,7 +13,7 @@ type WineId = string;
 
 type Wine = {
   id: WineId; // UUID o wine_<ts>_<rand>
-  category?: string; // UPPERCASE, opzionale
+  category?: string; // Initcap, opzionale
   name: string; // UPPERCASE
   age?: string; // anno vendemmia (label UI: ANNO), stringa libera
   producer: string; // Initcap
@@ -40,7 +40,7 @@ type SessionItem = {
 
 | Funzione                | Firma                   | Comportamento                                    |
 | ----------------------- | ----------------------- | ------------------------------------------------ |
-| `normalizeWineCategory` | `(v: string) => string` | `UPPER(trim + collapse spazi multipli)`          |
+| `normalizeWineCategory` | `(v: string) => string` | `INITCAP(LOWER(trim + collapse spazi multipli))` |
 | `normalizeWineName`     | `(v: string) => string` | `UPPER(trim + collapse spazi multipli)`          |
 | `normalizeWineProducer` | `(v: string) => string` | `INITCAP(LOWER(trim + collapse spazi multipli))` |
 

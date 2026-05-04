@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Ultimo aggiornamento: **03/05/2026 — 17:00 CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -100,7 +100,7 @@ Riferimento codice: `src/lib/supabase.ts` — crea il client Supabase, restituis
 | Colonna          | Tipo                   | Note                                             |
 | ---------------- | ---------------------- | ------------------------------------------------ |
 | `id`             | uuid                   | PK, default `gen_random_uuid()`                  |
-| `category`       | text nullable          | UPPERCASE (trigger)                              |
+| `category`       | text nullable          | Initcap (trigger)                                |
 | `name`           | text NOT NULL          | UPPERCASE (trigger)                              |
 | `age`            | text nullable          | anno vendemmia, stringa libera                   |
 | `producer`       | text NOT NULL          | Initcap (trigger)                                |
@@ -171,8 +171,8 @@ Procedura atomica eseguita alla conferma sessione:
 
 ### `BEFORE INSERT OR UPDATE` su `public.wines`
 
-- Normalizza `name`, `category`, `origin` → `UPPER(TRIM(...))`
-- Normalizza `producer` → `INITCAP(LOWER(TRIM(...)))`
+- Normalizza `name`, `origin` → `UPPER(TRIM(...))`
+- Normalizza `category`, `producer` → `INITCAP(LOWER(TRIM(...)))`
 - Calcola `warehouse = purchase_price * qty`
 - Calcola `margin = sale_price - purchase_price`
 - Aggiorna `updated_at = now()`

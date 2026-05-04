@@ -1,6 +1,6 @@
 # Admin
 
-Ultimo aggiornamento: **02/05/2026 — CEST**.
+Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 ---
 
@@ -196,7 +196,7 @@ Route dedicata, lazy-loaded. Vedi `09_CODE_REFERENCE.md` per dettagli tecnici.
 
 ### Toolbar (singola riga desktop)
 
-Ordine da sinistra: `Aggiungi vino` | `Cerca...` | `Categoria` | `Produttore` | `Provenienza` | box `Totale/Soglia/Esauriti` | pulsante reset filtri | azioni (export, AI)
+Ordine da sinistra: `Aggiungi vino` | `Cerca...` | `Categoria` | `Produttore` | `Provenienza` | box `Totale/Soglia/Esauriti` | pulsante reset filtri | `Foglio Google` | `Totali`
 
 Box statistiche:
 
@@ -234,6 +234,7 @@ Componente `InlineStickyAddSelect.tsx`:
 - Editing inline su ogni cella (blur/enter → salvataggio immediato)
 - Click destro → `BulkEditFilteredModal` (modifica massiva su filtri attivi, campo Categoria)
 - Colonna `ANNO`: vuota se assente (non `-`)
+- Colonna `ANNO`: edit inline tramite selector anni (anno corrente → 1900 + opzione `Vuoto`)
 - Colonna `Azioni`: note (gialla/grigia), modifica, elimina
 - Placeholder `—` per: Categoria, Produttore, Provenienza se vuoti
 - `qty = 0`: rosso acceso
@@ -244,7 +245,18 @@ Componente `InlineStickyAddSelect.tsx`:
 - `Magazzino = Acquisto × Q.tà` (2 decimali)
 - `Margine = Vendita − Acquisto` (2 decimali)
 - `Soglia` valida: intero >= 1 oppure assente. Mai 0.
-- Policy testo: Categoria/Nome/Provenienza UPPERCASE, Produttore Initcap (applicata in input + salvataggio)
+- Policy testo: Categoria/Produttore Initcap, Nome/Provenienza UPPERCASE (applicata in input + salvataggio)
+
+### Pulsante Totali
+
+- Pulsante ambra in toolbar (ultima posizione, dopo `Foglio Google`)
+- Apre modale `Totali` con metriche aggregate sui vini filtrati:
+  - righe filtrate
+  - quantità totale
+  - acquisto (somma prezzi acquisto)
+  - vendita (somma prezzi vendita)
+  - margine (somma `vendita - acquisto`)
+  - magazzino (somma `acquisto × qty`)
 
 ### Guardia abbandono sessione
 
