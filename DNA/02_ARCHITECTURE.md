@@ -83,7 +83,7 @@ PIN default: `1909` (SHA-256 Base64, calcolato al primo uso se assente in localS
 ```
 apps/scarichi-vini/
   index.html                    — entry HTML (preconnect Supabase, PWA meta)
-  vite.config.ts                — build, PWA, chunk splitting, server porta 5000
+  vite.config.ts                — build, PWA, chunk splitting, server porta 5001
   tsconfig.json                 — TypeScript strict
   .env.local                    — VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY (non committato)
 
@@ -239,7 +239,7 @@ type SessionItem = {
 
 `vendor_excel` e `vendor_pdf` sono **lazy-loaded** (dynamic import in `archiveExport.ts`): scaricati solo all'azione export, non al caricamento iniziale.
 
-Server dev: porta **5000** (strictPort, host: true, allowedHosts: true).
+Server dev: porta **5001** (strictPort, host: true, allowedHosts: true).
 
 ---
 

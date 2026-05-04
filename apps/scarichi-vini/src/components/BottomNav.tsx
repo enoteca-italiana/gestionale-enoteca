@@ -26,6 +26,7 @@ export function BottomNav({
   const isHome = currentPath === APP_ROUTES.HOME;
   const isArchive = isArchivePath(currentPath);
   const isSettings = isSettingsPath(currentPath) && !isArchive;
+  const isAdminSubSection = isSettings && Boolean(adminInSubSection);
 
   const settingsHomeOnly = isSettings && !adminInSubSection;
 
@@ -36,13 +37,14 @@ export function BottomNav({
       return (
         <button
           type="button"
-          className="navNavItem navNavItemActive navNavItemBack"
+          className="navNavItem navNavItemBack"
           aria-label="Torna a Impostazioni"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('scarichi:openAdminHome'));
           }}
         >
           <CircleArrowLeft size={26} strokeWidth={1.4} />
+          <span>Torna</span>
         </button>
       );
     }
@@ -69,6 +71,7 @@ export function BottomNav({
   return (
     <nav className="navbar">
       <div className={`navbarInner${settingsHomeOnly ? ' navbarInnerCentered' : ''}`}>
+        {isAdminSubSection ? renderRightTab() : null}
         <Link
           href={APP_ROUTES.HOME}
           className={`navNavItem ${isHome ? 'navNavItemActive' : ''}`}
@@ -102,7 +105,7 @@ export function BottomNav({
           <Archive size={26} strokeWidth={1.4} />
           <span>Archivio</span>
         </Link>
-        {renderRightTab()}
+        {isAdminSubSection ? null : renderRightTab()}
       </div>
     </nav>
   );

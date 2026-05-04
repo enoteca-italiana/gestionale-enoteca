@@ -114,8 +114,10 @@ export function WineAdminPage() {
         busy={busy}
         initial={formState}
         categories={allCategories}
+        producers={allProducers}
         origins={allOrigins}
         onRequestAddCategory={handleRequestAddCategory}
+        onRequestAddProducer={handleRequestAddProducer}
         onRequestAddOrigin={handleRequestAddOrigin}
         onSubmit={handleSubmit}
         onCancel={closeForm}

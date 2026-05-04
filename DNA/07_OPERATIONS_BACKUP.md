@@ -9,10 +9,10 @@ Ultimo aggiornamento: **03/05/2026 — CEST**.
 ```bash
 # Dalla root del monorepo
 npm install       # installa tutte le dipendenze
-npm run dev       # avvia dev server su porta 5000
+npm run dev       # avvia dev server su porta 5001
 ```
 
-Porta dev: **5000** (strictPort — se occupata, non si avvia un secondo server, si ferma con errore).
+Porta dev: **5001** (strictPort — se occupata, non si avvia un secondo server, si ferma con errore).
 
 Workflow Replit configurato: `npm install && npm run dev`
 
@@ -218,12 +218,12 @@ Dopo ricaricamento in Replit da zip:
 3. Installa Node LTS 20.x
 4. Dalla root: `npm install`
 5. Crea `apps/scarichi-vini/.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
-6. Avvio: `npm run dev` (porta 5000)
+6. Avvio: `npm run dev` (porta 5001)
 7. Verifica build: `npm run build`
 8. Leggere prima di modifiche: `DNA/00_INDEX.md`, `DNA/02_ARCHITECTURE.md`, `DNA/05_ADMIN.md`
 
 Se l'app non parte:
 
-- Porta 5000 occupata? → fermare il processo che la usa
+- Porta 5001 occupata? → fermare il processo che la usa
 - Cache PWA/SW? → hard refresh, rimuovere app installata
 - Supabase paused? → riattivare dal dashboard Supabase (progetto `aezqtgadyaxdcptwlpci`)

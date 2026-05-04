@@ -157,7 +157,7 @@ Comandi utili:
 2. Verifica Node LTS 20.x (`node -v`).
 3. Esegui `npm install` dalla root.
 4. Avvia `npm run dev`.
-5. Se porta occupata: `lsof -iTCP:5173 -sTCP:LISTEN`.
+5. Se porta occupata: `lsof -iTCP:5001 -sTCP:LISTEN`.
 6. Se UI stale in PWA: hard refresh o rimozione SW/PWA installata.
 
 ## Variabili ambiente

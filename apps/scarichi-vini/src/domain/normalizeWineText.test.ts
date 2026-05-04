@@ -14,6 +14,7 @@ describe('normalizeWineText', () => {
   });
 
   it('forces only first letter uppercase for produttore', () => {
-    expect(normalizeWineProducer('  hUgEL  ')).toBe('HUgEL');
+    expect(normalizeWineProducer('  hUgEL  ')).toBe('Hugel');
+    expect(normalizeWineProducer('  lA   rIVOLTA  ')).toBe('La Rivolta');
   });
 });

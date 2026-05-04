@@ -6,7 +6,7 @@ Monorepo npm workspace. App principale in `apps/scarichi-vini/`.
 
 **Stack:** React 18 + Vite 5 + TypeScript strict + wouter (routing) + Supabase + vite-plugin-pwa
 
-**Entry point dev server:** `npm run dev` → porta 5000
+**Entry point dev server:** `npm run dev` → porta 5001
 
 ## Struttura directory
 

@@ -11,7 +11,7 @@ export type AdminRootSection =
 export function AdminHome({ onOpen }: { onOpen: (section: AdminRootSection) => void }) {
   return (
     <div className="adminCenterSection">
-      <div className="title centered mt6">Impostazioni</div>
+      <div className="title centered mt6 adminHomeTitle">Impostazioni</div>
       <div className="list mt12">
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('history')}>
           Sessioni storico

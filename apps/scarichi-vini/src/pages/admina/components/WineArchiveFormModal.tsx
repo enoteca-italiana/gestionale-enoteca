@@ -8,8 +8,10 @@ type Props = {
   busy: boolean;
   initial: WineFormState;
   categories: string[];
+  producers: string[];
   origins: string[];
   onRequestAddCategory: (onResult: (created: string | null) => void) => void;
+  onRequestAddProducer: (onResult: (created: string | null) => void) => void;
   onRequestAddOrigin: (onResult: (created: string | null) => void) => void;
   onSubmit: (wine: WineFormState) => Promise<void>;
   onCancel: () => void;
@@ -43,6 +45,13 @@ function normalizePriceInput(rawValue: string): string {
   return `${intPart},${decimalPart}`;
 }
 
+function buildAutoSalePriceInput(purchaseInput: string): string {
+  const purchase = asNumber(purchaseInput);
+  if (purchase === undefined) return '';
+  const sale = Number((purchase * 1.3).toFixed(2));
+  return formatNumberForPriceInput(sale);
+}
+
 function normalizeYear(value?: string) {
   const normalized = value?.trim() ?? '';
   if (!normalized) return '';
@@ -56,8 +65,10 @@ export function WineArchiveFormModal({
   busy,
   initial,
   categories,
+  producers,
   origins,
   onRequestAddCategory,
+  onRequestAddProducer,
   onRequestAddOrigin,
   onSubmit,
   onCancel
@@ -92,8 +103,9 @@ export function WineArchiveFormModal({
         age: normalizeYear(initial.age),
         qty: Number.isFinite(initial.qty) ? Math.max(0, Math.min(99, Math.round(initial.qty))) : 0
       });
-      setPurchasePriceInput(formatNumberForPriceInput(initial.purchasePrice));
-      setSalePriceInput(formatNumberForPriceInput(initial.salePrice));
+      const nextPurchaseInput = formatNumberForPriceInput(initial.purchasePrice);
+      setPurchasePriceInput(nextPurchaseInput);
+      setSalePriceInput(buildAutoSalePriceInput(nextPurchaseInput));
       setError(null);
     }
   }, [open, initial]);
@@ -123,11 +135,12 @@ export function WineArchiveFormModal({
   const submit = async () => {
     if (!canSubmit || busy) return;
     try {
+      const salePriceForSubmitInput = buildAutoSalePriceInput(purchasePriceInput);
       await onSubmit({
         ...state,
         age: normalizeYear(state.age),
         purchasePrice: asNumber(purchasePriceInput),
-        salePrice: asNumber(salePriceInput),
+        salePrice: asNumber(salePriceForSubmitInput),
         qty: Number.isFinite(state.qty) ? Math.max(0, Math.round(state.qty)) : 0
       });
     } catch (err) {
@@ -193,11 +206,28 @@ export function WineArchiveFormModal({
 
           <label className="modalLabel">
             Produttore
-            <input
+            <select
               className="input mt4"
               value={state.producer}
-              onChange={(e) => setField('producer', e.target.value)}
-            />
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '__add_producer__') {
+                  onRequestAddProducer((created) => {
+                    if (created) setField('producer', created);
+                  });
+                  return;
+                }
+                setField('producer', value);
+              }}
+            >
+              <option value="__add_producer__">+ Aggiungi produttore…</option>
+              <option value="">Seleziona produttore</option>
+              {producers.map((producer) => (
+                <option key={producer} value={producer}>
+                  {producer}
+                </option>
+              ))}
+            </select>
           </label>
           <div className="archiveFormInlineOriginThreshold">
             <label className="modalLabel">
@@ -283,12 +313,16 @@ export function WineArchiveFormModal({
                   className="input archiveCurrencyInput"
                   inputMode="decimal"
                   value={purchasePriceInput}
-                  onChange={(e) => setPurchasePriceInput(normalizePriceInput(e.target.value))}
+                  onChange={(e) => {
+                    const normalized = normalizePriceInput(e.target.value);
+                    setPurchasePriceInput(normalized);
+                    setSalePriceInput(buildAutoSalePriceInput(normalized));
+                  }}
                 />
               </div>
             </label>
             <label className="modalLabel">
-              Vendita
+              Vendita +30%
               <div className="archiveCurrencyInputWrap mt4">
                 <span className="archiveCurrencyPrefix" aria-hidden="true">
                   €
@@ -297,6 +331,7 @@ export function WineArchiveFormModal({
                   className="input archiveCurrencyInput"
                   inputMode="decimal"
                   value={salePriceInput}
+                  readOnly
                   onChange={(e) => setSalePriceInput(normalizePriceInput(e.target.value))}
                 />
               </div>
