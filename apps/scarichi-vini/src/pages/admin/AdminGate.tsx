@@ -123,6 +123,7 @@ export function AdminGate() {
 
       <AdminSettings
         hidePanel
+        activeDomain={activeDomain}
         onBack={() => setSection('home')}
         openAction={settingsAction}
         onActionHandled={() => setSettingsAction(null)}

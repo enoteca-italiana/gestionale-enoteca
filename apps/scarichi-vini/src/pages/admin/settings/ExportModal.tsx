@@ -2,11 +2,19 @@ type Props = {
   open: boolean;
   exportBusy: boolean;
   exportError: string | null;
+  entityLabelPlural: string;
   onExport: (mode: 'excel' | 'pdf') => void;
   onClose: () => void;
 };
 
-export function ExportModal({ open, exportBusy, exportError, onExport, onClose }: Props) {
+export function ExportModal({
+  open,
+  exportBusy,
+  exportError,
+  entityLabelPlural,
+  onExport,
+  onClose
+}: Props) {
   if (!open) return null;
 
   return (
@@ -14,7 +22,7 @@ export function ExportModal({ open, exportBusy, exportError, onExport, onClose }
       <div className="modalCard adminSettingsModalCard">
         <div className="modalTitle">Esporta archivio</div>
         <div className="modalDescription">
-          Seleziona il formato di esportazione dell&apos;archivio vini.
+          {`Seleziona il formato di esportazione dell'archivio ${entityLabelPlural}.`}
         </div>
         {exportError ? <div className="errorText mt10">{exportError}</div> : null}
         <div className="modalActions">

@@ -232,3 +232,5 @@ Decisione UI già approvata:
 - Coda offline resa domain-aware (`offlineDischargeQueue`): supporta enqueue/flush sia `wine` che `spirits`.
 - Home: editing giacenza domain-aware (update su `wineRepository` o `spiritsRepository` in base al contesto).
 - Admin > Gestione voci filtri protetta per evitare contaminazione: in modalità Spirits mostra placeholder (manager legacy attivo solo su Vini).
+- Admin > Import/Export archivio resi domain-aware: in modalità Spirits operano su `spirits_products` (nessuna scrittura su `wines`).
+- Admin > Imposta Soglie protetto da contaminazione: pulsante disabilitato in modalità Spirits e guard-rail runtime attivo nel relativo hook.

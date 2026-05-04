@@ -15,6 +15,8 @@ export function AdminHome({
   onOpen: (section: AdminRootSection) => void;
   activeDomain: 'wine' | 'spirits';
 }) {
+  const thresholdActionDisabled = activeDomain === 'spirits';
+
   return (
     <div className="adminCenterSection">
       <div className="title centered mt6 adminHomeTitle">Impostazioni</div>
@@ -35,9 +37,11 @@ export function AdminHome({
         <button
           className="button adminHomeAction"
           type="button"
+          disabled={thresholdActionDisabled}
+          aria-disabled={thresholdActionDisabled ? 'true' : undefined}
           onClick={() => onOpen('threshold')}
         >
-          Imposta Soglie
+          {thresholdActionDisabled ? 'Imposta Soglie (solo Vini)' : 'Imposta Soglie'}
         </button>
         <button className="button adminHomeAction" type="button" onClick={() => onOpen('password')}>
           Aggiorna password

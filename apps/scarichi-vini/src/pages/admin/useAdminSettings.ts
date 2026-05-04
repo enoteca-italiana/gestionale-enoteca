@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getBool, storageKeys } from '@/pages/admin/storage';
 import { parseArchiveCsv, type ArchiveCsvWineInput } from '@/data/archiveCsv';
+import type { AppDomain } from '@/app/appDomain';
 import {
   appendWines,
   listWines,
   replaceAllWines,
   updateThresholdForAllWines
 } from '@/data/wineRepository';
+import { appendSpirits, listSpirits, replaceAllSpirits } from '@/data/spiritsRepository';
 import { exportArchiveExcel, exportArchivePdf } from '@/pages/admina/utils/archiveExport';
 import { sha256Base64 } from '@/pages/admin/crypto';
 
 type ImportMode = 'replace' | 'append';
 
 export type UseAdminSettingsOptions = {
+  activeDomain: AppDomain;
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   onHardReset: () => Promise<void>;
   openAction?: 'password' | 'import' | 'export' | 'threshold' | 'pinRequest' | 'reset' | null;
@@ -20,6 +23,7 @@ export type UseAdminSettingsOptions = {
 };
 
 export function useAdminSettings({
+  activeDomain,
   onChangePassword,
   onHardReset,
   openAction,
@@ -173,12 +177,21 @@ export function useAdminSettings({
     setImportError(null);
     setImportOk(null);
     try {
+      const entityLabel = activeDomain === 'wine' ? 'Vini' : 'Spirits';
       if (importMode === 'append') {
-        await appendWines(importRows);
-        setImportOk(`Import completato: aggiunti ${importRows.length} Vini`);
+        if (activeDomain === 'wine') {
+          await appendWines(importRows);
+        } else {
+          await appendSpirits(importRows);
+        }
+        setImportOk(`Import completato: aggiunti ${importRows.length} ${entityLabel}`);
       } else {
-        await replaceAllWines(importRows);
-        setImportOk(`Import completato: ${importRows.length} Vini`);
+        if (activeDomain === 'wine') {
+          await replaceAllWines(importRows);
+        } else {
+          await replaceAllSpirits(importRows);
+        }
+        setImportOk(`Import completato: ${importRows.length} ${entityLabel}`);
       }
       setImportRows(null);
       setImportFile(null);
@@ -230,6 +243,10 @@ export function useAdminSettings({
 
   const confirmBulkThresholdWithPin = async () => {
     if (thresholdBusy) return;
+    if (activeDomain !== 'wine') {
+      setThresholdPinError('Operazione disponibile solo in modalità Vini.');
+      return;
+    }
     const nextThreshold = parseThresholdValue();
     if (nextThreshold === null) {
       setThresholdError('Inserisci una soglia valida (numero intero >= 1).');
@@ -296,11 +313,20 @@ export function useAdminSettings({
     setExportError(null);
     setExportBusy(true);
     try {
-      const wines = await listWines({ forceRemote: true });
-      if (mode === 'excel') {
-        await exportArchiveExcel(wines);
+      if (activeDomain === 'wine') {
+        const wines = await listWines({ forceRemote: true });
+        if (mode === 'excel') {
+          await exportArchiveExcel(wines);
+        } else {
+          await exportArchivePdf(wines);
+        }
       } else {
-        await exportArchivePdf(wines);
+        const spirits = await listSpirits();
+        if (mode === 'excel') {
+          await exportArchiveExcel(spirits);
+        } else {
+          await exportArchivePdf(spirits);
+        }
       }
     } catch (error) {
       setExportError(error instanceof Error ? error.message : 'Errore durante export archivio');

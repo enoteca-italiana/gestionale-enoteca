@@ -6,11 +6,13 @@ import { ResetModal } from './settings/ResetModal';
 import { ImportModal } from './settings/ImportModal';
 import { ExportModal } from './settings/ExportModal';
 import { useAdminSettings } from '@/pages/admin/useAdminSettings';
+import type { AppDomain } from '@/app/appDomain';
 
 export function AdminSettings({
   onChangePassword,
   onLogout,
   onHardReset,
+  activeDomain,
   onBack,
   openAction,
   onActionHandled,
@@ -19,6 +21,7 @@ export function AdminSettings({
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   onLogout: () => void;
   onHardReset: () => Promise<void>;
+  activeDomain: AppDomain;
   onBack?: () => void;
   openAction?: 'password' | 'import' | 'export' | 'threshold' | 'pinRequest' | 'reset' | null;
   onActionHandled?: () => void;
@@ -102,7 +105,7 @@ export function AdminSettings({
     confirmBulkThresholdWithPin,
     confirmResetWithPin,
     handleExportArchive
-  } = useAdminSettings({ onChangePassword, onHardReset, openAction, onActionHandled });
+  } = useAdminSettings({ activeDomain, onChangePassword, onHardReset, openAction, onActionHandled });
 
   return (
     <>
@@ -315,6 +318,7 @@ export function AdminSettings({
         open={exportModalOpen}
         exportBusy={exportBusy}
         exportError={exportError}
+        entityLabelPlural={activeDomain === 'wine' ? 'vini' : 'spirits'}
         onExport={(mode) => void handleExportArchive(mode)}
         onClose={() => {
           setExportModalOpen(false);

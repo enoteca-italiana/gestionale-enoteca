@@ -1,4 +1,5 @@
 import type { Wine } from '@/domain/types';
+import type { ArchiveCsvWineInput } from '@/data/archiveCsv';
 import { supabase } from '@/lib/supabase';
 import { newId } from '@/data/localDb';
 import {
@@ -30,6 +31,15 @@ function isSchemaColumnError(error: unknown): boolean {
     (error as { message?: unknown } | null | undefined)?.message ?? ''
   ).toLowerCase();
   return message.includes('column') && message.includes('does not exist');
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const code = String((error as { code?: unknown } | null | undefined)?.code ?? '');
+  if (code === '23505') return true;
+  const message = String(
+    (error as { message?: unknown } | null | undefined)?.message ?? ''
+  ).toLowerCase();
+  return message.includes('duplicate key') || message.includes('unique');
 }
 
 function toNumber(value: unknown): number | undefined {
@@ -76,6 +86,19 @@ function toSpirit(row: SpiritsRow, index: number): Wine {
   };
 }
 
+function toSpiritInput(row: ArchiveCsvWineInput, fallbackId?: string): Partial<Wine> {
+  const candidateId = row.id?.trim();
+  return {
+    id: candidateId || fallbackId || newId('spirit'),
+    category: row.category ? normalizeWineCategory(row.category) : undefined,
+    name: normalizeWineName(row.name),
+    producer: normalizeWineProducer(row.producer),
+    purchasePrice: row.purchasePrice,
+    salePrice: row.salePrice,
+    qty: Number.isFinite(row.qty) ? Math.max(0, Math.round(row.qty)) : 0
+  };
+}
+
 function toEnglishPayload(input: Partial<Wine> & { id?: string }) {
   return {
     id: input.id,
@@ -102,6 +125,24 @@ function toItalianPayload(input: Partial<Wine> & { id?: string }) {
 
 function sortSpirits(items: Wine[]): Wine[] {
   return [...items].sort((a, b) => SPIRITS_NAME_COLLATOR.compare(a.name, b.name));
+}
+
+async function insertSpiritsToSupabase(input: Partial<Wine>[]): Promise<Wine[]> {
+  if (input.length === 0) return [];
+  if (!supabase) throw new Error('Supabase non configurato');
+
+  const englishPayload = input.map((spirit) => toEnglishPayload(spirit));
+  const first = await supabase.from(SPIRITS_TABLE).insert(englishPayload).select('*');
+  if (first.error && isSchemaColumnError(first.error)) {
+    const italianPayload = input.map((spirit) => toItalianPayload(spirit));
+    const legacy = await supabase.from(SPIRITS_TABLE).insert(italianPayload).select('*');
+    if (legacy.error) throw legacy.error;
+    const legacyRows = (legacy.data ?? []) as SpiritsRow[];
+    return sortSpirits(legacyRows.map((row, index) => toSpirit(row, index)));
+  }
+  if (first.error) throw first.error;
+  const rows = (first.data ?? []) as SpiritsRow[];
+  return sortSpirits(rows.map((row, index) => toSpirit(row, index)));
 }
 
 export async function listSpirits(): Promise<Wine[]> {
@@ -181,4 +222,39 @@ export async function clearSpiritsArchive(): Promise<number> {
   const { error } = await supabase.from(SPIRITS_TABLE).delete().not('id', 'is', null);
   if (error) throw error;
   return before.length;
+}
+
+export async function replaceAllSpirits(inputRows: ArchiveCsvWineInput[]): Promise<Wine[]> {
+  if (!supabase) throw new Error('Supabase non configurato');
+
+  const normalized = inputRows.map((row) => toSpiritInput(row));
+  const { error: deleteError } = await supabase.from(SPIRITS_TABLE).delete().not('id', 'is', null);
+  if (deleteError) throw deleteError;
+
+  return insertSpiritsToSupabase(normalized);
+}
+
+export async function appendSpirits(inputRows: ArchiveCsvWineInput[]): Promise<Wine[]> {
+  if (!supabase) throw new Error('Supabase non configurato');
+
+  const current = await listSpirits();
+  const usedIds = new Set(current.map((item) => item.id));
+  const normalized = inputRows.map((row) => {
+    const candidateId = row.id?.trim();
+    const safeId = candidateId && !usedIds.has(candidateId) ? candidateId : undefined;
+    const spirit = toSpiritInput(row, safeId);
+    if (spirit.id) usedIds.add(spirit.id);
+    return spirit;
+  });
+
+  let inserted: Wine[] = [];
+  try {
+    inserted = await insertSpiritsToSupabase(normalized);
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+    const retried = normalized.map((item) => ({ ...item, id: newId('spirit') }));
+    inserted = await insertSpiritsToSupabase(retried);
+  }
+
+  return sortSpirits([...current, ...inserted]);
 }

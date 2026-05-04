@@ -170,7 +170,7 @@ bash backup/make_backup.sh "Backup_2 Maggio_16.00"
 
 Esempio: `Backup_2 Maggio_16.30.tar.gz`
 
-Ultimo backup creato: **`Backup_4 Maggio_12.58.tar.gz`** (1.9 MB)
+Ultimo backup creato: **`Backup_4 Maggio_14.36.tar.gz`** (872K)
 
 ### Esclusioni
 
