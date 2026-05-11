@@ -369,30 +369,40 @@ function syncTableFromSheetToSupabase_(tableKey) {
   ensureHeaders_(sh, tableCfg);
 
   const values = sh.getDataRange().getValues();
-  if (values.length < 2) {
-    toast_('Nessun dato da sincronizzare (' + labelForTable_(tableKey) + ')');
-    return;
-  }
-
   const header = values[0];
   const idx = indexByHeader_(header, tableCfg);
-  const body = values.slice(1).filter(function (row) {
-    return rowHasContent_(tableKey, row, idx);
-  });
 
-  if (!body.length) {
-    toast_('Nessun dato da sincronizzare (' + labelForTable_(tableKey) + ')');
-    return;
-  }
+  // Righe con contenuto reale (esclude righe vuote/header)
+  const body =
+    values.length > 1
+      ? values.slice(1).filter(function (row) {
+          return rowHasContent_(tableKey, row, idx);
+        })
+      : [];
 
   const payload = body.map(function (row) {
     return normalizeSheetRowAndBuildPayload_(tableKey, row, idx);
   });
 
-  sh.getRange(2, 1, body.length, header.length).setValues(body);
+  // Normalizza valori nel foglio
+  if (body.length) {
+    sh.getRange(2, 1, body.length, header.length).setValues(body);
+  }
 
-  supabaseUpsert_(tableCfg, payload);
-  toast_('Push completato (' + labelForTable_(tableKey) + '): ' + payload.length + ' righe');
+  // UPSERT righe presenti nel foglio
+  if (payload.length) {
+    supabaseUpsert_(tableCfg, payload);
+  }
+
+  // DELETE righe presenti nel DB ma assenti dal foglio (hard delete bidirezionale)
+  const sheetIds = payload
+    .map(function (r) {
+      return r.id;
+    })
+    .filter(Boolean);
+  supabaseDeleteMissing_(tableCfg, sheetIds);
+
+  toast_('Push completato (' + labelForTable_(tableKey) + '): ' + payload.length + ' upsert');
 }
 
 function setupSheetForTable_(tableKey) {
@@ -653,6 +663,90 @@ function supabaseUpsert_(tableCfg, rows) {
 
     if (code < 200 || code >= 300) {
       throw new Error('Supabase upsert error ' + code + ' [' + tableCfg.table + ']: ' + txt);
+    }
+  }
+}
+
+// Recupera tutti gli ID presenti nel DB (paginato, solo colonna id).
+function supabaseSelectIds_(tableCfg) {
+  const pageSize = CFG.PAGE_SIZE;
+  let from = 0;
+  const all = [];
+
+  while (true) {
+    const url =
+      CFG.SUPABASE_URL + '/rest/v1/' + tableCfg.table + '?select=id&id=not.is.null&order=id.asc';
+
+    const res = UrlFetchApp.fetch(url, {
+      method: 'get',
+      headers: {
+        apikey: CFG.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: 'Bearer ' + CFG.SUPABASE_SERVICE_ROLE_KEY,
+        Range: from + '-' + (from + pageSize - 1),
+        Prefer: 'count=exact'
+      },
+      muteHttpExceptions: true
+    });
+
+    const code = res.getResponseCode();
+    if (code < 200 || code >= 300) {
+      throw new Error(
+        'Supabase selectIds error ' + code + ' [' + tableCfg.table + ']: ' + res.getContentText()
+      );
+    }
+
+    const chunk = JSON.parse(res.getContentText() || '[]');
+    if (!Array.isArray(chunk) || chunk.length === 0) break;
+
+    chunk.forEach(function (r) {
+      if (r.id) all.push(r.id);
+    });
+
+    if (chunk.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
+}
+
+// Cancella dal DB le righe il cui id NON è presente in keepIds (hard delete).
+function supabaseDeleteMissing_(tableCfg, keepIds) {
+  const dbIds = supabaseSelectIds_(tableCfg);
+
+  const toDelete = dbIds.filter(function (id) {
+    return keepIds.indexOf(id) === -1;
+  });
+
+  if (!toDelete.length) return;
+
+  supabaseDelete_(tableCfg, toDelete);
+}
+
+// DELETE su Supabase per lista di ID (a blocchi di 100 per sicurezza URL length).
+function supabaseDelete_(tableCfg, ids) {
+  if (!ids || !ids.length) return;
+
+  const chunkSize = 100;
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const url =
+      CFG.SUPABASE_URL + '/rest/v1/' + tableCfg.table + '?id=in.(' + chunk.join(',') + ')';
+
+    const res = UrlFetchApp.fetch(url, {
+      method: 'delete',
+      headers: {
+        apikey: CFG.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: 'Bearer ' + CFG.SUPABASE_SERVICE_ROLE_KEY,
+        Prefer: 'return=minimal'
+      },
+      muteHttpExceptions: true
+    });
+
+    const code = res.getResponseCode();
+    if (code < 200 || code >= 300) {
+      throw new Error(
+        'Supabase delete error ' + code + ' [' + tableCfg.table + ']: ' + res.getContentText()
+      );
     }
   }
 }

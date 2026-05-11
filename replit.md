@@ -189,6 +189,23 @@ Architettura sync completa, debounced, con loop guard:
 - Prima di un pull, viene scritto `MUTE_PUSH_KEY = now`. Le modifiche al Sheet entro 45s vengono ignorate da `onSheetEdit_`.
 - Le modifiche multiple in serie coalescono in 1 sola sync (debounce 10s sul flag pending).
 
+**Delete bidirezionale (11/05/2026):**
+
+- Sheet → DB push: dopo l'upsert, recupera tutti gli ID presenti nel DB, calcola il diff con gli ID del foglio, cancella (hard delete) le righe assenti dal foglio via `DELETE ?id=in.(...)`.
+- DB → Sheet pull: già completo — `clearDataKeepHeader_` + riscrittura totale; righe eliminate dal DB non riappaiono nel foglio.
+- Funzioni aggiunte: `supabaseDeleteMissing_`, `supabaseSelectIds_`, `supabaseDelete_`.
+
+**Latenza minima ineliminabile (limite Apps Script):**
+
+| Direzione                 | Latenza minima | Latenza massima |
+| ------------------------- | -------------- | --------------- |
+| App → Supabase            | istantanea     | istantanea      |
+| Supabase → App (Realtime) | ~2 s           | ~2 s            |
+| Sheet → Supabase          | ~10 s          | ~70 s           |
+| Supabase → Sheet          | ~10 s          | ~70 s           |
+
+I timer di Apps Script non possono scendere sotto 1 minuto — è un limite della piattaforma.
+
 **Stabilità:**
 
 - Eliminata la cascata di errori `doPost` (prima: lock 30s × N webhook = timeout multipli).
