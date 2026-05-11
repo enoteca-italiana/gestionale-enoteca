@@ -81,6 +81,11 @@ function normalizeThreshold(value: unknown): number | undefined {
   return Math.min(99, rounded);
 }
 
+function requiredDbText(value: string): string {
+  const trimmed = value.trim();
+  return trimmed || 'N/D';
+}
+
 function toSpirit(row: SpiritsRow, index: number): Wine {
   const nameRaw = row.name ?? row.nome ?? '';
   const producerRaw = row.producer ?? row.produttore ?? '';
@@ -128,8 +133,8 @@ function toEnglishPayload(input: Partial<Wine> & { id?: string }) {
   return {
     id: input.id,
     category: input.category ? normalizeWineCategory(input.category) : null,
-    name: normalizeWineName(input.name ?? ''),
-    producer: normalizeWineProducer(input.producer ?? ''),
+    name: requiredDbText(normalizeWineName(input.name ?? '')),
+    producer: requiredDbText(normalizeWineProducer(input.producer ?? '')),
     threshold: normalizeThreshold(input.threshold) ?? null,
     purchase_price: input.purchasePrice ?? null,
     sale_price: salePrice ?? null,
@@ -142,8 +147,8 @@ function toItalianPayload(input: Partial<Wine> & { id?: string }) {
   return {
     id: input.id,
     category: input.category ? normalizeWineCategory(input.category) : null,
-    nome: normalizeWineName(input.name ?? ''),
-    produttore: normalizeWineProducer(input.producer ?? ''),
+    nome: requiredDbText(normalizeWineName(input.name ?? '')),
+    produttore: requiredDbText(normalizeWineProducer(input.producer ?? '')),
     soglia: normalizeThreshold(input.threshold) ?? null,
     acquisto: input.purchasePrice ?? null,
     vendita: salePrice ?? null,

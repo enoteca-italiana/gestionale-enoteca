@@ -62,6 +62,11 @@ function normalizeThreshold(value?: number | null): number | undefined {
   return rounded;
 }
 
+function requiredDbText(value: string): string {
+  const trimmed = value.trim();
+  return trimmed || 'N/D';
+}
+
 function ensureThreshold(wine: Wine, fallback?: number): Wine {
   const normalized = normalizeThreshold(wine.threshold);
   if (normalized !== undefined) return { ...wine, threshold: normalized };
@@ -111,10 +116,10 @@ function toRowPayload(wine: Wine) {
   return {
     id: wine.id,
     category: wine.category ? normalizeWineCategory(wine.category) : null,
-    name: normalizeWineName(wine.name),
+    name: requiredDbText(normalizeWineName(wine.name)),
     age: wine.age ?? null,
-    producer: normalizeWineProducer(wine.producer),
-    origin: normalizeOrigin(wine.origin),
+    producer: requiredDbText(normalizeWineProducer(wine.producer)),
+    origin: requiredDbText(normalizeOrigin(wine.origin)),
     threshold: normalizeThreshold(wine.threshold) ?? null,
     purchase_price: wine.purchasePrice ?? null,
     sale_price: computedSalePrice ?? null,
@@ -129,9 +134,9 @@ function toRowPayload(wine: Wine) {
 function toLegacyPayload(wine: Wine) {
   return {
     id: wine.id,
-    name: normalizeWineName(wine.name),
-    producer: normalizeWineProducer(wine.producer),
-    origin: normalizeOrigin(wine.origin),
+    name: requiredDbText(normalizeWineName(wine.name)),
+    producer: requiredDbText(normalizeWineProducer(wine.producer)),
+    origin: requiredDbText(normalizeOrigin(wine.origin)),
     vintage: wine.vintage ?? null,
     category: wine.category ? normalizeWineCategory(wine.category) : null,
     qty: wine.qty
