@@ -199,7 +199,7 @@ Architettura v3 — logica semplificata, stabile, senza loop:
 
 ## Ultimo deploy GitHub
 
-Push via API del **03/05/2026** — 10 file sincronizzati su `enoteca-italiana/gestionale` branch `main`.
+Push via API del **03/05/2026** — 10 file sincronizzati su `enoteca-italiana/gestionale-enoteca` branch `main`.
 `deploy.sh` aggiornato: calcola diff `remote_SHA..HEAD` invece di `HEAD~1..HEAD`.
 
 ## Preferenze utente
