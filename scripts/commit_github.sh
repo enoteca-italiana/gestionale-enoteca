@@ -20,7 +20,7 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
 fi
 
 BRANCH="main"
-REMOTE_URL="https://${GITHUB_TOKEN}@github.com/enoteca-italiana/gestionale.git"
+REMOTE_URL="https://${GITHUB_TOKEN}@github.com/enoteca-italiana/gestionale-enoteca.git"
 
 if git status --porcelain --untracked-files=all | grep -q "."; then
   :
