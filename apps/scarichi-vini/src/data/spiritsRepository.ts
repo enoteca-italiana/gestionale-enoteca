@@ -29,6 +29,7 @@ type SpiritsRow = {
 
 const SPIRITS_TABLE = 'spirits_products';
 const SPIRITS_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
+const SPIRITS_PAGE_SIZE = 1000;
 const SPIRITS_WRITE_CHUNK_SIZE = 500;
 
 function isSchemaColumnError(error: unknown): boolean {
@@ -93,8 +94,8 @@ function toSpirit(row: SpiritsRow, index: number): Wine {
   return {
     id: row.id?.trim() ? row.id.trim() : `spirit-${index + 1}`,
     category: row.category ? normalizeWineCategory(row.category) : undefined,
-    name: normalizeWineName(nameRaw || `SPIRIT ${index + 1}`),
-    producer: normalizeWineProducer(producerRaw || 'N/D'),
+    name: normalizeWineName(nameRaw),
+    producer: normalizeWineProducer(producerRaw),
     origin: '',
     threshold,
     qty,
@@ -217,13 +218,34 @@ async function deleteSpiritsByIds(ids: string[]): Promise<void> {
 
 export async function listSpirits(): Promise<Wine[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.from(SPIRITS_TABLE).select('*');
-  if (error) {
+  try {
+    const rows = await listAllSpiritRows();
+    return sortSpirits(rows.map(toSpirit));
+  } catch (error) {
     console.error('[spiritsRepository] listSpirits error', error);
     return [];
   }
-  const rows = (data ?? []) as SpiritsRow[];
-  return sortSpirits(rows.map(toSpirit));
+}
+
+async function listAllSpiritRows(): Promise<SpiritsRow[]> {
+  if (!supabase) return [];
+
+  const rows: SpiritsRow[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + SPIRITS_PAGE_SIZE - 1;
+    const { data, error } = await supabase.from(SPIRITS_TABLE).select('*').range(from, to);
+    if (error) throw error;
+
+    const page = (data ?? []) as SpiritsRow[];
+    rows.push(...page);
+
+    if (page.length < SPIRITS_PAGE_SIZE) break;
+    from += SPIRITS_PAGE_SIZE;
+  }
+
+  return rows;
 }
 
 export async function createSpirit(input: Partial<Wine>): Promise<Wine> {
