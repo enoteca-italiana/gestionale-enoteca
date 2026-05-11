@@ -519,9 +519,9 @@ export function useAdminAuth(): {
 
 ## `src/pages/admina/WineAdminPage.tsx`
 
-Orchestratore principale archivio vini (~689 righe).
+Orchestratore pagina archivio vini (~264 righe — solo JSX). Tutta la logica è in `useWineAdminPage.ts` (~645 righe).
 
-Stato gestito:
+Stato gestito (in `useWineAdminPage.ts`):
 
 - `wines: Wine[]` — inventario caricato
 - `filterState: FilterState` — term, category, producer, origin, stockFilter
@@ -544,7 +544,7 @@ Filtri complementari:
 
 ## `src/pages/admina/components/AdminArchiveTable.tsx`
 
-Tabella inline-editable (~1219 righe).
+Tabella inline-editable (~713 righe).
 
 Comportamenti chiave:
 

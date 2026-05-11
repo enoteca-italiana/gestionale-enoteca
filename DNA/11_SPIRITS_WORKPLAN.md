@@ -255,7 +255,7 @@ Decisione UI già approvata:
 - Azione eseguita: i due trigger legacy sono stati rimossi manualmente dall'utente per evitare esecuzioni automatiche incoerenti e reset del tab `Spirits`.
 - Esito operativo verificato: il caricamento Spirits funziona correttamente se si usa il comando giusto `syncSpiritsFromSheetToSupabase`; il comando opposto `syncSpiritsFromSupabaseToSheet` va usato solo quando il DB è già la fonte autorevole.
 - Audit diretto via API con service-role locale:
-  - `wines`: `6382` record
+  - `wines`: `6382` record *(audit 04/05/2026; al 11/05/2026 il conteggio è 7234)*
   - `spirits_products`: `1684` record
   - `spirits_sessions`: `0`
   - `spirits_session_items`: `0`

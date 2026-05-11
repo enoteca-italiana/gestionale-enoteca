@@ -69,17 +69,13 @@ Variabili ambiente obbligatorie in Cloudflare (Settings → Environment variable
 
 `vite.config.ts` accetta anche il nome con prefisso `VITE_` come fallback (ad es. `VITE_SUPABASE_URL`).
 
-> ⚠ **CRITICO — API key mismatch (03/05/2026):** I secret Replit `SUPABASE_ANON_KEY` e
-> `SUPABASE_SERVICE_ROLE_KEY` risultano appartenere al **vecchio progetto** `kuigzaqaewgcosfhahkv`
-> invece dell'attuale `aezqtgadyaxdcptwlpci`. Questo causa 401 su tutte le chiamate REST.
-> L'app funziona solo su localStorage (nessun sync Supabase) finché non si aggiornano le chiavi.
+> ~~⚠ **CRITICO — API key mismatch (03/05/2026):** I secret Replit `SUPABASE_ANON_KEY` e
+> `SUPABASE_SERVICE_ROLE_KEY` risultavano appartenere al **vecchio progetto** `kuigzaqaewgcosfhahkv`
+> invece dell'attuale `aezqtgadyaxdcptwlpci`. Causa: 401 su tutte le chiamate REST.~~
 >
-> Azione richiesta:
->
-> 1. Supabase Dashboard → progetto `aezqtgadyaxdcptwlpci` → Settings → API → copia `anon public`
-> 2. Aggiornare secret Replit: `SUPABASE_ANON_KEY`
-> 3. Aggiornare variabili Cloudflare Pages come da tabella sopra
-> 4. Aggiornare `apps/scarichi-vini/.env.local` per sviluppo locale
+> ✅ **Risolto (verificare nella propria istanza):** aggiornare i secret Replit con le chiavi
+> `anon public` e `service_role` dal dashboard Supabase progetto `aezqtgadyaxdcptwlpci`.
+> Stesso aggiornamento in Cloudflare Pages env vars e `.env.local` locale.
 
 ---
 

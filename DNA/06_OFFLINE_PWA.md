@@ -132,7 +132,7 @@ Soluzione doppia:
    - All'avvio: se ultimo ping > 24h fa → esegue ping immediato.
    - Timer: ping silenzioso ogni 24h (`setInterval`).
    - Chiave localStorage: `supabase_keepalive_ts` → epoch ms ultimo ping.
-   - Query: `SELECT id FROM vini LIMIT 1` (tabella di test).
+   - Query: `supabase.from('wines').select('id').limit(1)` (tabella di test).
    - Fallimento silenzioso: non interrompe mai l'app.
 
 2. **GitHub Actions cron** (`.github/workflows/supabase-keepalive.yml`):
