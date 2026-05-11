@@ -31,6 +31,17 @@ const SPIRITS_TABLE = 'spirits_products';
 const SPIRITS_NAME_COLLATOR = new Intl.Collator('it', { sensitivity: 'base' });
 const SPIRITS_PAGE_SIZE = 1000;
 const SPIRITS_WRITE_CHUNK_SIZE = 500;
+const SPIRITS_SELECT_COLUMNS =
+  'id,category,name,producer,purchase_price,sale_price,qty,warehouse,margin,threshold';
+const SPIRITS_REMOTE_SYNC_TTL_MS = 30 * 60 * 1000; // 30 minuti
+let listSpiritsInFlight: Promise<Wine[]> | null = null;
+let listSpiritsCache: Wine[] | null = null;
+let lastSpiritsSyncAt = 0;
+
+function invalidateSpiritsCacheAndSync(): void {
+  listSpiritsCache = null;
+  lastSpiritsSyncAt = 0;
+}
 
 function isSchemaColumnError(error: unknown): boolean {
   const message = String(
@@ -221,14 +232,30 @@ async function deleteSpiritsByIds(ids: string[]): Promise<void> {
   }
 }
 
-export async function listSpirits(): Promise<Wine[]> {
-  if (!supabase) return [];
+async function fetchAndCacheSpirits(): Promise<Wine[]> {
   try {
     const rows = await listAllSpiritRows();
-    return sortSpirits(rows.map(toSpirit));
+    const result = sortSpirits(rows.map(toSpirit));
+    listSpiritsCache = result;
+    lastSpiritsSyncAt = Date.now();
+    return result;
   } catch (error) {
     console.error('[spiritsRepository] listSpirits error', error);
-    return [];
+    return listSpiritsCache ?? [];
+  }
+}
+
+export async function listSpirits(): Promise<Wine[]> {
+  if (!supabase) return [];
+  if (listSpiritsCache && Date.now() - lastSpiritsSyncAt < SPIRITS_REMOTE_SYNC_TTL_MS) {
+    return listSpiritsCache;
+  }
+  if (listSpiritsInFlight) return listSpiritsInFlight;
+  listSpiritsInFlight = fetchAndCacheSpirits();
+  try {
+    return await listSpiritsInFlight;
+  } finally {
+    listSpiritsInFlight = null;
   }
 }
 
@@ -240,7 +267,10 @@ async function listAllSpiritRows(): Promise<SpiritsRow[]> {
 
   while (true) {
     const to = from + SPIRITS_PAGE_SIZE - 1;
-    const { data, error } = await supabase.from(SPIRITS_TABLE).select('*').range(from, to);
+    const { data, error } = await supabase
+      .from(SPIRITS_TABLE)
+      .select(SPIRITS_SELECT_COLUMNS)
+      .range(from, to);
     if (error) throw error;
 
     const page = (data ?? []) as SpiritsRow[];
@@ -275,6 +305,7 @@ export async function createSpirit(input: Partial<Wine>): Promise<Wine> {
   }
 
   const created = toSpirit(createdRow ?? { ...englishPayload, id }, 0);
+  invalidateSpiritsCacheAndSync();
   await syncSpiritUpsert(created);
   return created;
 }
@@ -307,6 +338,7 @@ export async function updateSpirit(input: Partial<Wine> & { id: string }): Promi
   }
 
   const updated = toSpirit(updatedRow ?? { ...englishPayload, id: input.id }, 0);
+  invalidateSpiritsCacheAndSync();
   await syncSpiritUpsert(updated);
   return updated;
 }
@@ -315,6 +347,7 @@ export async function deleteSpirit(id: string): Promise<void> {
   if (!supabase) throw new Error('Supabase non configurato');
   const { error } = await supabase.from(SPIRITS_TABLE).delete().eq('id', id);
   if (error) throw error;
+  invalidateSpiritsCacheAndSync();
   await syncSpiritDelete(id);
 }
 
@@ -323,6 +356,7 @@ export async function clearSpiritsArchive(): Promise<number> {
   const before = await listSpirits();
   const { error } = await supabase.from(SPIRITS_TABLE).delete().not('id', 'is', null);
   if (error) throw error;
+  invalidateSpiritsCacheAndSync();
   return before.length;
 }
 
@@ -344,6 +378,7 @@ export async function updateThresholdForAllSpirits(rawThreshold: number): Promis
   }
 
   const updated = sortSpirits(current.map((spirit) => ({ ...spirit, threshold })));
+  invalidateSpiritsCacheAndSync();
   for (const spirit of updated) {
     await syncSpiritUpsert(spirit);
   }
@@ -361,6 +396,7 @@ export async function replaceAllSpirits(inputRows: ArchiveCsvWineInput[]): Promi
   const nextIds = new Set(inserted.map((spirit) => spirit.id));
   const staleIds = previousIds.filter((id) => !nextIds.has(id));
   await deleteSpiritsByIds(staleIds);
+  invalidateSpiritsCacheAndSync();
   for (const spirit of inserted) {
     await syncSpiritUpsert(spirit);
   }
@@ -389,6 +425,7 @@ export async function appendSpirits(inputRows: ArchiveCsvWineInput[]): Promise<W
     inserted = await insertSpiritsToSupabase(retried);
   }
 
+  invalidateSpiritsCacheAndSync();
   for (const spirit of inserted) {
     await syncSpiritUpsert(spirit);
   }

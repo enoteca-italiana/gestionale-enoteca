@@ -47,7 +47,7 @@ let listWinesCache: Wine[] | null = null;
 // Egress control: evita fetch ripetute da Supabase entro la finestra TTL.
 // Il refresh remoto avviene solo se: dati assenti localmente, TTL scaduto,
 // o caller passa esplicitamente skipTtl:true (es. pulsante "Aggiorna" manuale).
-const REMOTE_SYNC_TTL_MS = 10 * 60 * 1000; // 10 minuti
+const REMOTE_SYNC_TTL_MS = 30 * 60 * 1000; // 30 minuti
 let lastRemoteSyncAt = 0;
 
 function randomThreshold(): number {
