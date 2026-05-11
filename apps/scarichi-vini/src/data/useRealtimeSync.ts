@@ -33,7 +33,6 @@ export function useRealtimeSync(domain: AppDomain, onRemoteChange: () => void): 
     const channel = client
       .channel(`home_realtime_${table}`)
       .on('postgres_changes', { event: '*', schema: 'public', table }, () => {
-        console.log(`[Realtime] evento ricevuto su ${table}`);
         void invalidateCacheForDomain(domain);
         if (timerRef.current !== null) window.clearTimeout(timerRef.current);
         timerRef.current = window.setTimeout(() => {
@@ -42,7 +41,9 @@ export function useRealtimeSync(domain: AppDomain, onRemoteChange: () => void): 
         }, REALTIME_DEBOUNCE_MS);
       })
       .subscribe((status) => {
-        console.log(`[Realtime] ${table} → status: ${status}`);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn(`[Realtime] ${table} → status: ${status}`);
+        }
       });
 
     return () => {
