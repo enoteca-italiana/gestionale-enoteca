@@ -48,8 +48,10 @@ var MUTE_PUSH_KEY = 'autoMute_push_ts';
 var MUTE_PULL_KEY = 'autoMute_pull_ts';
 // Tempo minimo di silenzio prima di sincronizzare (10 secondi)
 var DEBOUNCE_MS = 10 * 1000;
-// Finestra di mute dopo ogni sync per prevenire loop (45 secondi)
-var MUTE_MS = 45 * 1000;
+// Finestra di mute dopo ogni sync per prevenire loop (10 secondi)
+// I webhook generati da un push arrivano entro 1-3s → 10s è sufficiente.
+// Finestre più lunghe bloccano webhook legittimi dall'app quando i sync girano ogni minuto.
+var MUTE_MS = 10 * 1000;
 
 // ── Helper: lettura/scrittura mappa pending ──
 function readPendingMap_(key) {

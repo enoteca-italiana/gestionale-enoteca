@@ -5,4 +5,4 @@ generated = []
 id = "kynZ0kYbr9GPLvudXeve5"
 uri = "file://scripts/google-apps-script/enoteca_sync_v2.txt"
 type = "text"
-title = "enoteca_sync_v2.gs — Sync bidirezionale completo con delete"
+title = "enoteca_sync_v2.gs — MUTE_MS 45s → 10s"
