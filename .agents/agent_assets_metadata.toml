@@ -5,4 +5,4 @@ generated = []
 id = "kynZ0kYbr9GPLvudXeve5"
 uri = "file://scripts/google-apps-script/enoteca_sync_v2.txt"
 type = "text"
-title = "enoteca_sync_v2.gs — MUTE_PULL_MS 10s / MUTE_PUSH_MS 90s"
+title = "enoteca_sync_v2.gs — Logica semplificata (reconcile 5 min)"

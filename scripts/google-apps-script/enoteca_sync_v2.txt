@@ -40,57 +40,24 @@ const TABLES = {
   }
 };
 
-// ─── SYNC AUTOMATICO BIDIREZIONALE: debounce + loop guard + multi-tabella ─
-// Chiavi Script Properties (mappe JSON per supportare wines + spirits insieme)
-var PENDING_PUSH_KEY = 'autoSync_pending_push'; // {wines: ts, spirits_products: ts}
-var PENDING_PULL_KEY = 'autoSync_pending_pull'; // {wines: ts, spirits_products: ts}
-var MUTE_PUSH_KEY = 'autoMute_push_ts';
-var MUTE_PULL_KEY = 'autoMute_pull_ts';
-// Tempo minimo di silenzio prima di sincronizzare (10 secondi)
-var DEBOUNCE_MS = 10 * 1000;
-// Mute dopo un PUSH (Sheet→DB): blocca doPost per 10s.
-// I webhook generati da un push arrivano entro 1-3s → 10s è più che sufficiente.
-// Mantenerlo basso permette ai webhook legittimi dell'app di passare dopo pochi secondi.
-var MUTE_PULL_MS = 10 * 1000;
+// ─── SYNC AUTOMATICO BIDIREZIONALE — logica semplificata ─────────────────
+//
+// Architettura:
+//   App ↔ Supabase  : REST diretto + Realtime (istantaneo, gestito lato app)
+//   Sheet ↔ DB      : timer reconcile ogni 5 minuti
+//
+// reconcile() per ogni tabella:
+//   → se il foglio è stato modificato dall'utente (dirty=true) → push Sheet→DB
+//   → altrimenti → pull DB→Sheet (mantiene il foglio aggiornato)
+//
+// Niente webhook, niente mute, niente pending map.
+// ─────────────────────────────────────────────────────────────────────────
 
-// Mute dopo un PULL (DB→Sheet): blocca onSheetEdit_ per 90s.
-// Il trigger onChange può sparare anche 30-60s dopo che setValues completa.
-// Finestra lunga previene il falso push-loop causato dal pull che riscrive il foglio.
-var MUTE_PUSH_MS = 90 * 1000;
-
-// ── Helper: lettura/scrittura mappa pending ──
-function readPendingMap_(key) {
-  var raw = PropertiesService.getScriptProperties().getProperty(key);
-  if (!raw) return {};
-  try {
-    var parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch (_) {
-    return {};
-  }
-}
-
-function writePendingMap_(key, map) {
-  var props = PropertiesService.getScriptProperties();
-  if (!map || Object.keys(map).length === 0) {
-    props.deleteProperty(key);
-  } else {
-    props.setProperty(key, JSON.stringify(map));
-  }
-}
-
-// Aggiunge/aggiorna una entry mantenendo il timestamp più recente.
-// Atomic-safe: legge → merge con max → riscrive.
-function mergePending_(key, tableKey, ts) {
-  var map = readPendingMap_(key);
-  if (!map[tableKey] || ts > map[tableKey]) {
-    map[tableKey] = ts;
-  }
-  writePendingMap_(key, map);
-}
+var DIRTY_WINES_KEY = 'dirty_wines';
+var DIRTY_SPIRITS_KEY = 'dirty_spirits';
 
 // Chiamato dal trigger onChange installabile.
-// Non contatta mai Supabase: registra solo un flag pending push.
+// Segna il foglio come "modificato dall'utente" — nessuna chiamata HTTP.
 function onSheetEdit_(e) {
   try {
     var changeType = e && e.changeType ? e.changeType : 'EDIT';
@@ -100,165 +67,109 @@ function onSheetEdit_(e) {
     var sheetName = null;
     if (e && e.range) {
       sheetName = e.range.getSheet().getName();
-      if (e.range.getRow() === 1) return;
+      if (e.range.getRow() === 1) return; // ignora modifiche all'header
     } else if (e && e.source) {
       try {
         sheetName = e.source.getActiveSheet().getName();
       } catch (_) {}
     }
 
-    var tableKey = null;
-    if (sheetName === CFG.SHEET_NAME_WINES) tableKey = 'wines';
-    else if (sheetName === CFG.SHEET_NAME_SPIRITS) tableKey = 'spirits_products';
-    if (!tableKey) return;
+    var dirtyKey = null;
+    if (sheetName === CFG.SHEET_NAME_WINES) dirtyKey = DIRTY_WINES_KEY;
+    else if (sheetName === CFG.SHEET_NAME_SPIRITS) dirtyKey = DIRTY_SPIRITS_KEY;
+    if (!dirtyKey) return;
 
-    var props = PropertiesService.getScriptProperties();
+    // Ignora modifiche fatte dal pull stesso (flag temporaneo durante sync)
+    var syncKey = 'reconcile_running_' + dirtyKey;
+    if (PropertiesService.getScriptProperties().getProperty(syncKey) === 'true') return;
 
-    // LOOP GUARD: pull recente → la modifica è effetto del pull stesso, ignora
-    var mutePushTs = parseInt(props.getProperty(MUTE_PUSH_KEY) || '0', 10);
-    if (mutePushTs && Date.now() - mutePushTs < MUTE_PUSH_MS) return;
-
-    mergePending_(PENDING_PUSH_KEY, tableKey, Date.now());
+    PropertiesService.getScriptProperties().setProperty(dirtyKey, 'true');
   } catch (_) {
     // silenzioso — non disturba mai l'utente durante la modifica
   }
 }
 
-// Webhook ricevuto da Supabase quando il DB cambia.
-// NON acquisisce lock: registra solo un flag pending pull.
+// Webhook da Supabase (DB trigger AFTER INSERT/UPDATE/DELETE).
+// Con la nuova architettura reconcile non usiamo più il webhook per il pull.
+// Rispondiamo subito 200 per evitare retry da Supabase.
 function doPost(e) {
-  try {
-    if (!CFG.WEBHOOK_SECRET) {
-      return jsonResponse_({ ok: false, status: 500, error: 'WEBHOOK_SECRET mancante' });
-    }
-
-    var qsSecret = e && e.parameter && e.parameter.secret ? String(e.parameter.secret) : '';
-    var bodyText = e && e.postData && e.postData.contents ? e.postData.contents : '';
-
-    var body = {};
-    try {
-      body = bodyText ? JSON.parse(bodyText) : {};
-    } catch (_) {
-      body = {};
-    }
-
-    var bodySecret = safeString_(body && body.secret);
-    var receivedSecret = qsSecret || bodySecret;
-
-    if (receivedSecret !== CFG.WEBHOOK_SECRET) {
-      return jsonResponse_({ ok: false, status: 401, error: 'Unauthorized' });
-    }
-
-    var tableKey = resolveTableKey_(body && body.table);
-    if (!tableKey) {
-      return jsonResponse_({
-        ok: false,
-        status: 400,
-        error: 'Tabella non supportata: ' + safeString_(body && body.table)
-      });
-    }
-
-    var props = PropertiesService.getScriptProperties();
-
-    // LOOP GUARD: push recente → il webhook è effetto del push stesso, ignora
-    var mutePullTs = parseInt(props.getProperty(MUTE_PULL_KEY) || '0', 10);
-    if (mutePullTs && Date.now() - mutePullTs < MUTE_PULL_MS) {
-      return jsonResponse_({ ok: true, status: 200, table: tableKey, muted: true });
-    }
-
-    mergePending_(PENDING_PULL_KEY, tableKey, Date.now());
-
-    return jsonResponse_({ ok: true, status: 200, table: tableKey, queued: true });
-  } catch (err) {
-    return jsonResponse_({
-      ok: false,
-      status: 500,
-      error: String(err && err.message ? err.message : err)
-    });
-  }
+  return jsonResponse_({ ok: true, status: 200, mode: 'reconcile' });
 }
 
-// Helper generico: processa una mappa pending applicando syncFn ad ogni entry pronta.
-// Re-merge atomico in caso di errore (preserva eventi nuovi arrivati durante l'esecuzione).
-function processPendingMap_(pendingKey, muteKey, syncFn) {
+// ── Reconcile: eseguito dal timer ogni 5 minuti ──────────────────────────
+// Per ogni tabella: se dirty → push Sheet→DB, altrimenti → pull DB→Sheet.
+function reconcile() {
+  var tables = [
+    { tableKey: 'wines', dirtyKey: DIRTY_WINES_KEY },
+    { tableKey: 'spirits_products', dirtyKey: DIRTY_SPIRITS_KEY }
+  ];
+
   var props = PropertiesService.getScriptProperties();
-  var map = readPendingMap_(pendingKey);
-  var keys = Object.keys(map);
-  if (!keys.length) return;
 
-  var now = Date.now();
-  var ready = [];
-  var notReady = {};
+  tables.forEach(function (t) {
+    var isDirty = props.getProperty(t.dirtyKey) === 'true';
 
-  keys.forEach(function (k) {
-    var ts = map[k];
-    if (now - ts >= DEBOUNCE_MS) ready.push({ table: k, ts: ts });
-    else notReady[k] = ts;
-  });
-
-  if (!ready.length) return;
-
-  // Persiste solo le entry non pronte; rimuove quelle in elaborazione
-  writePendingMap_(pendingKey, notReady);
-
-  ready.forEach(function (item) {
-    try {
-      // Mute lato opposto PRIMA del sync (eventi generati saranno ignorati)
-      props.setProperty(muteKey, String(Date.now()));
-      syncFn(item.table);
-      // Refresh mute DOPO il sync (copre eventi ritardati)
-      props.setProperty(muteKey, String(Date.now()));
-    } catch (err) {
-      // Re-merge: se nel frattempo è arrivato un evento più nuovo, mantieni il max
-      var current = readPendingMap_(pendingKey);
-      var existing = current[item.table] || 0;
-      current[item.table] = Math.max(existing, item.ts);
-      writePendingMap_(pendingKey, current);
+    if (isDirty) {
+      // Foglio modificato dall'utente → push Sheet→DB (include delete diff)
+      props.deleteProperty(t.dirtyKey);
+      try {
+        syncTableFromSheetToSupabaseWithLock_(t.tableKey);
+      } catch (err) {
+        // Ripristina dirty: riproverà al prossimo tick
+        props.setProperty(t.dirtyKey, 'true');
+      }
+    } else {
+      // Nessuna modifica utente → pull DB→Sheet
+      // Setta flag temporaneo: onSheetEdit_ non marca dirty durante il pull
+      var syncKey = 'reconcile_running_' + t.dirtyKey;
+      props.setProperty(syncKey, 'true');
+      try {
+        syncTableFromSupabaseToSheetWithLock_(t.tableKey);
+      } finally {
+        props.deleteProperty(syncKey);
+      }
     }
   });
-}
-
-// Timer ogni 1 minuto: processa pending push (Sheet → Supabase).
-function processPendingSync_() {
-  processPendingMap_(PENDING_PUSH_KEY, MUTE_PULL_KEY, syncTableFromSheetToSupabaseWithLock_);
-}
-
-// Timer ogni 1 minuto: processa pending pull (Supabase → Sheet).
-function processPendingPull_() {
-  processPendingMap_(PENDING_PULL_KEY, MUTE_PUSH_KEY, syncTableFromSupabaseToSheetWithLock_);
 }
 
 // Installa tutti i trigger necessari. Da eseguire una sola volta.
 function installTriggers() {
-  // Rimuove eventuali trigger precedenti per evitare duplicati
+  var toRemove = ['onSheetEdit_', 'reconcile', 'processPendingSync_', 'processPendingPull_'];
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    var fn = t.getHandlerFunction();
-    if (fn === 'onSheetEdit_' || fn === 'processPendingSync_' || fn === 'processPendingPull_') {
-      ScriptApp.deleteTrigger(t);
-    }
+    if (toRemove.indexOf(t.getHandlerFunction()) !== -1) ScriptApp.deleteTrigger(t);
   });
 
-  // Trigger onChange installabile → cattura ogni modifica al foglio
   ScriptApp.newTrigger('onSheetEdit_')
     .forSpreadsheet(SpreadsheetApp.getActive())
     .onChange()
     .create();
 
-  // Timer ogni 1 minuto → processa pending push (Sheet → Supabase)
-  ScriptApp.newTrigger('processPendingSync_').timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger('reconcile').timeBased().everyMinutes(5).create();
 
-  // Timer ogni 1 minuto → processa pending pull (Supabase → Sheet)
-  ScriptApp.newTrigger('processPendingPull_').timeBased().everyMinutes(1).create();
+  // Pulizia chiavi obsolete delle versioni precedenti
+  var obsolete = [
+    'autoSync_pending_push',
+    'autoSync_pending_pull',
+    'autoSync_table',
+    'autoSync_ts',
+    'autoPull_table',
+    'autoPull_ts',
+    'autoMute_push_ts',
+    'autoMute_pull_ts'
+  ];
+  obsolete.forEach(function (k) {
+    PropertiesService.getScriptProperties().deleteProperty(k);
+  });
 
-  toast_('✅ Attivatori installati (onChange + push timer + pull timer)');
+  toast_('✅ Attivatori installati (onChange + reconcile ogni 5 min)');
 }
 
 // Rimuove i trigger installati (utile per manutenzione).
 function removeTriggers() {
+  var toRemove = ['onSheetEdit_', 'reconcile', 'processPendingSync_', 'processPendingPull_'];
   var count = 0;
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    var fn = t.getHandlerFunction();
-    if (fn === 'onSheetEdit_' || fn === 'processPendingSync_' || fn === 'processPendingPull_') {
+    if (toRemove.indexOf(t.getHandlerFunction()) !== -1) {
       ScriptApp.deleteTrigger(t);
       count++;
     }
