@@ -128,7 +128,7 @@ function installTriggers() {
   // Trigger time-based ogni 2 minuti → processa il pending sync
   ScriptApp.newTrigger('processPendingSync_')
     .timeBased()
-    .everyMinutes(2)
+    .everyMinutes(5)
     .create();
 
   toast_('✅ Attivatori installati (onChange + timer 2 min)');
