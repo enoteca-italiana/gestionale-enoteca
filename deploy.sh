@@ -44,7 +44,7 @@ import sys, os, subprocess, urllib.request, urllib.error, json, base64
 
 MSG   = sys.argv[1]
 TOKEN = os.environ.get('GITHUB_TOKEN', '')
-REPO  = 'enoteca-italiana/gestionale'
+REPO  = 'enoteca-italiana/gestionale-enoteca'
 BASE  = 'https://api.github.com'
 
 SKIP_PREFIXES = ('backup/', 'attached_assets/', 'node_modules/', 'dist/',
