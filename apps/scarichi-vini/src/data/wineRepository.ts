@@ -50,6 +50,11 @@ let listWinesCache: Wine[] | null = null;
 const REMOTE_SYNC_TTL_MS = 30 * 60 * 1000; // 30 minuti
 let lastRemoteSyncAt = 0;
 
+export function invalidateWinesCache(): void {
+  listWinesCache = null;
+  lastRemoteSyncAt = 0;
+}
+
 function randomThreshold(): number {
   return Math.floor(Math.random() * 12) + 1;
 }

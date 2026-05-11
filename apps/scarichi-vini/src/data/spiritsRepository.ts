@@ -38,7 +38,7 @@ let listSpiritsInFlight: Promise<Wine[]> | null = null;
 let listSpiritsCache: Wine[] | null = null;
 let lastSpiritsSyncAt = 0;
 
-function invalidateSpiritsCacheAndSync(): void {
+export function invalidateSpiritsCacheAndSync(): void {
   listSpiritsCache = null;
   lastSpiritsSyncAt = 0;
 }

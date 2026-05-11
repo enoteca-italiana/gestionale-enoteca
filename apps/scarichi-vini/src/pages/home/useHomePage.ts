@@ -11,6 +11,7 @@ import {
   isDischargeQueueRecoverableError
 } from '@/data/offlineDischargeQueue';
 import { useLocalDb } from '@/data/useLocalDb';
+import { useRealtimeSync } from '@/data/useRealtimeSync';
 import { useLocalSession } from '@/pages/home/useLocalSession';
 import { useStockEditor } from '@/pages/home/useStockEditor';
 import {
@@ -93,6 +94,13 @@ export function useHomePage({
   const previousOnlineRef = useRef(online);
 
   const { inventory, setInventory, refreshInventory } = useLocalDb(domain);
+
+  useRealtimeSync(
+    domain,
+    useCallback(() => {
+      void refreshInventory({ forceRemote: true, skipTtl: true });
+    }, [refreshInventory])
+  );
 
   const {
     sessionOpen,
