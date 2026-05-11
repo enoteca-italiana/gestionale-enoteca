@@ -8,11 +8,11 @@ Ultimo aggiornamento: **04/05/2026 — CEST**.
 
 Queste regole valgono **sempre** in tutta l'app: input utente, import CSV, visualizzazione, export, script SQL, snapshot sessioni.
 
-| Campo                                | Regola                                           | Esempio             |
-| ------------------------------------ | ------------------------------------------------ | ------------------- |
-| `categoria`                          | **Initcap** (prima lettera maiuscola per parola) | `Rossi Fermi`       |
-| `name` / `provenienza`               | **UPPERCASE**                                    | `BAROLO`, `PIEMONT` |
-| `produttore`                         | **Initcap** (prima lettera maiuscola per parola) | `Giacomo Conterno`  |
+| Campo                  | Regola                                           | Esempio             |
+| ---------------------- | ------------------------------------------------ | ------------------- |
+| `categoria`            | **Initcap** (prima lettera maiuscola per parola) | `Rossi Fermi`       |
+| `name` / `provenienza` | **UPPERCASE**                                    | `BAROLO`, `PIEMONT` |
+| `produttore`           | **Initcap** (prima lettera maiuscola per parola) | `Giacomo Conterno`  |
 
 ---
 

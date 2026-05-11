@@ -3,11 +3,7 @@ import type { ArchiveCsvWineInput } from '@/data/archiveCsv';
 import { supabase } from '@/lib/supabase';
 import { newId } from '@/data/localDb';
 import { syncSpiritDelete, syncSpiritUpsert } from '@/integrations/googleSheetsSync';
-import {
-  deriveMarginValue,
-  deriveSalePrice,
-  deriveWarehouseValue
-} from '@/domain/pricing';
+import { deriveMarginValue, deriveSalePrice, deriveWarehouseValue } from '@/domain/pricing';
 import {
   normalizeWineCategory,
   normalizeWineName,
@@ -141,7 +137,9 @@ function toItalianPayload(input: Partial<Wine> & { id?: string }) {
     soglia: normalizeThreshold(input.threshold) ?? null,
     acquisto: input.purchasePrice ?? null,
     vendita: salePrice ?? null,
-    quantita_magazzino: Number.isFinite(input.qty) ? Math.max(0, Math.round(input.qty as number)) : 0
+    quantita_magazzino: Number.isFinite(input.qty)
+      ? Math.max(0, Math.round(input.qty as number))
+      : 0
   };
 }
 
@@ -259,10 +257,7 @@ export async function updateThresholdForAllSpirits(rawThreshold: number): Promis
   const current = await listSpirits();
   if (current.length === 0) return 0;
 
-  const { error } = await supabase
-    .from(SPIRITS_TABLE)
-    .update({ threshold })
-    .not('id', 'is', null);
+  const { error } = await supabase.from(SPIRITS_TABLE).update({ threshold }).not('id', 'is', null);
 
   if (error && !isSchemaColumnError(error)) throw error;
   if (error && isSchemaColumnError(error)) {

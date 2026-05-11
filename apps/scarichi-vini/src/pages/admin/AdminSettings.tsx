@@ -105,7 +105,13 @@ export function AdminSettings({
     confirmBulkThresholdWithPin,
     confirmResetWithPin,
     handleExportArchive
-  } = useAdminSettings({ activeDomain, onChangePassword, onHardReset, openAction, onActionHandled });
+  } = useAdminSettings({
+    activeDomain,
+    onChangePassword,
+    onHardReset,
+    openAction,
+    onActionHandled
+  });
 
   return (
     <>

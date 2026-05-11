@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.vite/
+.cache/
+.local/
+coverage/
+backup/
+attached_assets/
+apps/scarichi-vini/node_modules/
+apps/scarichi-vini/dist/
+apps/scarichi-vini/dev-dist/
+apps/scarichi-vini/coverage/
+*.tsbuildinfo
+*.tar.gz
+*.zip
+.DS_Store

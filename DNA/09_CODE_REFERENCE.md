@@ -142,13 +142,13 @@ export function useLocalDb(): {
 
 Comportamenti chiave:
 
-| Metodo                    | Comportamento                                                                                                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `setInventory(inv)`       | Aggiorna `db.inventory` via `commit()` con coalescing 120ms                                                                                                        |
-| `clearHistory()`          | Azzera `db.history`                                                                                                                                                |
-| `hardResetAll()`          | Cancella chiave localStorage, cancella timer pending, ricarica seed                                                                                                |
-| `refreshInventory(opts?)` | Carica `wineRepository` lazy, chiama `listWines()`, aggiorna stato senza doppia scrittura se array identico. Deduplicato: riusa in-flight Promise se già in corso. |
-| `summary`                 | Memo: `{ totalQty: sum(qty), winesCount: inventory.length }`                                                                                                       |
+| Metodo                    | Comportamento                                                                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setInventory(inv)`       | Aggiorna `db.inventory` via `commit()` con coalescing 120ms. In modalità `Spirits` non forza più lista vuota: lavora sul dominio attivo.                                                                                                          |
+| `clearHistory()`          | Azzera `db.history`                                                                                                                                                                                                                               |
+| `hardResetAll()`          | Cancella chiave localStorage, cancella timer pending, ricarica seed                                                                                                                                                                               |
+| `refreshInventory(opts?)` | Domain-aware: carica lazy `wineRepository` o `spiritsRepository` in base al contesto, chiama `listWines()` oppure `listSpirits()`, aggiorna stato senza doppia scrittura se array identico. Deduplicato: riusa in-flight Promise se già in corso. |
+| `summary`                 | Memo: `{ totalQty: sum(qty), winesCount: inventory.length }` sul dominio attivo                                                                                                                                                                   |
 
 Propagazione cambiamenti:
 
@@ -215,10 +215,10 @@ type WineInput = {
 
 | Funzione                             | Comportamento                                                                                                                |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `toWine(row)`                        | Mappa WineRow → Wine. Normalizza testi, applica threshold, ricava `salePrice` da `purchasePrice * 1.3` se il dato manca.    |
-| `toRowPayload(wine)`                 | Mappa Wine → payload Supabase (schema completo con `sale_price`, `warehouse`, `margin` coerenti ai campi derivati).         |
+| `toWine(row)`                        | Mappa WineRow → Wine. Normalizza testi, applica threshold, ricava `salePrice` da `purchasePrice * 1.3` se il dato manca.     |
+| `toRowPayload(wine)`                 | Mappa Wine → payload Supabase (schema completo con `sale_price`, `warehouse`, `margin` coerenti ai campi derivati).          |
 | `toLegacyPayload(wine)`              | Mappa Wine → payload schema legacy (solo campi base). Usato come fallback se schema esteso non ancora applicato.             |
-| `normalizeInput(input)`              | Mappa WineInput → Wine normalizzata completa. Se `salePrice` manca la auto-genera con `+30%`, poi calcola warehouse/margin. |
+| `normalizeInput(input)`              | Mappa WineInput → Wine normalizzata completa. Se `salePrice` manca la auto-genera con `+30%`, poi calcola warehouse/margin.  |
 | `listAllWineRows()`                  | Fetch paginata da Supabase (1000 rows/page). Se `count` disponibile: pagine parallele. Altrimenti: sequenziale con sentinel. |
 | `prepareInventory(source, fallback)` | `enrichThresholdsFromFallback` → `normalizeWineTextFields` → `sortWines`.                                                    |
 | `sameInventory(prev, next)`          | Confronto campo per campo. Guard anti-write ridondanti.                                                                      |
@@ -358,10 +358,10 @@ Funzioni principali:
 
 ### Funzioni esportate
 
-| Funzione                 | Firma                                    | Comportamento                                                                                                                                                                                      |
-| ------------------------ | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `buildArchiveCsv(wines)` | `(wines: Wine[]) => string`              | CSV con separatore `;`, escape RFC 4180, normalizzazione campi, encoding UTF-8.                                                                                                                    |
-| `parseArchiveCsv(raw)`   | `(raw: string) => ArchiveCsvWineInput[]` | Auto-detect separatore (`;` o `,`). Parser manuale RFC 4180 (gestisce quoted fields, escape `""`, CRLF). Rimozione BOM `\uFEFF`. Normalizzazione campi. Validazione: richiede `name` e `producer`. |
+| Funzione                 | Firma                                    | Comportamento                                                                                                                                                                                                                                                     |
+| ------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buildArchiveCsv(wines)` | `(wines: Wine[]) => string`              | CSV con separatore `;`, escape RFC 4180, normalizzazione campi, encoding UTF-8.                                                                                                                                                                                   |
+| `parseArchiveCsv(raw)`   | `(raw: string) => ArchiveCsvWineInput[]` | Auto-detect separatore (`;` o `,`). Parser manuale RFC 4180 (gestisce quoted fields, escape `""`, CRLF). Rimozione BOM `\uFEFF`. Normalizzazione campi. Validazione: richiede le colonne `name` e `producer`; celle testuali vuote importate come stringhe vuote. |
 
 ### `parseLooseNumber(raw)`
 
@@ -588,6 +588,13 @@ export async function syncSpiritDelete(spiritId: string): Promise<void>;
 - Non parte del flusso critico: fallimento non blocca l'operazione principale.
 - Nel repository il file resta placeholder non bloccante; in produzione la sync primaria verso Google è oggi attivata dai trigger DB `trg_wines_notify_google_sheets` e `trg_spirits_notify_google_sheets`.
 
+Nota audit 11/05/2026:
+
+- lato Supabase -> Google Sheet risultano presenti URL Web App `/exec`, secret, trigger e funzioni webhook coerenti;
+- lato Google Sheet -> Supabase non c'e' automatismo installato: Apps Script mostra `0 attivatori`, quindi i comandi `syncWinesFromSheetToSupabase` e `syncSpiritsFromSheetToSupabase` partono solo manualmente dal menu;
+- i CSV esportati dal foglio non includono `__ID__`, quindi non sono adatti a sync bidirezionale automatica sicura senza prima popolare ID stabili;
+- i duplicati naturali impediscono di usare `NOME + PRODUTTORE` come chiave affidabile.
+
 ---
 
 ## `src/components/BottomNav.tsx`
@@ -665,7 +672,9 @@ Nota dominio Spirits:
 - lato repository `Spirits`, se `sale_price/vendita` manca ma `purchase_price/acquisto` è presente, `salePrice` viene derivata automaticamente con regola `+30%`;
 - lato DB è verificata la presenza del trigger `trg_spirits_notify_google_sheets` con funzione `integration.notify_google_sheets_spirits()`;
 - lato Google Apps Script il flusso corretto è distinto: `syncSpiritsFromSheetToSupabase` per caricare il foglio nel DB, `syncSpiritsFromSupabaseToSheet` per riscrivere il foglio a partire dal DB;
+- il sorgente Apps Script è versionato nel repo in `scripts/google-apps-script/enoteca_sync.gs`;
 - i vecchi trigger installabili Apps Script (`syncFromSheetToSupabase`, `syncFromSupabaseToSheet`) sono stati rimossi perché riferiti a funzioni legacy non più presenti nel nuovo script.
+- al 11/05/2026 non risultano trigger installabili Apps Script attivi; prima di rendere automatica la sync Sheet -> DB va introdotto un trigger controllato e idempotente.
 - se `spirits_products` è stato creato prima dell’introduzione delle soglie, va eseguito `scripts/sql/2026-05-04_spirits_threshold_enable.sql`.
 
 ---

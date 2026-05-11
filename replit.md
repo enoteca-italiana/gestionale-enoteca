@@ -149,11 +149,11 @@ I chunk `vendor_excel` (938 KB) e `vendor_pdf` (422 KB) superano i 500 KB — co
 
 Logica tab sinistra navbar (mobile):
 
-| Stato                                       | Tab sinistra                                           |
-| ------------------------------------------- | ------------------------------------------------------ |
-| Pagina qualsiasi (Home, Archivio, ecc.)     | `Settings` ⚙️ + testo "Impostazioni" → `/impostazioni` |
-| Home impostazioni (`!adminInSubSection`)    | nascosto — solo `Home` centrato                        |
-| Sotto-sezione admin (`adminInSubSection`)   | `CircleArrowLeft` button → `scarichi:openAdminHome`    |
+| Stato                                     | Tab sinistra                                           |
+| ----------------------------------------- | ------------------------------------------------------ |
+| Pagina qualsiasi (Home, Archivio, ecc.)   | `Settings` ⚙️ + testo "Impostazioni" → `/impostazioni` |
+| Home impostazioni (`!adminInSubSection`)  | nascosto — solo `Home` centrato                        |
+| Sotto-sezione admin (`adminInSubSection`) | `CircleArrowLeft` button → `scarichi:openAdminHome`    |
 
 CSS: `.navbarInnerCentered` (flex, justify-content: center) applicata quando `settingsHomeOnly=true`.
 

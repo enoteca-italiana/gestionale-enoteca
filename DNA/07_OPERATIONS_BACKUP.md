@@ -145,6 +145,18 @@ apps/scarichi-vini/dev-dist/
 ```
 
 Cartella `backup/` presente nel repo solo per lo script `backup/make_backup.sh`.
+Il contenuto binario dei backup (`backup/*.tar.gz`) resta locale e **non** rientra in un nuovo clone Git.
+
+### Codice Apps Script versionato
+
+Il sorgente aggiornato del progetto Google Apps Script è ora salvato anche nel repo:
+
+`scripts/google-apps-script/enoteca_sync.gs`
+
+Questo file va considerato la fonte di verità lato foglio Google. Nel progetto Apps Script reale restano da configurare solo:
+
+- Script Properties
+- eventuali trigger installabili non-legacy se mai richiesti in futuro
 
 ---
 
@@ -202,7 +214,7 @@ Il file `.replitignore` esclude automaticamente le cartelle pesanti:
 | `.cache/` `.local/`      | Stato interno Replit                 |
 | `*.tsbuildinfo`          | Artefatto compilatore TypeScript     |
 
-**Dimensione zip attesa: ~20 MB** (solo codice sorgente, DNA/, scripts/, backup/).
+**Dimensione zip attesa: ~20 MB** (solo codice sorgente, DNA/, scripts/, backup script; non include i file `backup/*.tar.gz` locali).
 
 Dopo ricaricamento in Replit da zip:
 
@@ -220,7 +232,24 @@ Dopo ricaricamento in Replit da zip:
 5. Crea `apps/scarichi-vini/.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
 6. Avvio: `npm run dev` (porta 5001)
 7. Verifica build: `npm run build`
-8. Leggere prima di modifiche: `DNA/00_INDEX.md`, `DNA/02_ARCHITECTURE.md`, `DNA/05_ADMIN.md`
+8. Leggere prima di modifiche: `DNA/12_HANDOFF_STATUS.md`, `DNA/02_ARCHITECTURE.md`, `DNA/08_SUPABASE_SETUP.md`, `DNA/11_SPIRITS_WORKPLAN.md`
+
+### Contenuto versionato vs locale-only
+
+| Tipo                            | Presente nel clone Git | Note                                              |
+| ------------------------------- | ---------------------- | ------------------------------------------------- |
+| Codice app React/Vite           | Sì                     | Fonte principale del progetto                     |
+| File `DNA/`                     | Sì                     | Documentazione completa e aggiornata              |
+| Script SQL Supabase             | Sì                     | `scripts/sql/`                                    |
+| Codice Apps Script Google       | Sì                     | `scripts/google-apps-script/enoteca_sync.gs`      |
+| `apps/scarichi-vini/.env.local` | No                     | Da ricreare sul nuovo PC                          |
+| `backup/*.tar.gz`               | No                     | Restano solo sul PC locale dove sono stati creati |
+| `.local/`                       | No                     | Stato locale non versionato                       |
+
+Se il requisito è avere sul nuovo PC anche il materiale locale non versionato, dopo il clone Git vanno copiati manualmente almeno:
+
+- `apps/scarichi-vini/.env.local`
+- `backup/*.tar.gz`
 
 Se l'app non parte:
 

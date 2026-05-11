@@ -164,19 +164,19 @@ Deliverable: check finale “zero regressioni Vini”.
 ## Rischi principali e mitigazioni
 
 1. Contaminazione logica Vini  
-Mitigazione: file/tipi/repository separati + naming esplicito.
+   Mitigazione: file/tipi/repository separati + naming esplicito.
 
 2. Errori mapping Google Sheet  
-Mitigazione: parser rigido + validazioni e fallback.
+   Mitigazione: parser rigido + validazioni e fallback.
 
 3. Regressioni filtri/toolbar  
-Mitigazione: hook separati, non estendere indiscriminatamente hook vino.
+   Mitigazione: hook separati, non estendere indiscriminatamente hook vino.
 
 4. Debito UI/UX da copia-incolla  
-Mitigazione: riuso solo componenti neutrali, no fork confuso.
+   Mitigazione: riuso solo componenti neutrali, no fork confuso.
 
 5. RLS/autorizzazioni incompleta su nuove tabelle  
-Mitigazione: test CRUD con ruoli reali prima go-live.
+   Mitigazione: test CRUD con ruoli reali prima go-live.
 
 ---
 
@@ -262,3 +262,27 @@ Decisione UI già approvata:
 - Campionamento diretto su `spirits_products` conferma record persistiti con `name` maiuscolo, `producer` normalizzato, `sale_price`, `warehouse` e `margin` coerenti.
 - Quality pass completato sul codice applicativo: `test`, `typecheck`, `lint` e `build` verdi dopo split di `appDomainContext` e normalizzazione difensiva di `VITE_SUPABASE_URL` nel client frontend.
 - Fix runtime Home `Spirits`: `useLocalDb` non forza più `inventory = []` sul dominio spirits e `refreshInventory()` esegue correttamente `listSpirits()`, ripristinando il popolamento della Home.
+- Audit sync Google/Supabase del 11/05/2026:
+  - lato Supabase -> Google risultano configurati URL Web App `/exec`, secret, trigger DB e funzioni `integration.notify_google_sheets_*`;
+  - lato Apps Script risultano `0 attivatori`, quindi Google Sheet -> Supabase non e' automatico;
+  - CSV foglio esportati senza colonna `__ID__`;
+  - `Vini`: 7234 righe dati, 72 righe con campi critici vuoti, 27 duplicati naturali;
+  - `Spirits`: 1692 righe dati, 6 righe con nome/produttore vuoto, 6 duplicati naturali;
+  - una sync bidirezionale automatica deve prima introdurre ID stabili e non puo' basarsi su `nome + produttore`.
+
+## Stato consolidato / prossimi step
+
+Situazione attuale:
+
+- dominio `Spirits` operativo in Home e Archivio;
+- Supabase `Spirits` verificato e coerente;
+- Google Sheet `Spirits` operativo con flusso manuale corretto foglio -> DB e flusso DB -> foglio via webhook, ma senza automatismo Sheet -> DB installato;
+- nessun blocker critico noto aperto al `04/05/2026`.
+
+Prossimi step possibili, ma non obbligatori:
+
+1. protezione colonne derivate nel foglio Google (`VENDITA`, `MAGAZZINO`)
+2. introdurre colonna `__ID__` stabile nei tab Google prima della sync bidirezionale automatica
+3. progettare sync Sheet -> DB dirty-row/snapshot, evitando full sync automatici frequenti per non consumare egress Supabase Free
+4. eventuale enforcement SQL della regola `vendita = acquisto * 1.3`
+5. nuove feature `Spirits` solo dopo nuovo audit iniziale del DNA

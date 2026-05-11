@@ -8,11 +8,7 @@ import { clearManagedCategories, clearSupabaseCategories } from '@/data/category
 import { clearManagedOrigins } from '@/data/originRepository';
 import { clearManagedProducers } from '@/data/producerRepository';
 import { normalizeOrigin } from '@/domain/normalizeOrigin';
-import {
-  deriveMarginValue,
-  deriveSalePrice,
-  deriveWarehouseValue
-} from '@/domain/pricing';
+import { deriveMarginValue, deriveSalePrice, deriveWarehouseValue } from '@/domain/pricing';
 import {
   normalizeWineCategory,
   normalizeWineName,
@@ -84,14 +80,9 @@ function toWine(row: WineRow): Wine {
   const rawSale = typeof row.sale_price === 'number' ? row.sale_price : undefined;
   const sale = rawSale ?? deriveSalePrice(purchase);
   const qty = Number(row.qty ?? 0);
-  const margin =
-    typeof row.margin === 'number'
-      ? row.margin
-      : deriveMarginValue(purchase, sale);
+  const margin = typeof row.margin === 'number' ? row.margin : deriveMarginValue(purchase, sale);
   const warehouse =
-    typeof row.warehouse === 'number'
-      ? row.warehouse
-      : deriveWarehouseValue(purchase, qty);
+    typeof row.warehouse === 'number' ? row.warehouse : deriveWarehouseValue(purchase, qty);
 
   return {
     id: row.id,

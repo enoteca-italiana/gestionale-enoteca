@@ -16,7 +16,7 @@ describe('archiveCsv normalization', () => {
     expect(rows[0]?.origin).toBe('LANGUEDOC');
   });
 
-  it('requires only name and producer, applying defaults for missing origin and qty', () => {
+  it('keeps empty cells empty when the column exists', () => {
     const raw = [
       'Categoria,Nome,Produttore,Anno,Provenienza,Acquisto,Vendita,Q.tà',
       ',Roen 2024,Tramin,,,"€ 17,50","€ 22,75",'
@@ -26,10 +26,31 @@ describe('archiveCsv normalization', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]?.name).toBe('ROEN 2024');
     expect(rows[0]?.producer).toBe('Tramin');
-    expect(rows[0]?.origin).toBe('N/D');
+    expect(rows[0]?.age).toBe('');
+    expect(rows[0]?.origin).toBe('');
     expect(rows[0]?.qty).toBe(0);
     expect(rows[0]?.purchasePrice).toBe(17.5);
     expect(rows[0]?.salePrice).toBe(22.75);
+  });
+
+  it('allows empty name and producer cells', () => {
+    const raw = ['Nome,Produttore,Provenienza,Q.tà', ',,Francia,0'].join('\n');
+
+    const rows = parseArchiveCsv(raw);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.name).toBe('');
+    expect(rows[0]?.producer).toBe('');
+    expect(rows[0]?.origin).toBe('FRANCIA');
+    expect(rows[0]?.qty).toBe(0);
+  });
+
+  it('applies N/D only when the origin column is missing', () => {
+    const raw = ['Nome,Produttore,Q.tà', 'Roen 2024,Tramin,'].join('\n');
+
+    const rows = parseArchiveCsv(raw);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.origin).toBe('N/D');
+    expect(rows[0]?.qty).toBe(0);
   });
 
   it('ignores category placeholder values from spreadsheet markers', () => {

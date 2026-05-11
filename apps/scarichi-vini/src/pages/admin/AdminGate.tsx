@@ -31,9 +31,7 @@ export function AdminGate() {
   const [settingsAction, setSettingsAction] = useState<SettingsAction>(null);
 
   useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent('scarichi:adminSectionChange', { detail: { section } })
-    );
+    window.dispatchEvent(new CustomEvent('scarichi:adminSectionChange', { detail: { section } }));
   }, [section]);
   const {
     history,
@@ -80,7 +78,9 @@ export function AdminGate() {
 
   return (
     <>
-      {section === 'home' ? <AdminHome onOpen={openRootSection} activeDomain={activeDomain} /> : null}
+      {section === 'home' ? (
+        <AdminHome onOpen={openRootSection} activeDomain={activeDomain} />
+      ) : null}
 
       {section === 'history' ? (
         sessionsLoading ? null : sessionsError ? (

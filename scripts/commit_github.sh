@@ -42,11 +42,9 @@ fi
 git config user.name "enoteca-italiana"
 git config user.email "gestionale@enoteca-italiana.it"
 
-set -x
 git add -A
 git status -sb
 git commit -m "${COMMIT_MSG}"
 git push "${REMOTE_URL}" "${BRANCH}"
-set +x
 
 echo "[commit_github] Push completato su origin/${BRANCH}"

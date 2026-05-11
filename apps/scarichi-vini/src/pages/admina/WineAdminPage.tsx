@@ -224,9 +224,7 @@ export function WineAdminPage() {
       {totalsOpen ? (
         <div className="modalOverlay" role="dialog" aria-modal="true" aria-label="Totali archivio">
           <div className="modalCard archiveTotalsModalCard">
-            <div className="modalTitle">
-              {isWineDomain ? 'Totali' : 'Totali Spirits'}
-            </div>
+            <div className="modalTitle">{isWineDomain ? 'Totali' : 'Totali Spirits'}</div>
             <div className="archiveTotalsGrid mt12">
               <div className="archiveTotalsRow">
                 <span>Righe filtrate</span>

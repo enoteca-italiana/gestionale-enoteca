@@ -150,7 +150,7 @@ export async function listDischargeSessions(
     createdAt: new Date(row.created_at).getTime(),
     submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : undefined,
     totalQty: Number(row.total_qty ?? 0),
-    itemsCount: Number(row.spirits_session_items?.[0]?.count ?? 0),
+    itemsCount: Number(row.discharge_session_items?.[0]?.count ?? 0),
     status: row.status
   }));
 }
@@ -179,7 +179,7 @@ export async function listDischargeSessionsByDomain(
     createdAt: new Date(row.created_at).getTime(),
     submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : undefined,
     totalQty: Number(row.total_qty ?? 0),
-    itemsCount: Number(row.discharge_session_items?.[0]?.count ?? 0),
+    itemsCount: Number(row.spirits_session_items?.[0]?.count ?? 0),
     status: row.status
   }));
 }
@@ -306,7 +306,10 @@ export async function createSpiritsDischargeSession(input: {
   if (sessionError) throw sessionError;
 
   const spiritIds = [...new Set(cleanItems.map((item) => item.spiritId))];
-  let snapshotsById = new Map<string, { id: string; name?: string | null; producer?: string | null; category?: string | null }>();
+  let snapshotsById = new Map<
+    string,
+    { id: string; name?: string | null; producer?: string | null; category?: string | null }
+  >();
   if (spiritIds.length > 0) {
     const { data: snapshotRows, error: snapshotError } = await client
       .from('spirits_products')
@@ -668,7 +671,9 @@ export async function listSubmittedDischargeSessionItemsByDomain(
       sessionId: String(row.session_id ?? sessionId),
       sessionStatus: (session?.status as DischargeStatus | undefined) ?? 'submitted',
       createdAt: session?.created_at ? new Date(String(session.created_at)).getTime() : Date.now(),
-      submittedAt: session?.submitted_at ? new Date(String(session.submitted_at)).getTime() : undefined,
+      submittedAt: session?.submitted_at
+        ? new Date(String(session.submitted_at)).getTime()
+        : undefined,
       wineId: fallbackId,
       wineName: spiritNameRaw ? normalizeWineName(spiritNameRaw) : fallbackId,
       producer: producerRaw ? normalizeWineProducer(producerRaw) : undefined,

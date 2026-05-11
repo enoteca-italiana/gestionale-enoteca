@@ -58,10 +58,10 @@ async function loadDomainRepository(domain: AppDomain): Promise<DomainRepository
   const mod = await spiritsRepositoryPromise;
   return {
     list: () => mod.listSpirits(),
-      create: (payload) => mod.createSpirit({ ...payload, id: undefined }),
-      update: (payload) => mod.updateSpirit(payload),
-      deleteOne: (id) => mod.deleteSpirit(id)
-    };
+    create: (payload) => mod.createSpirit({ ...payload, id: undefined }),
+    update: (payload) => mod.updateSpirit(payload),
+    deleteOne: (id) => mod.deleteSpirit(id)
+  };
 }
 
 export function useWineAdminPage(domain: AppDomain = 'wine') {

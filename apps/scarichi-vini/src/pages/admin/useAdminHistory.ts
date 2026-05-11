@@ -40,7 +40,9 @@ export function useAdminHistory({
   const [detailError, setDetailError] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<DischargeSessionSummary | null>(null);
   const [detailItems, setDetailItems] = useState<DischargeSessionItemDetail[]>([]);
-  const [deleteTargetSession, setDeleteTargetSession] = useState<DischargeSessionSummary | null>(null);
+  const [deleteTargetSession, setDeleteTargetSession] = useState<DischargeSessionSummary | null>(
+    null
+  );
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(HISTORY_RENDER_BATCH);

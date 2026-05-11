@@ -224,7 +224,6 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
     const record: Partial<ArchiveCsvWineInput> = {};
     map.forEach((field, index) => {
       const rawCell = (line[index] ?? '').trim();
-      if (!rawCell) return;
       if (field === 'category' && CATEGORY_PLACEHOLDERS.has(normalizeHeader(rawCell))) {
         return;
       }
@@ -243,15 +242,10 @@ export function parseArchiveCsv(raw: string): ArchiveCsvWineInput[] {
       record[field] = rawCell;
     });
 
-    const rowNumber = r + 1;
     const name = normalizeWineName((record.name ?? '').toString());
     const producer = normalizeWineProducer((record.producer ?? '').toString());
     const origin = normalizeOrigin((record.origin ?? 'N/D').toString());
     const qty = typeof record.qty === 'number' ? record.qty : 0;
-
-    if (!name || !producer) {
-      throw new Error(`Riga ${rowNumber} non valida: richiesti Nome e Produttore`);
-    }
 
     parsed.push({
       id: record.id?.toString(),

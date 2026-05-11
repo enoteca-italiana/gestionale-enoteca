@@ -255,7 +255,10 @@ export function AdminArchiveToolbar({
           ) : null}
         </div>
 
-        <div className="archiveStatsBox" aria-label={activeDomain === 'wine' ? 'Riepilogo vini' : 'Riepilogo spirits'}>
+        <div
+          className="archiveStatsBox"
+          aria-label={activeDomain === 'wine' ? 'Riepilogo vini' : 'Riepilogo spirits'}
+        >
           <button
             type="button"
             className={`archiveStatsItem archiveStatsItemTotal ${

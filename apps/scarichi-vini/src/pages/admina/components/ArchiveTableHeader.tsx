@@ -44,12 +44,7 @@ function SortableHeader({
   );
 }
 
-export function ArchiveTableHeader({
-  domain,
-  sortState,
-  onToggleSort,
-  getSortAriaLabel
-}: Props) {
+export function ArchiveTableHeader({ domain, sortState, onToggleSort, getSortAriaLabel }: Props) {
   const isWineDomain = domain === 'wine';
   return (
     <thead>

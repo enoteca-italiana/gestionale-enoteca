@@ -119,7 +119,9 @@ function toQueueItem(raw: PendingDischargeQueueRaw): PendingDischargeQueueItem |
       ? Math.round(lastAttemptAtRaw)
       : undefined;
   const lastErrorRaw = String(raw.lastError ?? '').trim();
-  const domainRaw = String(raw.domain ?? 'wine').trim().toLowerCase();
+  const domainRaw = String(raw.domain ?? 'wine')
+    .trim()
+    .toLowerCase();
   const domain: AppDomain = domainRaw === 'spirits' ? 'spirits' : 'wine';
 
   return {

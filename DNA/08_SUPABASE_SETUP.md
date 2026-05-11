@@ -23,6 +23,17 @@ Vincoli operativi rilevanti del piano Free per questo progetto:
 
 Soluzione implementata: keepalive doppio (hook React periodico + GitHub Actions cron ogni 3 giorni).
 
+### Snapshot stato verificato
+
+Audit diretto validato il `04/05/2026`:
+
+- `wines`: `6382`
+- `spirits_products`: `1684`
+- `spirits_sessions`: `0`
+- `spirits_session_items`: `0`
+
+Questo snapshot è utile come riferimento iniziale per un nuovo PC o una nuova verifica.
+
 ---
 
 ## Gestione Egress (banda Supabase Free Tier)
@@ -163,19 +174,19 @@ Mantenute per compatibilità schema.
 
 Stato verificato via SQL Editor il `04/05/2026`.
 
-| Colonna          | Tipo                   | Note                                             |
-| ---------------- | ---------------------- | ------------------------------------------------ |
-| `id`             | uuid                   | PK, default `gen_random_uuid()`                  |
-| `category`       | text nullable          | Initcap (trigger)                                |
-| `name`           | text NOT NULL          | UPPERCASE (trigger)                              |
-| `producer`       | text NOT NULL          | Initcap (trigger)                                |
-| `purchase_price` | numeric nullable       | CHECK: >= 0                                      |
-| `sale_price`     | numeric nullable       | CHECK: >= 0                                      |
-| `qty`            | integer NOT NULL       | CHECK: >= 0, default 0                           |
-| `warehouse`      | numeric nullable       | calcolato: purchase_price × qty (trigger)        |
-| `margin`         | numeric nullable       | calcolato: sale_price − purchase_price (trigger) |
-| `updated_at`     | timestamptz NOT NULL   | aggiornato automaticamente da trigger            |
-| `threshold`      | integer nullable       | presente e verificato in produzione              |
+| Colonna          | Tipo                 | Note                                             |
+| ---------------- | -------------------- | ------------------------------------------------ |
+| `id`             | uuid                 | PK, default `gen_random_uuid()`                  |
+| `category`       | text nullable        | Initcap (trigger)                                |
+| `name`           | text NOT NULL        | UPPERCASE (trigger)                              |
+| `producer`       | text NOT NULL        | Initcap (trigger)                                |
+| `purchase_price` | numeric nullable     | CHECK: >= 0                                      |
+| `sale_price`     | numeric nullable     | CHECK: >= 0                                      |
+| `qty`            | integer NOT NULL     | CHECK: >= 0, default 0                           |
+| `warehouse`      | numeric nullable     | calcolato: purchase_price × qty (trigger)        |
+| `margin`         | numeric nullable     | calcolato: sale_price − purchase_price (trigger) |
+| `updated_at`     | timestamptz NOT NULL | aggiornato automaticamente da trigger            |
+| `threshold`      | integer nullable     | presente e verificato in produzione              |
 
 ### `public.spirits_sessions`
 
@@ -190,15 +201,15 @@ Stato verificato via SQL Editor il `04/05/2026`.
 
 ### `public.spirits_session_items`
 
-| Colonna           | Tipo          | Note                                  |
-| ----------------- | ------------- | ------------------------------------- |
-| `id`              | uuid          | PK                                    |
-| `session_id`      | uuid          | FK → `spirits_sessions.id`            |
-| `spirit_id`       | uuid nullable | FK → `spirits_products.id`            |
-| `qty`             | integer       | CHECK: > 0                            |
-| `spirit_name`     | text nullable | snapshot al momento scarico           |
-| `spirit_producer` | text nullable | snapshot                              |
-| `spirit_category` | text nullable | snapshot                              |
+| Colonna           | Tipo          | Note                        |
+| ----------------- | ------------- | --------------------------- |
+| `id`              | uuid          | PK                          |
+| `session_id`      | uuid          | FK → `spirits_sessions.id`  |
+| `spirit_id`       | uuid nullable | FK → `spirits_products.id`  |
+| `qty`             | integer       | CHECK: > 0                  |
+| `spirit_name`     | text nullable | snapshot al momento scarico |
+| `spirit_producer` | text nullable | snapshot                    |
+| `spirit_category` | text nullable | snapshot                    |
 
 ---
 
@@ -294,7 +305,44 @@ Config condivisa in `integration.runtime_config`:
 Nota:
 
 - lato Supabase il webhook Spirits è attivo;
-- lato Google Apps Script serve uno script unico che distingua `wines` da `spirits_products`.
+- lato Google Apps Script è ora presente uno script unico che distingue `wines` da `spirits_products`;
+- sorgente versionato nel repo: `scripts/google-apps-script/enoteca_sync.gs`.
+
+Regola operativa importante:
+
+- `syncWinesFromSheetToSupabase` / `syncSpiritsFromSheetToSupabase` = foglio -> database
+- `syncWinesFromSupabaseToSheet` / `syncSpiritsFromSupabaseToSheet` = database -> foglio
+
+I vecchi trigger installabili Apps Script (`syncFromSheetToSupabase`, `syncFromSupabaseToSheet`) sono stati rimossi perché legacy e non compatibili con lo script attuale.
+
+### Audit sync Google del 11/05/2026
+
+Verifiche SQL eseguite in sola lettura:
+
+- `integration.runtime_config.google_sheets_webhook_url` presente, lunghezza 114, URL Web App valido con suffisso `/exec`;
+- `integration.runtime_config.google_sheets_webhook_secret` presente, lunghezza 29;
+- trigger DB presenti e abilitati:
+  - `public.wines` -> `trg_wines_notify_google_sheets` -> `integration.notify_google_sheets_wines`;
+  - `public.spirits_products` -> `trg_spirits_notify_google_sheets` -> `integration.notify_google_sheets_spirits`;
+- le funzioni `notify_google_sheets_*` inviano payload JSON con `source`, `table`, `op`, `id`, `secret`, `timestamp`, coerente con `doPost(e)` di Apps Script;
+- ultimo `updated_at` rilevato: `wines` 04/05/2026 12:24 UTC, `spirits_products` 04/05/2026 14:44 UTC. Questo indica che le modifiche fatte solo sul foglio Google non stavano arrivando a Supabase.
+
+Stato Apps Script osservato:
+
+- schermata "Attivatori" con `0 attivatori`;
+- quindi il verso automatico Google Sheet -> Supabase non e' attivo;
+- il verso Google Sheet -> Supabase e' disponibile solo tramite menu manuale (`Push ... da Foglio`).
+
+Audit CSV esportati dal foglio:
+
+- `Listino Ufficiale enoteca - Vini (1).csv`: 7234 righe dati, nessuna colonna `__ID__`, 72 righe con campi critici vuoti, 27 duplicati naturali;
+- `Listino Ufficiale enoteca - Spirits (2).csv`: 1692 righe dati, nessuna colonna `__ID__`, 6 righe con nome/produttore vuoto, 6 duplicati naturali.
+
+Conclusione tecnica:
+
+- per una sync bidirezionale sicura serve una colonna `__ID__` stabile su entrambi i tab;
+- non usare `nome + produttore` come chiave primaria: i duplicati naturali rendono questa chiave non affidabile;
+- con ~9000 record e Supabase Free, evitare full sync automatici frequenti: preferire dirty-row/snapshot mirato e full sync manuale controllato.
 
 ---
 
@@ -327,12 +375,12 @@ Script cleanup indici duplicati: `scripts/sql/supabase_enterprise_index_cleanup.
 
 ## Script SQL operativi (versionati)
 
-| File                                                | Descrizione                                               |
-| --------------------------------------------------- | --------------------------------------------------------- |
-| `scripts/sql/supabase_enterprise_index_cleanup.sql` | Rimuove indici duplicati su session items, esegue ANALYZE |
-| `scripts/sql/supabase_text_casing_policy.sql`       | Trigger normalizzazione campi + retroattivo su wines      |
-| `scripts/sql/2026-05-04_spirits_domain_setup.sql`   | Setup tabelle Spirits (`spirits_products`, `spirits_sessions`, `spirits_session_items`) + RPC `submit_spirits_session` + RLS/GRANT |
-| `scripts/sql/2026-05-04_spirits_threshold_enable.sql` | Migrazione incrementale: aggiunge `threshold` a `spirits_products` + CHECK + indice |
+| File                                                  | Descrizione                                                                                                                        |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/sql/supabase_enterprise_index_cleanup.sql`   | Rimuove indici duplicati su session items, esegue ANALYZE                                                                          |
+| `scripts/sql/supabase_text_casing_policy.sql`         | Trigger normalizzazione campi + retroattivo su wines                                                                               |
+| `scripts/sql/2026-05-04_spirits_domain_setup.sql`     | Setup tabelle Spirits (`spirits_products`, `spirits_sessions`, `spirits_session_items`) + RPC `submit_spirits_session` + RLS/GRANT |
+| `scripts/sql/2026-05-04_spirits_threshold_enable.sql` | Migrazione incrementale: aggiunge `threshold` a `spirits_products` + CHECK + indice                                                |
 
 ---
 

@@ -183,6 +183,13 @@ apps/scarichi-vini/
       components.css            — bottoni, card, nav items, animazioni
       archive.css               — tabella archivio, toolbar, filtri, modale archivio
       misc.css                  — modali generici, toast, summary dock, admin, impostazioni
+
+scripts/
+  sql/
+    2026-05-04_spirits_domain_setup.sql      — setup dominio Spirits lato Supabase
+    2026-05-04_spirits_threshold_enable.sql  — migrazione incrementale soglie Spirits
+  google-apps-script/
+    enoteca_sync.gs            — sorgente versionato del progetto Google Apps Script (`Vini` + `Spirits`)
 ```
 
 Nota UI dominio:

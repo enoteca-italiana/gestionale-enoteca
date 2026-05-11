@@ -11,8 +11,9 @@ import {
 const HISTORY_LIMIT = 300;
 const CACHE_TTL_MS = 60_000;
 
-let historyCacheByDomain: Partial<Record<AppDomain, { data: DischargeSessionSummary[]; at: number }>> =
-  {};
+let historyCacheByDomain: Partial<
+  Record<AppDomain, { data: DischargeSessionSummary[]; at: number }>
+> = {};
 
 function readHistoryCache(domain: AppDomain) {
   const cache = historyCacheByDomain[domain];

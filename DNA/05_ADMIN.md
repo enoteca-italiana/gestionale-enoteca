@@ -128,7 +128,7 @@ Flusso:
 3. PIN admin obbligatorio
 4. Post-import: modale mostra solo `Import completato: N Vini` + pulsante `Chiudi`
 
-Parsing: `parseArchiveCsv()` — auto-detect separatore, alias header flessibili, normalizzazione campi.
+Parsing: `parseArchiveCsv()` — auto-detect separatore, alias header flessibili, normalizzazione campi. Le colonne `Nome` e `Produttore` devono esistere, ma le celle testuali vuote vengono importate vuote.
 
 ### `ExportModal.tsx` — Export archivio
 

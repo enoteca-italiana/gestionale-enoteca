@@ -108,16 +108,6 @@ export function useHomePage({
     deleteItem
   } = useLocalSession({ inventory, setInventory });
 
-  useEffect(() => {
-    if (domain === 'wine') return;
-    if (!sessionOpen) return;
-    setConfirmOpen(false);
-    setLeaveSessionConfirmOpen(false);
-    setPendingNavPath(null);
-    resetSession();
-    setToast('Modalità Spirits: sessione vino chiusa');
-  }, [domain, resetSession, sessionOpen]);
-
   const {
     editingStockWine,
     editingStockQty,
@@ -312,7 +302,9 @@ export function useHomePage({
     if (!online) {
       try {
         enqueueSession(
-          domain === 'wine' ? 'Offline: sessione salvata in coda' : 'Offline: sessione Spirits salvata in coda'
+          domain === 'wine'
+            ? 'Offline: sessione salvata in coda'
+            : 'Offline: sessione Spirits salvata in coda'
         );
       } catch (error) {
         console.error('[HomePage] enqueue offline session failed', error);

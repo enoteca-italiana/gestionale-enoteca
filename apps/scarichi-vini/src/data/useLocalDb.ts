@@ -13,7 +13,8 @@ import {
 
 const WRITE_COALESCE_MS = 120;
 let wineRepositoryModulePromise: Promise<typeof import('@/data/wineRepository')> | null = null;
-let spiritsRepositoryModulePromise: Promise<typeof import('@/data/spiritsRepository')> | null = null;
+let spiritsRepositoryModulePromise: Promise<typeof import('@/data/spiritsRepository')> | null =
+  null;
 
 async function loadWineRepositoryModule() {
   wineRepositoryModulePromise ??= import('@/data/wineRepository');
