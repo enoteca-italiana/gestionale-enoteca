@@ -101,10 +101,7 @@ PIN SHA-256 locale (default "1909"), sessione 12h su `localStorage`.
 - Schema documentato in `DNA/08_SUPABASE_SETUP.md`
 - Offline queue: `offlineDischargeQueue.ts` + `useOfflineDischargeQueueSync.ts`
 - Free tier: progetto può andare in pausa → `ERR_NAME_NOT_RESOLVED` non è un bug del codice
-- **⚠ API KEY MISMATCH (03/05/2026):** `SUPABASE_ANON_KEY` in Replit appartiene al vecchio progetto
-  `kuigzaqaewgcosfhahkv` → causa 401 su tutte le REST calls. Aggiornare il secret con la chiave
-  `anon public` dal dashboard Supabase progetto `aezqtgadyaxdcptwlpci`. Stesso aggiornamento in
-  Cloudflare Pages env vars. Vedere `DNA/07_OPERATIONS_BACKUP.md` per istruzioni complete.
+- Secret Replit aggiornati l'11/05/2026: `SUPABASE_ANON_KEY`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL` tutti allineati al progetto `aezqtgadyaxdcptwlpci`.
 
 ## Pattern di refactoring consolidato
 
