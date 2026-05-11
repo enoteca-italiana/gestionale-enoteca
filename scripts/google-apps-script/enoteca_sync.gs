@@ -48,10 +48,15 @@ var MUTE_PUSH_KEY = 'autoMute_push_ts';
 var MUTE_PULL_KEY = 'autoMute_pull_ts';
 // Tempo minimo di silenzio prima di sincronizzare (10 secondi)
 var DEBOUNCE_MS = 10 * 1000;
-// Finestra di mute dopo ogni sync per prevenire loop (10 secondi)
-// I webhook generati da un push arrivano entro 1-3s → 10s è sufficiente.
-// Finestre più lunghe bloccano webhook legittimi dall'app quando i sync girano ogni minuto.
-var MUTE_MS = 10 * 1000;
+// Mute dopo un PUSH (Sheet→DB): blocca doPost per 10s.
+// I webhook generati da un push arrivano entro 1-3s → 10s è più che sufficiente.
+// Mantenerlo basso permette ai webhook legittimi dell'app di passare dopo pochi secondi.
+var MUTE_PULL_MS = 10 * 1000;
+
+// Mute dopo un PULL (DB→Sheet): blocca onSheetEdit_ per 90s.
+// Il trigger onChange può sparare anche 30-60s dopo che setValues completa.
+// Finestra lunga previene il falso push-loop causato dal pull che riscrive il foglio.
+var MUTE_PUSH_MS = 90 * 1000;
 
 // ── Helper: lettura/scrittura mappa pending ──
 function readPendingMap_(key) {
@@ -111,7 +116,7 @@ function onSheetEdit_(e) {
 
     // LOOP GUARD: pull recente → la modifica è effetto del pull stesso, ignora
     var mutePushTs = parseInt(props.getProperty(MUTE_PUSH_KEY) || '0', 10);
-    if (mutePushTs && Date.now() - mutePushTs < MUTE_MS) return;
+    if (mutePushTs && Date.now() - mutePushTs < MUTE_PUSH_MS) return;
 
     mergePending_(PENDING_PUSH_KEY, tableKey, Date.now());
   } catch (_) {
@@ -157,7 +162,7 @@ function doPost(e) {
 
     // LOOP GUARD: push recente → il webhook è effetto del push stesso, ignora
     var mutePullTs = parseInt(props.getProperty(MUTE_PULL_KEY) || '0', 10);
-    if (mutePullTs && Date.now() - mutePullTs < MUTE_MS) {
+    if (mutePullTs && Date.now() - mutePullTs < MUTE_PULL_MS) {
       return jsonResponse_({ ok: true, status: 200, table: tableKey, muted: true });
     }
 
