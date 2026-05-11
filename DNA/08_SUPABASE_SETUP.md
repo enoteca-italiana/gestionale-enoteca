@@ -9,7 +9,7 @@ Ultimo aggiornamento: **04/05/2026 — CEST**.
 - ID progetto: `aezqtgadyaxdcptwlpci`
 - Organizzazione: `enoteca-italiana`
 - Piano: Free tier
-- Branch collegato: `enoteca-italiana/gestionale` → `main`
+- Branch collegato: `enoteca-italiana/gestionale-enoteca` → `main`
 
 ### Nota free tier
 
@@ -430,7 +430,7 @@ Valori attesi post-seed: `total_wines = 20`.
 Se il repository non compare in `Settings → Integrations`:
 
 1. Installare GitHub App `Supabase` sull'organizzazione `enoteca-italiana`
-2. Impostare `Only select repositories` → selezionare `enoteca-italiana/gestionale`
+2. Impostare `Only select repositories` → selezionare `enoteca-italiana/gestionale-enoteca`
 3. Salvare su GitHub, poi refresh forzato pagina Supabase Integrations
 
 ---
