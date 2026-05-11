@@ -164,53 +164,38 @@ Card Riepilogo (`SummaryList`): nome vino completamente visibile su più righe �
 Override CSS su `.summaryItemButton .lineTitle`: `white-space: normal; overflow: visible; overflow-wrap: break-word`.
 `.summaryDock .list`: `overflow-x: hidden`.
 
-## Sync bidirezionale Sheet ↔ Supabase ↔ App (11/05/2026)
+## Sync bidirezionale Sheet ↔ Supabase ↔ App (11/05/2026 — v3 semplificata)
 
-Architettura sync completa, debounced, con loop guard:
+Architettura v3 — logica semplificata, stabile, senza loop:
 
-| Direzione        | Meccanismo                                                       | Latenza    |
-| ---------------- | ---------------------------------------------------------------- | ---------- |
-| App → Supabase   | Scrittura diretta REST                                           | Istantanea |
-| Supabase → App   | `useRealtimeSync` (websocket Realtime)                           | ~2 sec     |
-| Sheet → Supabase | `onSheetEdit_` flag + `processPendingSync_` timer                | ~1 min     |
-| Supabase → Sheet | DB trigger webhook → `doPost` flag + `processPendingPull_` timer | ~1 min     |
+| Direzione      | Meccanismo                                       | Latenza   |
+| -------------- | ------------------------------------------------ | --------- |
+| App → Supabase | REST diretto                                     | istant.   |
+| Supabase → App | `useRealtimeSync` websocket Realtime             | ~2 s      |
+| Sheet → DB     | `reconcile()` ogni 5 min — se dirty=true → push  | max 5 min |
+| DB → Sheet     | `reconcile()` ogni 5 min — se dirty=false → pull | max 5 min |
+
+**Logica reconcile (Apps Script):**
+
+- `onSheetEdit_` → setta `dirty_wines=true` o `dirty_spirits=true` (nessuna HTTP call).
+- `reconcile()` ogni 5 min: per ogni tabella — se dirty: push Sheet→DB (upsert + delete diff); altrimenti: pull DB→Sheet.
+- Durante il pull, `reconcile_running_*=true` blocca `onSheetEdit_` → zero loop.
+- `doPost` risponde 200 immediato (webhook Supabase mantenuto, non usato attivamente).
+
+**Delete bidirezionale:**
+
+- Push (Sheet→DB): upsert righe presenti + `supabaseDeleteMissing_` per righe assenti.
+- Pull (DB→Sheet): riscrittura totale — righe eliminate dal DB spariscono dal foglio.
 
 **File coinvolti:**
 
-- `apps/scarichi-vini/src/data/useRealtimeSync.ts` — hook React con subscribe a `postgres_changes` su `wines` / `spirits_products`. Cleanup safe via `client = supabase` capture nell'effect. Log warn solo su `CHANNEL_ERROR` / `TIMED_OUT`.
-- `apps/scarichi-vini/src/data/wineRepository.ts` — esporta `invalidateWinesCache()`.
-- `apps/scarichi-vini/src/data/spiritsRepository.ts` — esporta `invalidateSpiritsCacheAndSync()`.
-- `apps/scarichi-vini/src/pages/home/useHomePage.ts` — chiama `useRealtimeSync(domain, refreshOnRemoteChange)` con debounce 2s.
-- `scripts/google-apps-script/enoteca_sync.gs` — Apps Script con: `DEBOUNCE_MS=10s`, `MUTE_MS=45s`, due timer ogni 1 min (push/pull), `doPost` solo flag (no lock), loop guard via `MUTE_PUSH_KEY` / `MUTE_PULL_KEY`.
+- `scripts/google-apps-script/enoteca_sync.gs` — sorgente Apps Script v3
+- `apps/scarichi-vini/src/data/useRealtimeSync.ts` — Realtime hook lato app
+- `apps/scarichi-vini/src/pages/home/useHomePage.ts` — chiama `useRealtimeSync` con debounce 2s
 
-**Pattern loop guard Apps Script:**
+**Quota UrlFetch (limite 20.000/giorno):** pull ~9.200/giorno, push ~14.400/giorno — entro limite con timer 5 min.
 
-- Prima di un push, viene scritto `MUTE_PULL_KEY = now`. I webhook che arrivano da Supabase entro 45s vengono ignorati da `doPost` (rispondono `muted:true`).
-- Prima di un pull, viene scritto `MUTE_PUSH_KEY = now`. Le modifiche al Sheet entro 45s vengono ignorate da `onSheetEdit_`.
-- Le modifiche multiple in serie coalescono in 1 sola sync (debounce 10s sul flag pending).
-
-**Delete bidirezionale (11/05/2026):**
-
-- Sheet → DB push: dopo l'upsert, recupera tutti gli ID presenti nel DB, calcola il diff con gli ID del foglio, cancella (hard delete) le righe assenti dal foglio via `DELETE ?id=in.(...)`.
-- DB → Sheet pull: già completo — `clearDataKeepHeader_` + riscrittura totale; righe eliminate dal DB non riappaiono nel foglio.
-- Funzioni aggiunte: `supabaseDeleteMissing_`, `supabaseSelectIds_`, `supabaseDelete_`.
-
-**Latenza minima ineliminabile (limite Apps Script):**
-
-| Direzione                 | Latenza minima | Latenza massima |
-| ------------------------- | -------------- | --------------- |
-| App → Supabase            | istantanea     | istantanea      |
-| Supabase → App (Realtime) | ~2 s           | ~2 s            |
-| Sheet → Supabase          | ~10 s          | ~70 s           |
-| Supabase → Sheet          | ~10 s          | ~70 s           |
-
-I timer di Apps Script non possono scendere sotto 1 minuto — è un limite della piattaforma.
-
-**Stabilità:**
-
-- Eliminata la cascata di errori `doPost` (prima: lock 30s × N webhook = timeout multipli).
-- Realtime subscription verificata: `status: SUBSCRIBED` in console al mount.
-- Quality gate verde: typecheck, lint, test 14/14, format, build.
+**Quality gate:** typecheck ✅, lint ✅, test 14/14 ✅, format ✅, build ✅
 
 ## Ultimo deploy GitHub
 
