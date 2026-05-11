@@ -40,6 +40,114 @@ const TABLES = {
   }
 };
 
+// ─── SYNC AUTOMATICO: debounce Sheet → Supabase ────────────────────────────
+// Chiavi Script Properties usate per coordinare l'auto-sync
+var PENDING_KEY_TABLE = 'autoSync_table';
+var PENDING_KEY_TS    = 'autoSync_ts';
+// Tempo minimo di silenzio prima di inviare a Supabase (1 minuto)
+var DEBOUNCE_MS = 60 * 1000;
+
+// Chiamato dal trigger onChange installabile.
+// Non contatta mai Supabase: si limita a registrare un "flag in attesa".
+function onSheetEdit_(e) {
+  try {
+    var changeType = (e && e.changeType) ? e.changeType : 'EDIT';
+    // Ignora cambi strutturali non rilevanti (formato, freeze, ecc.)
+    var relevantTypes = ['EDIT', 'INSERT_ROW', 'DELETE_ROW', 'REMOVE_ROW'];
+    if (relevantTypes.indexOf(changeType) === -1) return;
+
+    // Determina il foglio modificato
+    var sheetName = null;
+    if (e && e.range) {
+      sheetName = e.range.getSheet().getName();
+      // Ignora modifiche alla riga header
+      if (e.range.getRow() === 1) return;
+    } else if (e && e.source) {
+      try { sheetName = e.source.getActiveSheet().getName(); } catch (_) {}
+    }
+
+    // Mappa nome foglio → chiave tabella
+    var tableKey = null;
+    if (sheetName === CFG.SHEET_NAME_WINES) tableKey = 'wines';
+    else if (sheetName === CFG.SHEET_NAME_SPIRITS) tableKey = 'spirits_products';
+    if (!tableKey) return;
+
+    // Registra pending sync (sovrascrive qualsiasi flag precedente)
+    var props = PropertiesService.getScriptProperties();
+    props.setProperty(PENDING_KEY_TABLE, tableKey);
+    props.setProperty(PENDING_KEY_TS, String(Date.now()));
+  } catch (_) {
+    // silenzioso — non disturba mai l'utente durante la modifica
+  }
+}
+
+// Chiamato dal timer ogni 2 minuti.
+// Controlla se c'è un sync in attesa e se il debounce è trascorso.
+function processPendingSync_() {
+  var props = PropertiesService.getScriptProperties();
+  var tableKey = props.getProperty(PENDING_KEY_TABLE);
+  var tsStr    = props.getProperty(PENDING_KEY_TS);
+
+  if (!tableKey || !tsStr) return; // Nulla in attesa
+
+  var lastEditMs = parseInt(tsStr, 10);
+  if (isNaN(lastEditMs)) return;
+
+  var elapsed = Date.now() - lastEditMs;
+  if (elapsed < DEBOUNCE_MS) return; // Ancora entro la finestra di debounce
+
+  // Cancella il flag prima di agire (evita doppie esecuzioni in parallelo)
+  props.deleteProperty(PENDING_KEY_TABLE);
+  props.deleteProperty(PENDING_KEY_TS);
+
+  try {
+    syncTableFromSheetToSupabaseWithLock_(tableKey);
+  } catch (err) {
+    // In caso di errore, ripristina il flag: riproverà al prossimo tick
+    props.setProperty(PENDING_KEY_TABLE, tableKey);
+    props.setProperty(PENDING_KEY_TS, String(lastEditMs));
+  }
+}
+
+// Installa i due trigger necessari. Da eseguire una sola volta.
+function installTriggers() {
+  // Rimuove eventuali trigger precedenti per evitare duplicati
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var fn = t.getHandlerFunction();
+    if (fn === 'onSheetEdit_' || fn === 'processPendingSync_') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  // Trigger onChange installabile → cattura ogni modifica al foglio
+  ScriptApp.newTrigger('onSheetEdit_')
+    .forSpreadsheet(SpreadsheetApp.getActive())
+    .onChange()
+    .create();
+
+  // Trigger time-based ogni 2 minuti → processa il pending sync
+  ScriptApp.newTrigger('processPendingSync_')
+    .timeBased()
+    .everyMinutes(2)
+    .create();
+
+  toast_('✅ Attivatori installati (onChange + timer 2 min)');
+}
+
+// Rimuove i trigger installati (utile per manutenzione).
+function removeTriggers() {
+  var count = 0;
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var fn = t.getHandlerFunction();
+    if (fn === 'onSheetEdit_' || fn === 'processPendingSync_') {
+      ScriptApp.deleteTrigger(t);
+      count++;
+    }
+  });
+  toast_('Rimossi ' + count + ' attivatori');
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Sync Enoteca')
@@ -52,6 +160,9 @@ function onOpen() {
     .addItem('Push Spirits da Foglio', 'syncSpiritsFromSheetToSupabase')
     .addSeparator()
     .addItem('Verifica configurazione', 'checkConfig')
+    .addSeparator()
+    .addItem('▶ Installa attivatori auto-sync', 'installTriggers')
+    .addItem('✕ Rimuovi attivatori', 'removeTriggers')
     .addToUi();
 }
 
