@@ -146,9 +146,9 @@ Il sorgente aggiornato del progetto Google Apps Script è ora salvato anche nel 
 Questo file va considerato la fonte di verità lato foglio Google. Nel progetto Apps Script reale sono già configurati:
 
 - Script Properties (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, WEBHOOK_SECRET, SHEET_NAME_WINES, SHEET_NAME_SPIRITS)
-- Trigger `onSheetEdit_` (onChange) + `processPendingSync_` (ogni 5 min) — installati l'11/05/2026 tramite `installTriggers()`
+- Trigger `onSheetEdit_` (onChange) + `reconcile` (ogni 5 min) — installati l'11/05/2026 tramite `installTriggers()`
 
-Flusso auto-sync attivo: modifica foglio → debounce 60s → push automatico a Supabase (max ~6 min di ritardo).
+Logica v3 (aggiornata 11/05/2026): `onSheetEdit_` setta solo flag `dirty_wines`/`dirty_spirits` (nessuna HTTP call). `reconcile()` ogni 5 min: se dirty → push Sheet→DB; altrimenti → pull DB→Sheet. Max latenza: 5 min in entrambe le direzioni.
 
 ---
 
@@ -174,11 +174,13 @@ bash backup/make_backup.sh "Backup_2 Maggio_16.00"
 
 Esempio: `Backup_2 Maggio_16.30.tar.gz`
 
-Ultimo backup creato: **`Backup_11 Maggio_15.55.tar.gz`** (4.9M)
+Ultimo backup creato: **`Backup_11 Maggio_17.15.tar.gz`** (9.7M)
 
 ### Esclusioni
 
-Lo script esclude: `node_modules`, `dist`, `dev-dist`, `coverage`, `.git`, `backup/`, `.cache/`, `.local/`, `.env*`
+Lo script esclude: `node_modules`, `dist`, `dev-dist`, `coverage`, `.git`, `backup/`, `.cache/`, `.local/`
+
+I file `.env.local` sono **inclusi** nel backup (necessari all'ambiente operativo locale). Non vengono committati su Git.
 
 ### Regola operativa — "esegui nuovo backup"
 

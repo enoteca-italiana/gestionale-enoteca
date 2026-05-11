@@ -37,8 +37,6 @@ rm -f "$ARCHIVE"
     --exclude="./.local" \
     --exclude="./.DS_Store" \
     --exclude="./apps/scarichi-vini/.DS_Store" \
-    --exclude="./.env" \
-    --exclude="./.env.*" \
     .
 )
 
