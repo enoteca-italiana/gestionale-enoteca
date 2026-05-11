@@ -50,14 +50,14 @@ Chunk notevoli:
 
 ## Deploy Cloudflare Pages (production)
 
-| Campo          | Valore                        |
-| -------------- | ----------------------------- |
-| Progetto       | `gestionale`                  |
-| Repository     | `enoteca-italiana/gestionale` |
-| Branch         | `main`                        |
-| Root directory | root monorepo                 |
-| Build command  | `npm run build`               |
-| Build output   | `apps/scarichi-vini/dist`     |
+| Campo          | Valore                                |
+| -------------- | ------------------------------------- |
+| Progetto       | `gestionale-enoteca`                  |
+| Repository     | `enoteca-italiana/gestionale-enoteca` |
+| Branch         | `main`                                |
+| Root directory | root monorepo                         |
+| Build command  | `npm run build`                       |
+| Build output   | `apps/scarichi-vini/dist`             |
 
 Variabili ambiente obbligatorie in Cloudflare (Settings → Environment variables → Production):
 
@@ -75,7 +75,7 @@ Variabili ambiente obbligatorie in Cloudflare (Settings → Environment variable
 
 ## GitHub
 
-- Remote: `https://github.com/enoteca-italiana/gestionale.git`
+- Remote: `https://github.com/enoteca-italiana/gestionale-enoteca.git`
 - Branch default: `main`
 - Account: `derohot975` / `dero975@hotmail.com`
 - Script helper: `scripts/commit_github.sh "messaggio"`
@@ -83,7 +83,7 @@ Variabili ambiente obbligatorie in Cloudflare (Settings → Environment variable
 ### Push da PC locale
 
 ```bash
-git push https://derohot975:<GITHUB_PAT>@github.com/enoteca-italiana/gestionale.git main
+git push https://derohot975:<GITHUB_PAT>@github.com/enoteca-italiana/gestionale-enoteca.git main
 ```
 
 Il PAT è salvato come segreto Replit (`GITHUB_PAT`). Non committare mai il token.
@@ -107,7 +107,7 @@ Se l'organizzazione usa SSO: autorizzare il token su `enoteca-italiana` (Configu
 # oppure
 git add -A
 git commit -m "messaggio"
-git push https://derohot975:<PAT>@github.com/enoteca-italiana/gestionale.git main
+git push https://derohot975:<PAT>@github.com/enoteca-italiana/gestionale-enoteca.git main
 ```
 
 ### Errori noti e fix
@@ -219,7 +219,7 @@ Dopo ricaricamento in Replit da zip:
 
 ## Handover nuovo PC (checklist)
 
-1. Clona repository: `git clone https://github.com/enoteca-italiana/gestionale.git`
+1. Clona repository: `git clone https://github.com/enoteca-italiana/gestionale-enoteca.git`
 2. Verifica branch: `git checkout main`
 3. Installa Node LTS 20.x
 4. Dalla root: `npm install`
